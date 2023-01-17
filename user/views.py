@@ -41,9 +41,35 @@ def login(request):
 
 
 def dashboard(request):
+    if not request.user.is_authenticated:
+        return redirect('/user/login')
     return render(request, "user/dashboard.html", {})
 
 
 def logout(request):
     auth_logout(request)
     return redirect('/')
+
+
+def algorithms(request):
+    if not request.user.is_authenticated:
+        return redirect('/user/login')
+    return render(request, "user/algorithms.html", {})
+
+
+def dataAnalysis(request):
+    if not request.user.is_authenticated:
+        return redirect('/user/login')
+    return render(request, "user/data-analysis.html", {})
+
+
+def recommendations(request):
+    if not request.user.is_authenticated:
+        return redirect('/user/login')
+    return render(request, "user/recommendations.html", {})
+
+
+def userAPI(request):
+    if not request.user.is_authenticated:
+        return redirect('/user/login')
+    return render(request, "user/user-api.html", {})
