@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .forms import *
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.contrib import messages
+from .models import CustomUser
 
 
 # Create your views here.
@@ -72,4 +74,14 @@ def recommendations(request):
 def userAPI(request):
     if not request.user.is_authenticated:
         return redirect('/user/login')
-    return render(request, "user/user-api.html", {})
+
+    user = CustomUser.objects.filter(id=request.user.id)[0]
+    current_api_key = user.api_key
+    if request.method == 'POST':
+        api_key = request.POST['api-key']
+        user.api_key = api_key
+        user.save()
+        current_api_key = api_key
+        messages.success(request, "API key updated successfully")
+
+    return render(request, "user/user-api.html", {"api_key": current_api_key})
