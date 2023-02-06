@@ -5,8 +5,142 @@
 {% endblock %}
 
 {% block content %}
+<div class="container mt-2 bg-light">
+    <div class="row">
+        <div class="col">
+            <h3>Equity: $100,000 </h3>
+        </div>
+        <div class="col">
+            <h3> Earn/Lost: +5% </h3>
+        </div>
+    </div>
+</div>
 
-<h1>This is User DashBoard Page, this page could show user's watch list stock price, user's earning, user's selected
-algorithms, and other data that user like to see here.</h1>
+<div class="container mt-4" >
+    <h3>Positions</h3>
+    <table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Asset</th>
+      <th scope="col">Price</th>
+      <th scope="col">Quantity</th>
+      <th scope="col">Market Value</th>
+        <th scope="col">Profit</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">SPY</th>
+      <td>$400.00</td>
+      <td>5</td>
+      <td>$2000.00</td>
+         <td>+5%</td>
+    </tr>
+    <tr>
+      <th scope="row">AAPL</th>
+      <td>$130.00</td>
+      <td>2</td>
+      <td>$260.00</td>
+         <td>+5%</td>
+    </tr>
+    <tr>
+      <th scope="row">MSFT</th>
+      <td>$250.00</td>
+      <td>3</td>
+      <td>$750.00</td>
+        <td>+5%</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="container mt-4 bg-light" >
+    <h3> Activated Algorithms </h3>
+    <div class="container">
+        <strong> Algo 1: </strong>
+        <ul>
+            <li> AAPL </li>
+            <li> MSFT</li>
+        </ul>
+        <string> Algo 2:</string>
+        <ul>
+            <li>SPY</li>
+        </ul>
+        <a href="" class="btn btn-primary"> Edit Activated Algorithms</a>
+    </div>
+</div>
+
+<div class="container mt-4" >
+    <h3>Trading History</h3>
+    <table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Asset</th>
+      <th scope="col">Order</th>
+      <th scope="col">Quantity</th>
+      <th scope="col">Cost</th>
+        <th scope="col">Amount</th>
+        <th scope="col">Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">SPY</th>
+      <td>Market Buy 1/1/2023 12:00 PM</td>
+      <td>1</td>
+      <td>$400.00</td>
+         <td>$400.00</td>
+        <td>Filled</td>
+    </tr>
+    <tr>
+      <th scope="row">SPY</th>
+      <td>Market Buy 1/2/2023 12:00 PM</td>
+      <td>2</td>
+      <td>$400.00</td>
+         <td>$800.00</td>
+        <td>Filled</td>
+    </tr>
+    <tr>
+      <th scope="row">AAPL</th>
+      <td>Market Buy 1/3/2023 12:00 PM</td>
+      <td>1</td>
+      <td>$130.00</td>
+         <td>$130.00</td>
+        <td>Filled</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="container mt-4 bg-light" >
+    <h3> Watch List</h3>
+    <table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Asset</th>
+      <th scope="col">Price</th>
+      <th scope="col">Change of Today</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">META</th>
+      <td>$150</td>
+      <td>+2%</td>
+    </tr>
+    <tr>
+      <th scope="row">GOOGL</th>
+      <td>$100.00</td>
+      <td>-1%</td>
+    </tr>
+    <tr>
+      <th scope="row">AMZN</th>
+      <td>$110</td>
+      <td>+1.50%</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
 
 {% endblock %}
