@@ -76,12 +76,13 @@ def userAPI(request):
         return redirect('/user/login')
 
     user = CustomUser.objects.filter(id=request.user.id)[0]
-    current_api_key = user.api_key
+
     if request.method == 'POST':
         api_key = request.POST['api-key']
+        secret_key = request.POST['secret-key']
         user.api_key = api_key
+        user.secret_key = secret_key
         user.save()
-        current_api_key = api_key
         messages.success(request, "API key updated successfully")
 
-    return render(request, "user/user-api.html", {"api_key": current_api_key})
+    return render(request, "user/user-api.html", {"api_key": user.api_key, "secret_key":user.secret_key})
