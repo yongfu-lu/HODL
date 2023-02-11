@@ -7,7 +7,7 @@ from . import models
 class RegisterForm(UserCreationForm):
     class Meta:
         model = models.CustomUser
-        fields = ['username', 'email', 'password1', 'password2', 'api_key']
+        fields = ['username', 'email', 'password1', 'password2']
 
 
 class LoginForm(forms.Form):

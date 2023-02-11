@@ -40,6 +40,14 @@
         </ul>
     </div>
 
+    <div class="dropdown">
+  <button class="btn btn-secondary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    Hello {{user.username}}
+  </button>
+  <div class="dropdown-menu" style="min-width: 2rem;" aria-labelledby="dropdownMenuButton">
+    <a  href="/user/logout" class="dropdown-item" role="button">Log Out</a>
+  </div>
+</div>
     {% endif%}
     <div id="navEle" , name="navEle" class="ml-auto">
         {% block navEle %}
