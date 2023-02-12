@@ -2,14 +2,28 @@
 
 {% block content %}
 <div class="container mt-2 bg-light">
-    <div class="row">
-        <div class="col">
-            <h3>Equity: $100,000 </h3>
-        </div>
-        <div class="col">
-            <h3> Earn/Lost: +5% </h3>
-        </div>
-    </div>
+    <h3>Account Balance </h3>
+    {% if is_account_linked %}
+    <table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Equity</th>
+      <th scope="col">Change of Today</th>
+      <th scope="col"> % Change of Today</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>{{equity}}</td>
+      <td>{{change_of_today}}</td>
+      <td>{{per_change_of_today}}</td>
+    </tr>
+  </tbody>
+</table>
+    {%else%}
+    <h6> Ops, We can't link to your Alpaca account</h6>
+    <h6> Please Update your api key and secret key of your Alpaca Account</h6>
+    {%endif%}
 </div>
 
 <div class="container mt-4" >

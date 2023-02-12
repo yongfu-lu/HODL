@@ -4,7 +4,7 @@ from .forms import *
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib import messages
 from .models import CustomUser
-
+from .utility import AlpacaAccount
 
 # Create your views here.
 def register(request):
@@ -45,7 +45,20 @@ def login(request):
 def dashboard(request):
     if not request.user.is_authenticated:
         return redirect('/user/login')
-    return render(request, "user/dashboard.html", {})
+
+    else:
+        alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
+        is_account_linked = alpaca_account.link_account()
+
+    context = {
+        "is_account_linked": is_account_linked,
+    }
+    if is_account_linked:
+        context["equity"] = float(alpaca_account.account.equity)
+        context["change_of_today"] = float(alpaca_account.account.equity) - float(alpaca_account.account.last_equity)
+        context["per_change_of_today"] = (float(alpaca_account.account.equity) - float(alpaca_account.account.last_equity)) / float(alpaca_account.account.last_equity)
+
+    return render(request, "user/dashboard.html", context)
 
 
 def logout(request):
