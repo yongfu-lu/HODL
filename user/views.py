@@ -47,17 +47,13 @@ def dashboard(request):
         return redirect('/user/login')
 
     alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
-    is_account_linked = alpaca_account.link_account()
+    is_account_linked = alpaca_account.account_linked
     context = {
         "is_account_linked": is_account_linked,
     }
     if is_account_linked:
-        context["equity"] = "{:.2f}".format(float(alpaca_account.account.equity))
-        context["change_of_today"] = "{:.2f}".format(float(alpaca_account.account.equity) - float(alpaca_account.account.last_equity))
-        context["per_change_of_today"] = "{:.2f}".format((float(alpaca_account.account.equity) - float(alpaca_account.account.last_equity)) / float(alpaca_account.account.last_equity))
-        context["positions"] = alpaca_account.positions
-        for position in context["positions"]:
-            position.change_today = "{:.2f}".format(float(position.change_today)*100)
+        context["account"] = alpaca_account.get_account()
+        context["positions"] = alpaca_account.get_positions()
 
     return render(request, "user/dashboard.html", context)
 

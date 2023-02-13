@@ -5,23 +5,30 @@ from alpaca.trading.enums import OrderSide, TimeInForce
 
 class AlpacaAccount:
     def __init__(self, api_key, secret_key):
-        self.account = None
-        self.positions = []
-        self.api_key = api_key
-        self.secret_key = secret_key
+        self.account_linked = None
+        self.client = None
 
-    def link_account(self):
-        if self.api_key == '' or self.secret_key == '':
-            print('account is not found')
-            return False
+        if api_key == '' or secret_key == '':
+            print('User does not have api-key or secret-key')
+            self.account_linked = False
+            return
 
-        trading_client = TradingClient(self.api_key, self.secret_key, paper=True)
+        self.client = TradingClient(api_key, secret_key, paper=True)
         try:
-            self.account = trading_client.get_account()
-            self.positions = trading_client.get_all_positions()
+            self.client.get_account()
         except:
             print("account is not found")
-            return False
+            self.account_linked = False
         else:
             print("account is found")
-            return True
+            self.account_linked = True
+
+    def get_account(self):
+        if not self.account_linked:
+            return None
+        return self.client.get_account()
+
+    def get_positions(self):
+        if not self.account_linked:
+            return None
+        return self.client.get_all_positions()

@@ -6,3 +6,10 @@ register = template.Library()
 def sub(value, arg):
     return float(value) - float(arg)
 
+@register.filter
+def div(value, arg):
+    return float(value) / float(arg)
+
+@register.filter
+def mult(value, arg):
+    return float(value) * float(arg)
