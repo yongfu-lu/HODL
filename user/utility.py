@@ -1,12 +1,14 @@
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
-
+import alpaca_trade_api as tradeapi
+import datetime
 
 class AlpacaAccount:
     def __init__(self, api_key, secret_key):
-        self.account_linked = None
-        self.client = None
+        # self.account_linked = None
+        # self.client = None
+        self.base_url = "https://paper-api.alpaca.markets"
 
         if api_key == '' or secret_key == '':
             print('User does not have api-key or secret-key')
@@ -16,6 +18,7 @@ class AlpacaAccount:
         self.client = TradingClient(api_key, secret_key, paper=True)
         try:
             self.client.get_account()
+            self.API = tradeapi.REST(api_key, secret_key, api_version="v2", base_url=self.base_url)
         except:
             print("account is not found")
             self.account_linked = False
@@ -32,3 +35,9 @@ class AlpacaAccount:
         if not self.account_linked:
             return None
         return self.client.get_all_positions()
+
+    def get_activities(self):
+        if not self.account_linked:
+            return None
+        return self.API.get_activities()
+

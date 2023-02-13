@@ -54,6 +54,7 @@ def dashboard(request):
     if is_account_linked:
         context["account"] = alpaca_account.get_account()
         context["positions"] = alpaca_account.get_positions()
+        context["activities"] = alpaca_account.get_activities()
 
     return render(request, "user/dashboard.html", context)
 
