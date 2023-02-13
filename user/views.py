@@ -46,17 +46,18 @@ def dashboard(request):
     if not request.user.is_authenticated:
         return redirect('/user/login')
 
-    else:
-        alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
-        is_account_linked = alpaca_account.link_account()
-
+    alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
+    is_account_linked = alpaca_account.link_account()
     context = {
         "is_account_linked": is_account_linked,
     }
     if is_account_linked:
-        context["equity"] = float(alpaca_account.account.equity)
-        context["change_of_today"] = float(alpaca_account.account.equity) - float(alpaca_account.account.last_equity)
-        context["per_change_of_today"] = (float(alpaca_account.account.equity) - float(alpaca_account.account.last_equity)) / float(alpaca_account.account.last_equity)
+        context["equity"] = "{:.2f}".format(float(alpaca_account.account.equity))
+        context["change_of_today"] = "{:.2f}".format(float(alpaca_account.account.equity) - float(alpaca_account.account.last_equity))
+        context["per_change_of_today"] = "{:.2f}".format((float(alpaca_account.account.equity) - float(alpaca_account.account.last_equity)) / float(alpaca_account.account.last_equity))
+        context["positions"] = alpaca_account.positions
+        for position in context["positions"]:
+            position.change_today = "{:.2f}".format(float(position.change_today)*100)
 
     return render(request, "user/dashboard.html", context)
 

@@ -1,4 +1,5 @@
 {% extends 'user/base.html' %}
+{% load mathfilters %}
 
 {% block content %}
 <div class="container mt-2 bg-light">
@@ -14,9 +15,9 @@
   </thead>
   <tbody>
     <tr>
-      <td>{{equity}}</td>
-      <td>{{change_of_today}}</td>
-      <td>{{per_change_of_today}}</td>
+      <td>${{equity}}</td>
+      <td>${{change_of_today}}</td>
+      <td>{{per_change_of_today}}%</td>
     </tr>
   </tbody>
 </table>
@@ -28,40 +29,37 @@
 
 <div class="container mt-4" >
     <h3>Positions</h3>
+    {%if is_account_linked %}
     <table class="table">
   <thead>
     <tr>
       <th scope="col">Asset</th>
-      <th scope="col">Price</th>
       <th scope="col">Quantity</th>
+       <th scope="col">Last Price</th>
+        <th scope="col">% Change of Today</th>
+      <th scope="col">Cost Basis</th>
       <th scope="col">Market Value</th>
-        <th scope="col">Profit</th>
+         <th scope="col">Total Earning</th>
     </tr>
   </thead>
   <tbody>
+    {% for position in positions%}
     <tr>
-      <th scope="row">SPY</th>
-      <td>$400.00</td>
-      <td>5</td>
-      <td>$2000.00</td>
-         <td>+5%</td>
+      <th scope="row">{{position.symbol}}</th>
+      <td>{{position.qty}}</td>
+      <td>${{position.current_price}}</td>
+      <td>${{ position.change_today }}%</td>
+         <td>${{position.cost_basis|floatformat:2}}</td>
+        <td>${{position.market_value|floatformat:2}}</td>
+              <td>{{ position.market_value|sub:position.cost_basis|floatformat:2}}</td>
     </tr>
-    <tr>
-      <th scope="row">AAPL</th>
-      <td>$130.00</td>
-      <td>2</td>
-      <td>$260.00</td>
-         <td>+5%</td>
-    </tr>
-    <tr>
-      <th scope="row">MSFT</th>
-      <td>$250.00</td>
-      <td>3</td>
-      <td>$750.00</td>
-        <td>+5%</td>
-    </tr>
+    {%endfor%}
   </tbody>
 </table>
+        {%else%}
+    <h6> Ops, We can't link to your Alpaca account</h6>
+    <h6> Please Update your api key and secret key of your Alpaca Account</h6>
+    {%endif%}
 </div>
 
 <div class="container mt-4 bg-light" >

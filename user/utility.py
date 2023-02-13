@@ -6,6 +6,7 @@ from alpaca.trading.enums import OrderSide, TimeInForce
 class AlpacaAccount:
     def __init__(self, api_key, secret_key):
         self.account = None
+        self.positions = []
         self.api_key = api_key
         self.secret_key = secret_key
 
@@ -17,6 +18,7 @@ class AlpacaAccount:
         trading_client = TradingClient(self.api_key, self.secret_key, paper=True)
         try:
             self.account = trading_client.get_account()
+            self.positions = trading_client.get_all_positions()
         except:
             print("account is not found")
             return False
