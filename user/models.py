@@ -7,5 +7,3 @@ from django.contrib.auth.models import AbstractUser
 class CustomUser(AbstractUser):
     api_key = models.CharField(max_length=255, blank=True)
     secret_key = models.CharField(max_length=255, blank=True)
-
-

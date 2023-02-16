@@ -11,4 +11,5 @@ urlpatterns = [
     path('data-analysis/', views.dataAnalysis, name='dataAnalysis'),
     path('recommendations/', views.recommendations, name='recommendations'),
     path('user-api/', views.userAPI, name='userAPI'),
+    path('add-watchlist', views.add_watchlist, name='add-watchlist'),
 ]

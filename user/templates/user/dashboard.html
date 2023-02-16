@@ -79,7 +79,7 @@
         <ul>
             <li>SPY</li>
         </ul>
-        <a href="" class="btn btn-primary"> Edit Activated Algorithms</a>
+        <a href="/user/algorithms" class="btn btn-primary"> Edit Activated Algorithms</a>
     </div>
 </div>
 
@@ -121,34 +121,73 @@
 
 </div>
 
-<div class="container mt-4 bg-light">
-    <h3> Watch List</h3>
+<div class="container mt-4 mb-4 bg-light">
+    <div>
+        <span class="h3"> Watch List </span>
+        {%if is_account_linked %}
+        <!-- Button trigger modal -->
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#add-watchlist">
+            +
+        </button>
+
+        <!-- Modal -->
+        <div class="modal fade" id="add-watchlist" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add stock to watch list</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form action="/user/add-watchlist" method="post" class="mb-4">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <input type="text" class="form-control" name="stock-symbol"
+                                   placeholder="Enter Stock Symbol Here">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Add </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {%endif%}
+    </div>
+
+    {%if not is_account_linked %}
+    <div class="container text-center">
+        <h6> Ops, We can't link to your Alpaca account</h6>
+        <h6> Please Update your api key and secret key of your Alpaca Account</h6>
+    </div>
+    {%elif watchlist|length == 0 %}
+    <div class="container text-center pb-4">
+        <h6> Your watch list is empty, add some stocks to your watch list.</h6>
+    </div>
+    {%else%}
     <table class="table">
         <thead>
         <tr>
             <th scope="col">Asset</th>
             <th scope="col">Price</th>
             <th scope="col">Change of Today</th>
+            <th scope="col">% Change of Today</th>
         </tr>
         </thead>
         <tbody>
+        {%for asset in watchlist%}
         <tr>
-            <th scope="row">META</th>
-            <td>$150</td>
-            <td>+2%</td>
+            <th scope="row">{{asset.symbol}}</th>
+            <td>${{asset.current_price|floatformat:2}}</td>
+            <td>${{asset.price_change|floatformat:2}}</td>
+            <td>{{asset.price_change_perc|floatformat:2}}%</td>
         </tr>
-        <tr>
-            <th scope="row">GOOGL</th>
-            <td>$100.00</td>
-            <td>-1%</td>
-        </tr>
-        <tr>
-            <th scope="row">AMZN</th>
-            <td>$110</td>
-            <td>+1.50%</td>
-        </tr>
+        {%endfor%}
         </tbody>
     </table>
+    {%endif%}
 </div>
 
 

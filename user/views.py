@@ -47,14 +47,14 @@ def dashboard(request):
         return redirect('/user/login')
 
     alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
-    is_account_linked = alpaca_account.account_linked
     context = {
-        "is_account_linked": is_account_linked,
+        "is_account_linked": alpaca_account.account_linked,
     }
-    if is_account_linked:
+    if alpaca_account.account_linked:
         context["account"] = alpaca_account.get_account()
         context["positions"] = alpaca_account.get_positions()
         context["activities"] = alpaca_account.get_activities()
+        context["watchlist"] = alpaca_account.get_stocks_in_watchlist()
 
     return render(request, "user/dashboard.html", context)
 
@@ -89,11 +89,15 @@ def userAPI(request):
     user = CustomUser.objects.filter(id=request.user.id)[0]
 
     if request.method == 'POST':
-        api_key = request.POST['api-key']
-        secret_key = request.POST['secret-key']
-        user.api_key = api_key
-        user.secret_key = secret_key
+        user.api_key = request.POST['api-key']
+        user.secret_key = request.POST['secret-key']
         user.save()
         messages.success(request, "API key updated successfully")
 
-    return render(request, "user/user-api.html", {"api_key": user.api_key, "secret_key":user.secret_key})
+    return render(request, "user/user-api.html", {"api_key": user.api_key, "secret_key": user.secret_key})
+
+def add_watchlist(requests):
+    if requests.method == "POST":
+        symbol = requests.POST['stock-symbol']
+
+    return redirect("/user/dashboard")
