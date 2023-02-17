@@ -2,6 +2,14 @@
 {% load mathfilters %}
 
 {% block content %}
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} {%if message.tags == 'error'%} alert-danger {%endif%} alert-dismissible fade show" role="alert">
+    {{message}}
+</div>
+{%endfor%}
+{%endif%}
 <div class="container mt-2 bg-light">
     <h3>Account Balance </h3>
     {% if is_account_linked %}
@@ -126,7 +134,7 @@
         <span class="h3"> Watch List </span>
         {%if is_account_linked %}
         <!-- Button trigger modal -->
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#add-watchlist">
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#add-watchlist">
             +
         </button>
 
@@ -140,15 +148,16 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <form action="/user/add-watchlist" method="post" class="mb-4">
+                    <form action="/user/add-to-watchlist" method="post" class="mb-4">
                         {% csrf_token %}
                         <div class="modal-body">
                             <input type="text" class="form-control" name="stock-symbol"
                                    placeholder="Enter Stock Symbol Here">
+                            <input type="hidden" name="watchlist-id" value={{watchlist.id}}>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary">Add </button>
+                            <button type="submit" class="btn btn-primary">Add</button>
                         </div>
                     </form>
                 </div>
@@ -185,7 +194,7 @@
             <td>${{asset.price_change|floatformat:2}}</td>
             <td>{{asset.price_change_perc|floatformat:2}}%</td>
             <th scope="col">
-                <button type="submit" class="btn btn-primary"> X </button>
+                <button type="submit" class="btn btn-danger"> &times;</button>
             </th>
         </tr>
         {%endfor%}
@@ -193,6 +202,4 @@
     </table>
     {%endif%}
 </div>
-
-
 {% endblock %}

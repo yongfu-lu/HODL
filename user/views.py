@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.contrib import messages
 from .models import CustomUser
 from .utility import AlpacaAccount
+from .all_US_assets import all_US_assets
 
 # Create your views here.
 def register(request):
@@ -96,8 +97,14 @@ def userAPI(request):
 
     return render(request, "user/user-api.html", {"api_key": user.api_key, "secret_key": user.secret_key})
 
-def add_watchlist(requests):
-    if requests.method == "POST":
-        symbol = requests.POST['stock-symbol']
+def add_to_watchlist(request):
+    if request.method == "POST":
+        alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
+        symbol = request.POST["stock-symbol"]
+        if symbol not in all_US_assets:
+            messages.error(request, "The asset you tried to add to watch list is not found!")
+        else:
+            alpaca_account.add_to_watchlist(request.POST['watchlist-id'], symbol)
+            messages.success(request, "Watch list updated!")
 
     return redirect("/user/dashboard")

@@ -2,6 +2,8 @@ from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 from alpaca_trade_api.rest import TimeFrame, TimeFrameUnit
+from alpaca.trading.requests import GetAssetsRequest
+from alpaca.trading.enums import AssetClass
 import alpaca_trade_api as tradeapi
 import datetime
 import pytz
@@ -9,8 +11,6 @@ import pytz
 
 class AlpacaAccount:
     def __init__(self, api_key, secret_key):
-        # self.account_linked = None
-        # self.client = None
         self.base_url = "https://paper-api.alpaca.markets"
 
         if api_key == '' or secret_key == '':
@@ -70,3 +70,13 @@ class AlpacaAccount:
                  "price_change_perc": (current_price - last_market_close_price) / last_market_close_price * 100})
 
         return {"id": watchlist_id, "assets": assets}
+
+    def add_to_watchlist(self, watchlist_id: str, symbol: str):
+        if not self.account_linked:
+            return
+        self.API.add_to_watchlist(watchlist_id, symbol)
+
+    def get_all_assets(self):
+        search_params = GetAssetsRequest(asset_class=AssetClass.US_EQUITY)
+        assets = self.client.get_all_assets(search_params)
+        return [asset.symbol for asset in assets]
