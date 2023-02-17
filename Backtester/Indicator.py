@@ -118,4 +118,3 @@ class Indicator:
         signal = signal.rename("signal")
         df = MACD.to_frame().join(signal.to_frame())
         return df
-

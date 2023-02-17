@@ -53,18 +53,3 @@ class Plot:
         ax.set_ylabel('investment')
         ax.set_title(title)
         plt.show()
-
-trading_client = StockHistoricalDataClient('PKV2FZHX6E4RMGFON60X',
-                                           'GMKXVZ3W4MqenB6SbcSKM8h9WnvYBZn0qdZ86E6n')
-
-x = datetime(2020, 2, 16)
-y = datetime(2021, 11, 1)
-
-moving_average = strat.Strategy(trading_client, 10000, 5)
-df = moving_average.execute_ma(x, y, "TSLA", 50, 200)
-print(moving_average.getVal())
-
-test = Plot(df, trading_client)
-test.line_plot("strategy1")
-test.candlestick_plot("AAPL", x, y)
-    

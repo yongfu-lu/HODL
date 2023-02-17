@@ -248,24 +248,3 @@ class Strategy:
 
     def getVal(self):
         return self.investment
-
-trading_client = StockHistoricalDataClient('PKV2FZHX6E4RMGFON60X',
-                                           'GMKXVZ3W4MqenB6SbcSKM8h9WnvYBZn0qdZ86E6n')
-
-x = datetime(2020, 1, 1)
-y = datetime(2021, 11, 5)
-
-atr = Strategy(trading_client, 10000, 5)
-print(atr.execute_atr(x, y, "AAPL", 50, 100).to_string())
-
-fib = Strategy(trading_client, 10000, 5)
-print(fib.execute_fib(x, y, "AAPL", 50, 100).to_string())
-
-#bb = Strategy(trading_client, 10000, 5)
-#print(bb.execute_bb(x, y, "AAPL", 20, 2).to_string())
-
-#rsi = Strategy(trading_client, 10000, 5)
-#print(rsi.execute_rsi(x, y, "AAPL", 20, 68, 32).to_string())
-
-
-        
