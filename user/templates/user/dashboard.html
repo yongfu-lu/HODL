@@ -162,7 +162,7 @@
         <h6> Ops, We can't link to your Alpaca account</h6>
         <h6> Please Update your api key and secret key of your Alpaca Account</h6>
     </div>
-    {%elif watchlist|length == 0 %}
+    {%elif watchlist.assets|length == 0 %}
     <div class="container text-center pb-4">
         <h6> Your watch list is empty, add some stocks to your watch list.</h6>
     </div>
@@ -174,15 +174,19 @@
             <th scope="col">Price</th>
             <th scope="col">Change of Today</th>
             <th scope="col">% Change of Today</th>
+            <th scope="col"></th>
         </tr>
         </thead>
         <tbody>
-        {%for asset in watchlist%}
+        {%for asset in watchlist.assets%}
         <tr>
             <th scope="row">{{asset.symbol}}</th>
             <td>${{asset.current_price|floatformat:2}}</td>
             <td>${{asset.price_change|floatformat:2}}</td>
             <td>{{asset.price_change_perc|floatformat:2}}%</td>
+            <th scope="col">
+                <button type="submit" class="btn btn-primary"> X </button>
+            </th>
         </tr>
         {%endfor%}
         </tbody>

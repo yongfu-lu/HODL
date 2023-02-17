@@ -53,7 +53,7 @@ class AlpacaAccount:
         symbols = [asset['symbol'] for asset in watchlist.assets]
 
         # create list of stock dictionary, each dictionary contains symbol, current price, last market close price
-        data = []
+        assets = []
         for i in range(len(symbols)):
             current_price = self.API.get_latest_bar(symbols[i]).c
             close_time = datetime.datetime.now(tz=pytz.timezone('US/Eastern')) \
@@ -62,11 +62,11 @@ class AlpacaAccount:
             last_market_close_price = self.API.get_bars([symbols[i]], timeframe=TimeFrame(1, TimeFrameUnit('Hour')),
                                                         start=(close_time - datetime.timedelta(minutes=1)).isoformat(),
                                                         end=close_time.isoformat())[0].c
-            data.append(
+            assets.append(
                 {"symbol": symbols[i],
                  "current_price": current_price,
                  "last_close_price": last_market_close_price,
                  "price_change": current_price - last_market_close_price,
                  "price_change_perc": (current_price - last_market_close_price) / last_market_close_price * 100})
 
-        return data
+        return {"id": watchlist_id, "assets": assets}
