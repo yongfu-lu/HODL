@@ -93,21 +93,23 @@ class Indicator:
         df = MACD.to_frame().join(signal.to_frame())
         return df
 
+    def ATR(self, s, e, days):
+        # Get historical data for the symbol
+        request_params = StockBarsRequest(symbol_or_symbols=[self.symbol],
+                                          timeframe = TimeFrame.Day,
+                                          start = s,
+                                          end = e) # type: ignore
+        bars = self.api.get_stock_bars(request_params)
 
+        # Calculate the true range for each day
+        high_low = bars.df['high'] - bars.df['low']
+        high_close = abs(bars.df['high'] - bars.df['close'].shift())
+        low_close = abs(bars.df['low'] - bars.df['close'].shift())
+        ranges = pd.concat([high_low, high_close, low_close], axis = 1)
+        true_range = np.max(ranges, axis = 1)
+        
+        ATR = true_range.rolling(window=days).mean() # standard number of periods is 14
+        ATR = ATR.rename('ATR')
+        df = ATR.to_frame()
 
-
-trading_client = StockHistoricalDataClient('PKV2FZHX6E4RMGFON60X',
-                                           'GMKXVZ3W4MqenB6SbcSKM8h9WnvYBZn0qdZ86E6n')
-
-ind = Indicator(trading_client, "AAPL")
-
-x = datetime(2020, 5, 7)
-y = datetime(2021, 5, 7)
-
-#s1 = (ind.MACD(x, y, 12, 9)).to_string()
-#s2 = (ind2.bollinger_bands(x, y, 20, 2)).to_string()
-#s3 = (ind3.RSI(x, y, 20)).to_string()
-
-#print(s1)
-#print(s2)
-#print(s3)
+        return df

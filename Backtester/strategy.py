@@ -99,16 +99,41 @@ class Strategy:
                 self.portfolio = self.investment
             hi_level, lo_level = get_level(price)
 
+    def execute_atr(self, start, end, symbol, short, long):
+        atr = ind.Indicator(self.client, symbol)
+        atr_short = atr.ATR(start, end, short)
+        atr_short.rename(columns = {'ATR':'short'}, inplace = True)
+        atr_long = atr.ATR(start, end, long)
+        atr_long.rename(columns = {'ATR':'long'}, inplace = True)
+        position = 'cash'
+
+        request_params = StockBarsRequest(symbol_or_symbols=[symbol],
+                                          timeframe = TimeFrame.Day,
+                                          start = start,
+                                          end = end) # type: ignore
+
+        bars = self.client.get_stock_bars(request_params)
+        data = bars.df['close']
+
+        df = pd.concat([atr_short, atr_long, data], axis=1)
+
+        prev_close = 0
+
+        for index, row in df.iterrows():
+            if (prev_close != 0) and (row['long'] + row['close'] > prev_close) and (position == 'cash'):
+                shares = self.investment / row['close']
+                self.investment = 0
+                position = 'long'
+            elif (prev_close != 0) and (row['long'] + row['close'] < prev_close) and (position == 'long'):
+                self.investment = shares * row['close'] - self.commission # type: ignore
+                shares = 0
+                position = 'cash'
+            if position == 'long':
+                self.portfolio = shares * row['close'] # type: ignore
+            else:
+                self.portfolio = self.investment
+                
+            prev_close = row['close']    
+
     def getVal(self):
         return self.portfolio
-
-trading_client = StockHistoricalDataClient('PKV2FZHX6E4RMGFON60X',
-                                           'GMKXVZ3W4MqenB6SbcSKM8h9WnvYBZn0qdZ86E6n')
-
-x = datetime(2020, 5, 17)
-y = datetime(2022, 5, 17)
-
-moving_average = Strategy(trading_client, 10000, 10000, 5)
-print(moving_average.getVal())
-moving_average.execute_fib(x, y, "AAPL", 12, 9)
-print(moving_average.getVal())
