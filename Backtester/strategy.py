@@ -4,13 +4,92 @@ from alpaca.data.timeframe import TimeFrame
 from datetime import datetime
 import Indicator as ind
 import pandas as pd
+import numpy as np
 
 class Strategy:
-    def __init__(self, client, portfolio, investment, commission):
-        self.portfolio = portfolio
+    def __init__(self, client, investment, commission):
         self.investment = investment
         self.commission = commission
         self.client = client
+
+    def execute_rsi(self, start, end, symbol, days, over, under):
+        request_params = StockBarsRequest(symbol_or_symbols=[symbol],
+                                          timeframe = TimeFrame.Day,
+                                          start = start,
+                                          end = end,
+                                          adjustment='all')
+        bars = self.client.get_stock_bars(request_params).df
+        res = ind.Indicator(self.client, symbol)
+        rsi = res.RSI(start, end, days)
+        signals = pd.DataFrame()
+        signals['rsi'] = rsi['RSI']
+        signals['long'] = np.where(rsi['RSI'] > over, 1, 0)
+        signals['short'] = np.where(rsi['RSI'] < under, -1, 0)
+        signals['signal'] = signals['long'] + signals['short']
+
+        in1 = []
+        for index, row in bars.iterrows():
+            in1.append(index[1].date())
+        
+        positions = signals.signal.values.tolist()
+        shares = 0
+        temp = []
+        pos = 'cash'
+
+        for i in range(len(positions)):
+            if positions[i] == 1 and (pos=='cash'):
+                shares = self.investment / bars['close'][i]
+                self.investment = 0
+                pos = 'long'
+            elif positions[i] == -1 and (pos=='long'):
+                self.investment = shares * bars['close'][i]
+                shares = 0
+                pos = 'cash'
+            temp.append(self.investment if shares == 0 else shares*bars['close'][i])
+
+        ret = pd.DataFrame({'date': in1, 'investment': temp})
+        
+        return ret
+
+    def execute_bb(self, start, end, symbol, ma_days, num_std_devs):
+        request_params = StockBarsRequest(symbol_or_symbols=[symbol],
+                                          timeframe = TimeFrame.Day,
+                                          start = start,
+                                          end = end,
+                                          adjustment='all')
+        bars = self.client.get_stock_bars(request_params).df
+        bb = ind.Indicator(self.client, symbol)
+        bands = bb.bollinger_bands(start, end, ma_days, num_std_devs)
+        signals = pd.DataFrame()
+        signals['ma'] = bars['close'].rolling(window=ma_days).mean()
+        signals['signal'] = 0.0
+        in1 = []
+        for index, row in bars.iterrows():
+            in1.append(index[1].date())
+
+        signals['signal'][ma_days:] = np.where(bars['close'][ma_days:] > bands['upper band'][ma_days:], -1.0, 0.0)
+        signals['signal'][ma_days:] = np.where(bars['close'][ma_days:] < bands['lower band'][ma_days:], 1.0, signals['signal'][ma_days:])
+        signals['positions'] = signals['signal'].diff()
+
+        positions = signals.positions.values.tolist()
+        shares = 0
+        temp = []
+        pos = 'cash'
+
+        for i in range(len(positions)):
+            if positions[i] == 1.0 and (pos=='cash'):
+                shares = self.investment / bars['close'][i]
+                self.investment = 0
+                pos = 'long'
+            elif positions[i] == -1.0 and (pos=='long'):
+                self.investment = shares * bars['close'][i]
+                shares = 0
+                pos = 'cash'
+            temp.append(self.investment if shares == 0 else shares*bars['close'][i])
+
+        
+        ret = pd.DataFrame({'date': in1, 'investment': temp})
+        return ret
 
     def execute_ma(self, start, end, symbol, short, long):
         ma = ind.Indicator(self.client, symbol)
@@ -23,13 +102,13 @@ class Strategy:
         request_params = StockBarsRequest(symbol_or_symbols=[symbol],
                                           timeframe = TimeFrame.Day,
                                           start = start,
-                                          end = end)
+                                          end = end,
+                                          adjustment='all')
 
         bars = self.client.get_stock_bars(request_params)
         data = bars.df['close']
-        df2 = data.to_frame()
-
         df = pd.concat([ma_short, ma_long, data], axis=1)
+        in1, in2 = [], []
 
         for index, row in df.iterrows():
             if(row['short'] > row['long']) and (position=='cash'):
@@ -41,9 +120,64 @@ class Strategy:
                 shares = 0
                 position = 'cash'
             if position == 'long':
-                self.portfolio = shares * row['close']
+                in1.append(index[1].date())
+                in2.append((row['close'] * shares))
             else:
-                self.portfolio = self.investment
+                in1.append(index[1].date())
+                in2.append(self.investment)
+        in1 = pd.Series(in1)
+        in1 = in1.rename('date')
+        in2 = pd.Series(in2)
+        in2 = in2.rename('investment')
+        ret = pd.concat([in1,in2], axis=1)
+        return ret
+
+    def execute_atr(self, start, end, symbol, short, long):
+        atr = ind.Indicator(self.client, symbol)
+        atr_short = atr.ATR(start, end, short)
+        atr_short.rename(columns = {'ATR':'short'}, inplace = True)
+        atr_long = atr.ATR(start, end, long)
+        atr_long.rename(columns = {'ATR':'long'}, inplace = True)
+        position = 'cash'
+
+        request_params = StockBarsRequest(symbol_or_symbols=[symbol],
+                                          timeframe = TimeFrame.Day,
+                                          start = start,
+                                          end = end,
+                                          adjustment = 'all')
+
+        bars = self.client.get_stock_bars(request_params)
+        data = bars.df['close']
+
+        df = pd.concat([atr_short, atr_long, data], axis=1)
+        in1, in2 = [], []
+
+        prev_close = 0
+
+        for index, row in df.iterrows():
+            if (prev_close != 0) and (row['long'] + row['close'] > prev_close) and (position == 'cash'):
+                shares = self.investment / row['close']
+                self.investment = 0
+                position = 'long'
+            elif (prev_close != 0) and (row['long'] + row['close'] < prev_close) and (position == 'long'):
+                self.investment = shares * row['close'] - self.commission
+                shares = 0
+                position = 'cash'
+            if position == 'long':
+                in1.append(index[1].date())
+                in2.append((row['close'] * shares))
+            else:
+                in1.append(index[1].date())
+                in2.append(self.investment)
+
+            prev_close = row['close']
+
+        in1 = pd.Series(in1)
+        in1 = in1.rename('date')
+        in2 = pd.Series(in2)
+        in2 = in2.rename('investment')
+        ret = pd.concat([in1,in2], axis=1)
+        return ret
 
     def execute_fib(self, start, end, symbol, short, long):
         fib = ind.Indicator(self.client, symbol)
@@ -65,13 +199,15 @@ class Strategy:
         request_params = StockBarsRequest(symbol_or_symbols=[symbol],
                                           timeframe = TimeFrame.Day,
                                           start = start,
-                                          end = end)
+                                          end = end,
+                                          adjustment = 'all')
 
         bars = self.client.get_stock_bars(request_params)
         data = bars.df['close']
         df2 = data.to_frame()
 
         df = pd.concat([fib_signals, data], axis=1)
+        in1, in2 = [], []
 
         position = 'cash'
         hi_level, lo_level = None, None
@@ -94,46 +230,42 @@ class Strategy:
                     position = 'cash'
                     buy_price = 0
             if position == 'long':
-                self.portfolio = shares * row['close']
+                in1.append(index[1].date())
+                in2.append((row['close'] * shares))
             else:
-                self.portfolio = self.investment
+                in1.append(index[1].date())
+                in2.append(self.investment)
+
             hi_level, lo_level = get_level(price)
 
-    def execute_atr(self, start, end, symbol, short, long):
-        atr = ind.Indicator(self.client, symbol)
-        atr_short = atr.ATR(start, end, short)
-        atr_short.rename(columns = {'ATR':'short'}, inplace = True)
-        atr_long = atr.ATR(start, end, long)
-        atr_long.rename(columns = {'ATR':'long'}, inplace = True)
-        position = 'cash'
+        in1 = pd.Series(in1)
+        in1 = in1.rename('date')
+        in2 = pd.Series(in2)
+        in2 = in2.rename('investment')
+        ret = pd.concat([in1,in2], axis=1)
+        return ret
 
-        request_params = StockBarsRequest(symbol_or_symbols=[symbol],
-                                          timeframe = TimeFrame.Day,
-                                          start = start,
-                                          end = end) # type: ignore
-
-        bars = self.client.get_stock_bars(request_params)
-        data = bars.df['close']
-
-        df = pd.concat([atr_short, atr_long, data], axis=1)
-
-        prev_close = 0
-
-        for index, row in df.iterrows():
-            if (prev_close != 0) and (row['long'] + row['close'] > prev_close) and (position == 'cash'):
-                shares = self.investment / row['close']
-                self.investment = 0
-                position = 'long'
-            elif (prev_close != 0) and (row['long'] + row['close'] < prev_close) and (position == 'long'):
-                self.investment = shares * row['close'] - self.commission # type: ignore
-                shares = 0
-                position = 'cash'
-            if position == 'long':
-                self.portfolio = shares * row['close'] # type: ignore
-            else:
-                self.portfolio = self.investment
-                
-            prev_close = row['close']    
 
     def getVal(self):
-        return self.portfolio
+        return self.investment
+
+trading_client = StockHistoricalDataClient('PKV2FZHX6E4RMGFON60X',
+                                           'GMKXVZ3W4MqenB6SbcSKM8h9WnvYBZn0qdZ86E6n')
+
+x = datetime(2020, 1, 1)
+y = datetime(2021, 11, 5)
+
+atr = Strategy(trading_client, 10000, 5)
+print(atr.execute_atr(x, y, "AAPL", 50, 100).to_string())
+
+fib = Strategy(trading_client, 10000, 5)
+print(fib.execute_fib(x, y, "AAPL", 50, 100).to_string())
+
+#bb = Strategy(trading_client, 10000, 5)
+#print(bb.execute_bb(x, y, "AAPL", 20, 2).to_string())
+
+#rsi = Strategy(trading_client, 10000, 5)
+#print(rsi.execute_rsi(x, y, "AAPL", 20, 68, 32).to_string())
+
+
+        
