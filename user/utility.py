@@ -56,12 +56,23 @@ class AlpacaAccount:
         assets = []
         for i in range(len(symbols)):
             current_price = self.API.get_latest_bar(symbols[i]).c
-            close_time = datetime.datetime.now(tz=pytz.timezone('US/Eastern')) \
-                             .replace(hour=16, minute=0, second=0, microsecond=0) - datetime.timedelta(days=1)
+
+            # find the last market close time, if it's Sat, Sun, last close time is on Thur, if it's Monday, last close time is Fri
+            day_of_week = datetime.datetime.now().weekday()
+            day_dif = 1
+            if day_of_week == 0:
+                day_dif = 3
+            if day_of_week == 5:
+                day_dif = 2
+            if day_of_week == 6:
+                day_dif = 3
+
+            last_close_time = datetime.datetime.now(tz=pytz.timezone('US/Eastern')) \
+                             .replace(hour=16, minute=0, second=0, microsecond=0) - datetime.timedelta(days=day_dif)
 
             last_market_close_price = self.API.get_bars([symbols[i]], timeframe=TimeFrame(1, TimeFrameUnit('Hour')),
-                                                        start=(close_time - datetime.timedelta(minutes=1)).isoformat(),
-                                                        end=close_time.isoformat())[0].c
+                                                        start=(last_close_time - datetime.timedelta(minutes=1)).isoformat(),
+                                                        end=last_close_time.isoformat())[0].c
             assets.append(
                 {"symbol": symbols[i],
                  "current_price": current_price,
@@ -75,6 +86,11 @@ class AlpacaAccount:
         if not self.account_linked:
             return
         self.API.add_to_watchlist(watchlist_id, symbol)
+
+    def remove_from_watchlist(self, watchlist_id: str, symbol: str):
+        if not self.account_linked:
+            return
+        self.API.delete_from_watchlist(watchlist_id, symbol)
 
     def get_all_assets(self):
         search_params = GetAssetsRequest(asset_class=AssetClass.US_EQUITY)

@@ -148,7 +148,7 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <form action="/user/add-to-watchlist" method="post" class="mb-4">
+                    <form action="/user/add-to-watchlist/" method="post" class="mb-4">
                         {% csrf_token %}
                         <div class="modal-body">
                             <input type="text" class="form-control" name="stock-symbol"
@@ -194,7 +194,12 @@
             <td>${{asset.price_change|floatformat:2}}</td>
             <td>{{asset.price_change_perc|floatformat:2}}%</td>
             <th scope="col">
-                <button type="submit" class="btn btn-danger"> &times;</button>
+                <form action="/user/remove-from-watchlist/" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="watchlist-id" value={{watchlist.id}}>
+                    <input type="hidden" name="stock-symbol" value={{asset.symbol}}>
+                    <button type="submit" class="btn btn-danger"> &times;</button>
+                </form>
             </th>
         </tr>
         {%endfor%}

@@ -104,7 +104,20 @@ def add_to_watchlist(request):
         if symbol not in all_US_assets:
             messages.error(request, "The asset you tried to add to watch list is not found!")
         else:
-            alpaca_account.add_to_watchlist(request.POST['watchlist-id'], symbol)
-            messages.success(request, "Watch list updated!")
+            try:
+                alpaca_account.add_to_watchlist(request.POST['watchlist-id'], symbol)
+            except:
+                messages.warning(request, "The stock you just entered already in your watchlist")
+            else:
+                messages.success(request, "Watch list updated!")
+
+    return redirect("/user/dashboard")
+
+
+def remove_from_watchlist(request):
+    if request.method == "POST":
+        alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
+        alpaca_account.remove_from_watchlist(request.POST['watchlist-id'], request.POST["stock-symbol"])
+        messages.success(request, "Watch list updated!")
 
     return redirect("/user/dashboard")
