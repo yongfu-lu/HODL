@@ -12,6 +12,84 @@ class Strategy:
         self.commission = commission
         self.client = client
 
+    def execute_control(self, start, end, symbol):
+        request_params = StockBarsRequest(symbol_or_symbols=[symbol],
+                                          timeframe = TimeFrame.Day,
+                                          start = start,
+                                          end = end,
+                                          adjustment='all')
+        bars = self.client.get_stock_bars(request_params).df
+
+        in1, in2, in3, in4, in5 = [], [], [], [], []
+        shares = self.investment / bars['close'][0]
+        pos = 'cash'
+        prevpos = 'cash'
+        
+        for index, row in bars.iterrows():
+            in1.append(index[1].date())
+            in2.append(row['close'] * shares)
+            in3.append(0)
+            in4.append('long')
+            in5.append(shares)
+        in3[0] = 1
+        
+        ret = pd.DataFrame({'date': in1, 'investment': in2, 'buy_sell_hold': in3, 'position': in4, 'shares': in5})
+        return ret
+        
+    def execute_ma(self, start, end, symbol, short, long):
+        ma = ind.Indicator(self.client, symbol)
+        ma_short = ma.moving_average(start, end, short)
+        ma_short.rename(columns = {'moving average':'short'}, inplace = True)
+        ma_long = ma.moving_average(start, end, long)
+        ma_long.rename(columns = {'moving average':'long'}, inplace = True)
+        position = 'cash'
+        prevpos = 'cash'
+
+        request_params = StockBarsRequest(symbol_or_symbols=[symbol],
+                                          timeframe = TimeFrame.Day,
+                                          start = start,
+                                          end = end,
+                                          adjustment='all')
+
+        bars = self.client.get_stock_bars(request_params)
+        data = bars.df['close']
+        df = pd.concat([ma_short, ma_long, data], axis=1)
+        in1, in2, in3, in4, in5 = [], [], [], [], []
+        shares = 0
+
+        for index, row in df.iterrows():
+            if(row['short'] > row['long']) and (position=='cash'):
+                shares = self.investment / row['close']
+                self.investment = 0
+                prevpos = position
+                position = 'long'
+            elif (row['short'] < row['long']) and (position == 'long'):
+                self.investment = shares * row['close'] - self.commission
+                shares = 0
+                prevpos = position
+                position = 'cash'
+            else:
+                prevpos = position
+            if position == 'long':
+                in1.append(index[1].date())
+                in2.append((row['close'] * shares))
+            else:
+                in1.append(index[1].date())
+                in2.append(self.investment)
+
+            if(prevpos == position):
+                in3.append(0)
+            else:
+                if(position=='cash'):
+                    in3.append(-1)
+                else:
+                    in3.append(1)
+            in4.append(position)
+            in5.append(shares)
+
+        ret = pd.DataFrame({'date': in1, 'investment': in2, 'buy_sell_hold': in3, 'position': in4, 'shares': in5})
+        return ret
+    
     def execute_rsi(self, start, end, symbol, days, over, under):
         request_params = StockBarsRequest(symbol_or_symbols=[symbol],
                                           timeframe = TimeFrame.Day,
@@ -33,22 +111,35 @@ class Strategy:
         
         positions = signals.signal.values.tolist()
         shares = 0
-        temp = []
+        temp, bsh, sh, p = [], [], [], []
+        prevpos = 'cash'
         pos = 'cash'
 
         for i in range(len(positions)):
             if positions[i] == 1 and (pos=='cash'):
                 shares = self.investment / bars['close'][i]
                 self.investment = 0
+                prevpos = pos
                 pos = 'long'
             elif positions[i] == -1 and (pos=='long'):
                 self.investment = shares * bars['close'][i]
                 shares = 0
+                prevpos = pos
                 pos = 'cash'
+            else:
+                prevpos = pos
             temp.append(self.investment if shares == 0 else shares*bars['close'][i])
-
-        ret = pd.DataFrame({'date': in1, 'investment': temp})
-        
+            sh.append(shares)
+            p.append(pos)
+            if(prevpos == pos):
+                bsh.append(0)
+            else:
+                if(pos=='cash'):
+                    bsh.append(-1)
+                else:
+                    bsh.append(1)
+                    
+        ret = pd.DataFrame({'date': in1, 'investment': temp, 'buy_sell_hold': bsh, 'position': p, 'shares': sh})
         return ret
 
     def execute_bb(self, start, end, symbol, ma_days, num_std_devs):
@@ -73,63 +164,36 @@ class Strategy:
 
         positions = signals.positions.values.tolist()
         shares = 0
-        temp = []
+        temp, bsh, sh, p = [], [], [], []
+        prevpos = 'cash'
         pos = 'cash'
 
         for i in range(len(positions)):
             if positions[i] == 1.0 and (pos=='cash'):
                 shares = self.investment / bars['close'][i]
                 self.investment = 0
+                prevpos = pos
                 pos = 'long'
             elif positions[i] == -1.0 and (pos=='long'):
                 self.investment = shares * bars['close'][i]
                 shares = 0
+                prevpos = pos
                 pos = 'cash'
+            else:
+                prevpos = pos
             temp.append(self.investment if shares == 0 else shares*bars['close'][i])
+            sh.append(shares)
+            p.append(pos)
+            if(prevpos == pos):
+                bsh.append(0)
+            else:
+                if(pos=='cash'):
+                    bsh.append(-1)
+                else:
+                    bsh.append(1)
 
         
-        ret = pd.DataFrame({'date': in1, 'investment': temp})
-        return ret
-
-    def execute_ma(self, start, end, symbol, short, long):
-        ma = ind.Indicator(self.client, symbol)
-        ma_short = ma.moving_average(start, end, short)
-        ma_short.rename(columns = {'moving average':'short'}, inplace = True)
-        ma_long = ma.moving_average(start, end, long)
-        ma_long.rename(columns = {'moving average':'long'}, inplace = True)
-        position = 'cash'
-
-        request_params = StockBarsRequest(symbol_or_symbols=[symbol],
-                                          timeframe = TimeFrame.Day,
-                                          start = start,
-                                          end = end,
-                                          adjustment='all')
-
-        bars = self.client.get_stock_bars(request_params)
-        data = bars.df['close']
-        df = pd.concat([ma_short, ma_long, data], axis=1)
-        in1, in2 = [], []
-
-        for index, row in df.iterrows():
-            if(row['short'] > row['long']) and (position=='cash'):
-                shares = self.investment / row['close']
-                self.investment = 0
-                position = 'long'
-            elif (row['short'] < row['long']) and (position == 'long'):
-                self.investment = shares * row['close'] - self.commission
-                shares = 0
-                position = 'cash'
-            if position == 'long':
-                in1.append(index[1].date())
-                in2.append((row['close'] * shares))
-            else:
-                in1.append(index[1].date())
-                in2.append(self.investment)
-        in1 = pd.Series(in1)
-        in1 = in1.rename('date')
-        in2 = pd.Series(in2)
-        in2 = in2.rename('investment')
-        ret = pd.concat([in1,in2], axis=1)
+        ret = pd.DataFrame({'date': in1, 'investment': temp, 'buy_sell_hold': bsh, 'position': p, 'shares': sh})
         return ret
 
     def execute_atr(self, start, end, symbol, short, long):
@@ -139,6 +203,8 @@ class Strategy:
         atr_long = atr.ATR(start, end, long)
         atr_long.rename(columns = {'ATR':'long'}, inplace = True)
         position = 'cash'
+        prevpos = 'cash'
+        shares = 0
 
         request_params = StockBarsRequest(symbol_or_symbols=[symbol],
                                           timeframe = TimeFrame.Day,
@@ -150,7 +216,7 @@ class Strategy:
         data = bars.df['close']
 
         df = pd.concat([atr_short, atr_long, data], axis=1)
-        in1, in2 = [], []
+        in1, in2, in3, in4, in5 = [], [], [], [], []
 
         prev_close = 0
 
@@ -158,25 +224,34 @@ class Strategy:
             if (prev_close != 0) and (row['long'] + row['close'] > prev_close) and (position == 'cash'):
                 shares = self.investment / row['close']
                 self.investment = 0
+                prevpos = position
                 position = 'long'
             elif (prev_close != 0) and (row['long'] + row['close'] < prev_close) and (position == 'long'):
                 self.investment = shares * row['close'] - self.commission
                 shares = 0
+                prevpos = position
                 position = 'cash'
+            else:
+                prevpos = position
             if position == 'long':
                 in1.append(index[1].date())
                 in2.append((row['close'] * shares))
             else:
                 in1.append(index[1].date())
                 in2.append(self.investment)
+            if(prevpos == position):
+                in3.append(0)
+            else:
+                if(position=='cash'):
+                    in3.append(-1)
+                else:
+                    in3.append(1)
+            in4.append(position)
+            in5.append(shares)
 
             prev_close = row['close']
 
-        in1 = pd.Series(in1)
-        in1 = in1.rename('date')
-        in2 = pd.Series(in2)
-        in2 = in2.rename('investment')
-        ret = pd.concat([in1,in2], axis=1)
+        ret = pd.DataFrame({'date': in1, 'investment': in2, 'buy_sell_hold': in3, 'position': in4, 'shares': in5})
         return ret
 
     def execute_fib(self, start, end, symbol, short, long):
@@ -207,9 +282,11 @@ class Strategy:
         df2 = data.to_frame()
 
         df = pd.concat([fib_signals, data], axis=1)
-        in1, in2 = [], []
+        in1, in2, in3, in4, in5 = [], [], [], [], []
 
         position = 'cash'
+        prevpos = 'cash'
+        shares = 0
         hi_level, lo_level = None, None
         buy_price = 0
 
@@ -222,13 +299,28 @@ class Strategy:
                 if (row['signal'] > row['MACD']) and (position == 'cash'): # buy
                     shares = self.investment / row['close']
                     self.investment = 0
+                    prevpos = position
                     position = 'long'
                     buy_price = price
                 elif (row['signal'] < row['MACD']) and (position == 'long') and price > buy_price: # sell
                     self.investment = shares * row['close'] - self.commission
                     shares = 0
+                    prevpos = position
                     position = 'cash'
                     buy_price = 0
+                else:
+                    prevpos = position
+
+            if(prevpos == position):
+                in3.append(0)
+            else:
+                if(position=='cash'):
+                    in3.append(-1)
+                else:
+                    in3.append(1)
+            in4.append(position)
+            in5.append(shares)
+            
             if position == 'long':
                 in1.append(index[1].date())
                 in2.append((row['close'] * shares))
@@ -238,13 +330,25 @@ class Strategy:
 
             hi_level, lo_level = get_level(price)
 
-        in1 = pd.Series(in1)
-        in1 = in1.rename('date')
-        in2 = pd.Series(in2)
-        in2 = in2.rename('investment')
-        ret = pd.concat([in1,in2], axis=1)
+        ret = pd.DataFrame({'date': in1, 'investment': in2, 'buy_sell_hold': in3, 'position': in4, 'shares': in5})
         return ret
-
 
     def getVal(self):
         return self.investment
+
+trading_client = StockHistoricalDataClient('PKV2FZHX6E4RMGFON60X',
+                                           'GMKXVZ3W4MqenB6SbcSKM8h9WnvYBZn0qdZ86E6n')
+
+x = datetime(2020, 5, 17)
+y = datetime(2022, 5, 17)
+
+test = Strategy(trading_client, 10000, 5)
+#print(test.execute_control(x, y, "AAPL").to_string())
+#print(test.execute_atr(x, y, "AAPL", 50, 100).to_string())
+#print(test.execute_fib(x, y, "AAPL", 50, 100).to_string())
+#print(test.execute_bb(x, y, "AAPL", 50, 2).to_string())
+#print(test.execute_ma(x, y, "AAPL", 50, 100).to_string())
+#print(test.execute_rsi(x, y, "AAPL", 20, 70, 30).to_string())
+
+
+

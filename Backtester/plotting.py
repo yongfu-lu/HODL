@@ -2,8 +2,10 @@ from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockBarsRequest
 from alpaca.data.timeframe import TimeFrame
 import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
 import plotly.graph_objects as go
 import pandas as pd
+import numpy as np
 import strategy as strat
 from datetime import datetime
 
@@ -47,9 +49,28 @@ class Plot:
                 close=ret['close'])])
         fig.show()
     
-    def line_plot(self, title):
-        ax = self.inputs.plot(x='date', y='investment', kind='line')
-        ax.set_xlabel('date')
-        ax.set_ylabel('investment')
-        ax.set_title(title)
+    def plot_strategy(self, title):
+        plt.scatter(self.inputs['date'][self.inputs.buy_sell_hold == -1.0], self.inputs['investment'][self.inputs.buy_sell_hold == -1.0], c='r', marker="v")
+        plt.scatter(self.inputs['date'][self.inputs.buy_sell_hold == 1.0], self.inputs['investment'][self.inputs.buy_sell_hold == 1.0], c='g', marker="^")
+        plt.plot(self.inputs['date'], self.inputs['investment'])
+        plt.xlabel('Date')
+        plt.ylabel('Investment')
+        plt.title(title)
+        buy = mlines.Line2D([], [], color='r', marker='v', linestyle='None', markersize=5, label='Sell marker')
+        sell = mlines.Line2D([], [], color='g', marker='^', linestyle='None', markersize=5, label='Buy marker')
+        plt.legend(handles=[buy, sell])
         plt.show()
+        
+trading_client = StockHistoricalDataClient('PKV2FZHX6E4RMGFON60X',
+                                           'GMKXVZ3W4MqenB6SbcSKM8h9WnvYBZn0qdZ86E6n')
+
+x = datetime(2020, 5, 17)
+y = datetime(2022, 5, 17)
+
+test = strat.Strategy(trading_client, 10000, 5)
+data = test.execute_ma(x, y, "AAPL", 50, 100)
+ptest = Plot(data, trading_client)
+ptest.plot_strategy("strategy 1")
+
+#ptest.plot_strategy("50/100 Moving Average")
+#ptest.candlestick_plot("AAPL", x, y)
