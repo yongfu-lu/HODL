@@ -29,7 +29,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     "54.90.0.30",
-    "127.0.0.1"
+    "127.0.0.1",
+    "www.tarolu.com",
 ]
 
 
