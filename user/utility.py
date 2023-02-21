@@ -51,28 +51,18 @@ class AlpacaAccount:
         watchlist_id = self.API.get_watchlists()[0].id
         watchlist = self.API.get_watchlist(watchlist_id)
         symbols = [asset['symbol'] for asset in watchlist.assets]
+        current_time = datetime.datetime.now(tz=pytz.timezone('US/Eastern'))
 
         # create list of stock dictionary, each dictionary contains symbol, current price, last market close price
         assets = []
         for i in range(len(symbols)):
             current_price = self.API.get_latest_bar(symbols[i]).c
+            last_market_close_price =self.API.get_bars(symbol=symbols[i],
+                                 timeframe=TimeFrame(1, TimeFrameUnit('Day')),
+                                 start=(current_time - datetime.timedelta(days=7)).isoformat(),
+                                 end=(current_time - datetime.timedelta(hours=1)).isoformat(),
+                                 limit=7)[-2].c
 
-            # find the last market close time, if it's Sat, Sun, last close time is on Thur, if it's Monday, last close time is Fri
-            day_of_week = datetime.datetime.now().weekday()
-            day_dif = 1
-            if day_of_week == 0:
-                day_dif = 3
-            if day_of_week == 5:
-                day_dif = 2
-            if day_of_week == 6:
-                day_dif = 3
-
-            last_close_time = datetime.datetime.now(tz=pytz.timezone('US/Eastern')) \
-                             .replace(hour=16, minute=0, second=0, microsecond=0) - datetime.timedelta(days=day_dif)
-
-            last_market_close_price = self.API.get_bars([symbols[i]], timeframe=TimeFrame(1, TimeFrameUnit('Hour')),
-                                                        start=(last_close_time - datetime.timedelta(minutes=1)).isoformat(),
-                                                        end=last_close_time.isoformat())[0].c
             assets.append(
                 {"symbol": symbols[i],
                  "current_price": current_price,
