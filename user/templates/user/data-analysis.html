@@ -2,6 +2,29 @@
 
 {% block content %}
 
-<h1>this is data analysis page, user could do back testing here??</h1>
+<h1>Stock Analysis</h1>
+
+<form method="POST">
+  {% csrf_token %}
+  <label for="start_date">Start Date:</label>
+  <input type="date" id="start_date" name="start_date" pattern="\d{2}/\d{2}/\d{4}" placeholder="MM/DD/YYYY">
+
+  <label for="end_date">End Date:</label>
+  <input type="date" id="end_date" name="end_date" pattern="\d{2}/\d{2}/\d{4}" placeholder="MM/DD/YYYY">
+
+  <label for="stock_symbol">Stock Symbol:</label>
+  <input type="text" id="stock_symbol" name="stock_symbol">
+
+  <label for="algorithm">Algorithm:</label>
+  <select id="algorithm" name="algorithm">
+    <option value="RSI">Relative Strength Indicator</option>
+    <option value="MA">Moving Average </option>
+    <option value="ATR">Average True Range</option>
+    <option value="FIB">MACD with Fibonacci Levels</option>
+    <option value="BB">Bollinger Bands</option>
+  </select>
+
+  <button type="submit">Analyze</button>
+</form>
 
 {% endblock %}
