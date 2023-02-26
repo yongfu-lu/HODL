@@ -4,6 +4,7 @@ from .forms import *
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib import messages
 from .models import CustomUser
+import pandas as pd
 
 
 # Create your views here.
@@ -68,7 +69,17 @@ def dataAnalysis(request):
 def recommendations(request):
     if not request.user.is_authenticated:
         return redirect('/user/login')
-    return render(request, "user/recommendations.html", {})
+    
+    data = {
+        'Strategy': ['Strategy A', 'Strategy B', 'Strategy C'],
+        'Percent_Difference': ['5%', '10%', '15%'],
+        'Period': ['2/4/23-Present', '1/14/23-Present', '2/21/23-Present']
+    }
+    df = pd.DataFrame(data)
+    context = {'df': df}
+    return render(request, 'user/recommendations.html', context)
+    
+    
 
 
 def userAPI(request):
@@ -85,3 +96,13 @@ def userAPI(request):
         messages.success(request, "API key updated successfully")
 
     return render(request, "user/user-api.html", {"api_key": current_api_key})
+
+
+def my_view(request):
+    data = {
+        'Strategy': ['Strategy A', 'Strategy B', 'Strategy C'],
+        'Percent Difference': ['5%', '10%', '15%']
+    }
+    df = pd.DataFrame(data)
+    context = {'df': df}
+    return render(request, 'user/recommendations.html', context)

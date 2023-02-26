@@ -6,42 +6,106 @@
 
 {% block content %}
 
-<div class="text-center">
   <h2>Recommendations</h2>
-  <div style="margin-top: 125px;"></div>
-</div>
 
-<div class="d-flex justify-content-around">
-  <div style="background-color: black; height: 200px; width: 200px; display: flex; justify-content: center; align-items: center;">
-    <div style="background-color: white; height: 75px; width: 75px;"></div>
-  </div>
-  <div style="background-color: black; height: 200px; width: 200px; display: flex; justify-content: center; align-items: center;">
-    <div style="background-color: white; height: 75px; width: 75px;"></div>
-  </div>
-  <div style="background-color: black; height: 200px; width: 200px; display: flex; justify-content: center; align-items: center;">
-    <div style="background-color: white; height: 75px; width: 75px;"></div>
-  </div>
-</div>
+  {% for index, row in df.iterrows %}
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">{{ row.Strategy }}</h5>
+        <p class="card-text">Percent Difference: {{ row.Percent_Difference }}</p>
+        <button class="btn btn-primary" onclick="showPopup('{{ row.Period }}', '{{ row.Current_Earnings }}', '{{ row.Potential_Earnings }}')">See More Details</button>
 
-<div class="d-flex justify-content-around mt-3">
-  <h4>Recommendation 1</h4>
-  <h4>Recommendation 2</h4>
-  <h4>Recommendation 3</h4>
-</div>
+      </div>
+    </div>
+  {% endfor %}
 
-<div class="d-flex justify-content-around mt-3">
-  <a href="#" class="btn btn-secondary">See More Details</a>
-  <a href="#" class="btn btn-secondary">See More Details</a>
-  <a href="#" class="btn btn-secondary">See More Details</a>
-</div>
-
-<hr style="margin-top: 175px;">
-
-<div class="text-center" style="margin-top: 20px;">
-  <h5>HODL</h5>
-  <hr style="width: 50%;">
-  <p> &copy 2022-2023</p>
-</div>
-
+  <script>
+    function showPopup(period, currentEarnings, potentialEarnings) {
+      var popup = window.open("", "popup", "width=800,height=600");
+      var popupDocument = popup.document;
+    
+      var style = popupDocument.createElement("style");
+      style.innerHTML = `
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f7f7f7;
+          margin: 0;
+          padding: 1rem;
+        }
+        h1 {
+          font-size: 1.5rem;
+          margin-top: 0;
+        }
+        p {
+          margin: 0;
+          padding: 0.5rem 0;
+        }
+        .info {
+          background-color: #fff;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          padding: 1rem;
+        }
+        .graph {
+          background-color: #fff;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          height: 300px;
+          margin-top: 1rem;
+          overflow: hidden;
+        }
+        .close-btn {
+          background-color: #fff;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          color: #333;
+          cursor: pointer;
+          font-size: 1rem;
+          padding: 0.5rem 1rem;
+          text-align: center;
+          transition: all 0.2s ease;
+        }
+        .close-btn:hover {
+          background-color: #f7f7f7;
+        }
+      `;
+      popupDocument.head.appendChild(style);
+    
+      var infoDiv = popupDocument.createElement("div");
+      infoDiv.classList.add("info");
+    
+      var periodElement = popupDocument.createElement("p");
+      periodElement.innerHTML = "<strong>Period:</strong> " + period;
+      infoDiv.appendChild(periodElement);
+    
+      var currentEarningsElement = popupDocument.createElement("p");
+      currentEarningsElement.innerHTML = "<strong>Current Earnings:</strong> " + currentEarnings;
+      infoDiv.appendChild(currentEarningsElement);
+    
+      var potentialEarningsElement = popupDocument.createElement("p");
+      potentialEarningsElement.innerHTML = "<strong>Potential Earnings:</strong> " + potentialEarnings;
+      infoDiv.appendChild(potentialEarningsElement);
+    
+      var plotDiv = popupDocument.createElement("div");
+      plotDiv.classList.add("graph");
+      plotDiv.innerHTML = "<strong>Plot:</strong> ";
+      infoDiv.appendChild(plotDiv);
+    
+      var closeButton = popupDocument.createElement("div");
+      closeButton.classList.add("close-btn");
+      closeButton.innerHTML = "Close";
+      closeButton.onclick = function() {
+        popup.close();
+      };
+      popupDocument.body.appendChild(closeButton);
+    
+      popupDocument.body.appendChild(infoDiv);
+    }
+    </script>
+    
+    
 
 {% endblock %}
+
