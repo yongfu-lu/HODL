@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from .forms import *
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib import messages
-from .models import CustomUser
+from .models import CustomUser, ActivatedAlgorithm
 from .utility import AlpacaAccount
 from .all_US_assets import all_US_assets
 
@@ -68,6 +68,28 @@ def logout(request):
 def algorithms(request):
     if not request.user.is_authenticated:
         return redirect('/user/login')
+
+    if request.method == 'POST':
+        obj, created = ActivatedAlgorithm.objects.get_or_create(user=request.user, algorithm=request.POST['algorithm'],
+                                                                defaults={'stock_name': request.POST['stock-symbol'],
+                                                                          'investment_amount':  request.POST['amount'],
+                                                                          'short_moving_avg': request.POST['short-moving-avg'],
+                                                                          'long_moving_avg': request.POST['long-moving-avg'],
+                                                                          'days_of_moving_avg': request.POST['days-of-moving-avg'],
+                                                                          'over_percentage_threshold': request.POST['over-percentage-threshold'],
+                                                                          'under_percentage_threshold': request.POST['under-percentage-threshold'],
+                                                                          'standard_deviation': request.POST['standard-deviation']})
+        if not created:
+            obj.investment_amount =  request.POST['amount']
+            obj.short_moving_avg = request.POST['short-moving-avg']
+            obj.long_moving_avg = request.POST['long-moving-avg']
+            obj.stock_name = request.POST['stock-symbol']
+            obj.days_of_moving_avg = request.POST['days-of-moving-avg']
+            obj.over_percentage_threshold = request.POST['over-percentage-threshold']
+            obj.under_percentage_threshold = request.POST['under-percentage-threshold']
+            obj.standard_deviation = request.POST['standard-deviation']
+            obj.save()
+
     return render(request, "user/algorithms.html", {})
 
 

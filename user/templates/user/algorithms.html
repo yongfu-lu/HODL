@@ -1,7 +1,123 @@
 {% extends 'user/base.html' %}
 
 {% block content %}
+<div class="container">
+    <div class="mt-4 mb-4">
+        <form action="/user/algorithms/" method="post">
+            <h3>Moving average</h3>
+            {% csrf_token %}
+            <input type="hidden" name="algorithm" value="moving-average">
+            <input type="hidden" name="days-of-moving-avg" value=0>
+            <input type="hidden" name="over-percentage-threshold" value=0>
+            <input type="hidden" name="under-percentage-threshold" value=0>
+            <input type="hidden" name="standard-deviation" value=0>
+            <label for="stock-symbol">Stock Symbol:</label>
+            <input type="text" name="stock-symbol" id="stock-symbol" required>
+            <label for="amount">Investment amount:</label>
+            <input type="number" name="amount" id="amount" required>
+            <br>
+            <label for="short-moving-avg">Short Moving Average:</label>
+            <input type="number" name="short-moving-avg" id="short-moving-avg" required>
+            <label for="long-moving-avg">Long Moving Average:</label>
+            <input type="number" name="long-moving-avg" id="long-moving-avg" required>
+            <br>
+            <button type="submit" class="btn btn-primary"> Set Up</button>
+        </form>
+    </div>
 
-<h1>This is algorithms page, could show algorithms description and user can enroll their algorithms here</h1>
+    <div class="mt-4 mb-4">
+        <form action="/user/algorithms/" method="post">
+            <h3>relative strength indicator</h3>
+            {% csrf_token %}
+            <input type="hidden" name="algorithm" value="relative-strength-indicator">
+            <input type="hidden" name="short-moving-avg" value=0>
+            <input type="hidden" name="long-moving-avg" value=0>
+            <input type="hidden" name="standard-deviation" value=0>
+
+            <label for="stock-symbol-2">Stock Symbol:</label>
+            <input type="text" name="stock-symbol" id="stock-symbol-2" required>
+            <label for="amount">Investment amount:</label>
+            <input type="number" name="amount" id="amount-2" required>
+            <label for="days-of-moving-avg-2">Days of Moving Avg:</label>
+            <input name="days-of-moving-avg" id="days-of-moving-avg-2">
+            <br>
+            <label for="over-percentage-threshold-2">Over Percentage Threshold:</label>
+            <input type="number" name="over-percentage-threshold" id="over-percentage-threshold-2" required>
+            <label for="under-percentage-threshold-2">Under Percentage Threshold:</label>
+            <input type="number" name="under-percentage-threshold" id="under-percentage-threshold-2" required>
+            <br>
+            <button type="submit" class="btn btn-primary"> Set Up</button>
+        </form>
+    </div>
+
+    <div class="mt-4 mb-4">
+        <form action="/user/algorithms/" method="post">
+            <h3>Average True Range</h3>
+            {% csrf_token %}
+            <input type="hidden" name="algorithm" value="average-true-range">
+            <input type="hidden" name="days-of-moving-avg" value=0>
+            <input type="hidden" name="over-percentage-threshold" value=0>
+            <input type="hidden" name="under-percentage-threshold" value=0>
+            <input type="hidden" name="standard-deviation" value=0>
+            <label for="stock-symbol-3">Stock Symbol:</label>
+            <input type="text" name="stock-symbol" id="stock-symbol-3" required>
+            <label for="amount-3">Investment amount:</label>
+            <input type="number" name="amount" id="amount-3" required>
+            <br>
+            <label for="short-moving-avg-3">Short Moving Average:</label>
+            <input type="number" name="short-moving-avg" id="short-moving-avg-3" required>
+            <label for="long-moving-avg-3">Long Moving Average:</label>
+            <input type="number" name="long-moving-avg" id="long-moving-avg-3" required>
+            <br>
+            <button type="submit" class="btn btn-primary"> Set Up</button>
+        </form>
+    </div>
+
+    <div class="mt-4 mb-4">
+        <form action="/user/algorithms/" method="post">
+            <h3>MACD with Fibonacci Levels</h3>
+            {% csrf_token %}
+            <input type="hidden" name="algorithm" value="MACD-with-fibonacci-levels">
+            <input type="hidden" name="days-of-moving-avg" value=0>
+            <input type="hidden" name="over-percentage-threshold" value=0>
+            <input type="hidden" name="under-percentage-threshold" value=0>
+            <input type="hidden" name="standard-deviation" value=0>
+            <label for="stock-symbol-4">Stock Symbol:</label>
+            <input type="text" name="stock-symbol" id="stock-symbol-4" required>
+            <label for="amount-4">Investment amount:</label>
+            <input type="number" name="amount" id="amount-4" required>
+            <br>
+            <label for="short-moving-avg-4">Short Moving Average:</label>
+            <input type="number" name="short-moving-avg" id="short-moving-avg-4" required>
+            <label for="long-moving-avg-4">Long Moving Average:</label>
+            <input type="number" name="long-moving-avg" id="long-moving-avg-4" required>
+            <br>
+            <button type="submit" class="btn btn-primary"> Set Up</button>
+        </form>
+    </div>
+
+    <div class="mt-4 mb-4">
+        <form action="/user/algorithms/" method="post">
+            <h3>Bollinger Bands</h3>
+            {% csrf_token %}
+            <input type="hidden" name="algorithm" value="billinger-bands">
+            <input type="hidden" name="over-percentage-threshold" value=0>
+            <input type="hidden" name="under-percentage-threshold" value=0>
+            <input type="hidden" name="short-moving-avg" value=0>
+            <input type="hidden" name="long-moving-avg" value=0>
+            <label for="stock-symbol-5">Stock Symbol:</label>
+            <input type="text" name="stock-symbol" id="stock-symbol-5" required>
+            <label for="amount-5">Investment amount:</label>
+            <input type="number" name="amount" id="amount-5" required>
+            <br>
+            <label for="days-of-moving-avg-5">Days of Moving Avg:</label>
+            <input name="days-of-moving-avg" id="days-of-moving-avg-5" required>
+            <label for="standard-deviation-5">Standard Deviation:</label>
+            <input name="standard-deviation" id="standard-deviation-5" required>
+            <br>
+            <button type="submit" class="btn btn-primary"> Set Up</button>
+        </form>
+    </div>
+</div>
 
 {% endblock %}
