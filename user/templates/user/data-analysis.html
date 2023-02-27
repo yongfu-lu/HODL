@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<h1>Stock Analysis</h1>
+<h1>Stock Backtesting Analysis</h1>
 
 <form method="POST">
   {% csrf_token %}
@@ -18,13 +18,90 @@
   <label for="algorithm">Algorithm:</label>
   <select id="algorithm" name="algorithm">
     <option value="RSI">Relative Strength Indicator</option>
-    <option value="MA">Moving Average </option>
+    <option value="MA">Moving Average</option>
     <option value="ATR">Average True Range</option>
     <option value="FIB">MACD with Fibonacci Levels</option>
     <option value="BB">Bollinger Bands</option>
   </select>
 
-  <button type="submit">Analyze</button>
+  <div id="rsi-fields" style="display:none;">
+    <label for="rsi_days">RSI Days:</label>
+    <input type="number" id="rsi_days" name="rsi_days">
+
+    <label for="rsi_over">RSI Over:</label>
+    <input type="number" id="rsi_over" name="rsi_over">
+
+    <label for="rsi_under">RSI Under:</label>
+    <input type="number" id="rsi_under" name="rsi_under">
+  </div>
+
+  <div id="ma-fields" style="display:none;">
+    <label for="ma_short">Ma Short:</label>
+    <input type="number" id="ma_short" name="ma_short">
+
+    <label for="ma_long">Ma Long:</label>
+    <input type="number" id="ma_long" name="ma_long">
+  </div>
+
+  <div id="atr-fields" style="display:none;">
+    <label for="atr_short">ATR Short:</label>
+    <input type="number" id="atr_short" name="atr_short">
+
+    <label for="atr_long">ATR Long:</label>
+    <input type="number" id="atr_long" name="atr_long">
+  </div>
+
+  <div id="fib-fields" style="display:none;">
+    <label for="fib_short">FIB Short:</label>
+    <input type="number" id="fib_short" name="fib_short">
+
+    <label for="fib_long">FIB Long:</label>
+    <input type="number" id="fib_long" name="fib_long">
+  </div>
+
+  <div id="bb-fields" style="display:none;">
+    <label for="bb_ma_days">BB MA Days:</label>
+    <input type="number" id="bb_ma_days" name="bb_ma_days">
+
+    <label for="bb_num_std">BB Num Std:</label>
+    <input type="number" id="bb_num_std" name="bb_num_std">
+  </div>
+
+<button type="submit">Analyze</button>
+
+</form>
+<script>
+    const algorithmSelect = document.getElementById('algorithm');
+    const rsiFields = document.getElementById('rsi-fields');
+    const maFields = document.getElementById('ma-fields');
+    const atrFields = document.getElementById('atr-fields');
+    const fibFields = document.getElementById('fib-fields');
+    const bbFields = document.getElementById('bb-fields');
+
+    algorithmSelect.addEventListener('change', () => {
+      const selectedAlgorithm = algorithmSelect.value;
+
+      rsiFields.style.display = 'none';
+      maFields.style.display = 'none';
+      atrFields.style.display = 'none';
+      fibFields.style.display = 'none';
+      bbFields.style.display = 'none';
+
+      if (selectedAlgorithm === 'RSI') {
+        rsiFields.style.display = 'block';
+      } else if (selectedAlgorithm === 'MA') {
+        maFields.style.display = 'block';
+      } else if (selectedAlgorithm === 'ATR') {
+        atrFields.style.display = 'block';
+      } else if (selectedAlgorithm === 'FIB') {
+        fibFields.style.display = 'block';
+      } else if (selectedAlgorithm === 'BB') {
+        bbFields.style.display = 'block';
+      }
+    });
+  </script>
 </form>
 
 {% endblock %}
+
+

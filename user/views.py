@@ -121,3 +121,42 @@ def remove_from_watchlist(request):
         messages.success(request, "Watch list updated!")
 
     return redirect("/user/dashboard")
+
+
+
+
+
+
+
+    def backtesting(request):
+        if request.method == 'POST':
+            start_date = request.POST.get('start_date')
+            end_date = request.POST.get('end_date')
+            stock_symbol = request.POST.get('stock_symbol')
+            algorithm = request.POST.get('algorithm')
+
+            if algorithm == 'RSI':
+                rsi_days = request.POST.get('rsi_days')
+                rsi_over = request.POST.get('rsi_over')
+                rsi_under = request.POST.get('rsi_under')
+                result = RSI(start_date, end_date, stock_symbol, rsi_days, rsi_over, rsi_under)
+            elif algorithm == 'MA':
+                ma_short = request.POST.get('ma_short')
+                ma_long = request.POST.get('ma_long')
+                result = moving_average(start_date, end_date, stock_symbol, ma_short, ma_long)
+            elif algorithm == 'ATR':
+                atr_short = request.POST.get('atr_short')
+                atr_long = request.POST.get('atr_long')
+                result = ATR(start_date, end_date, stock_symbol, atr_short, atr_long)
+            elif algorithm == 'FIB':
+                fib_short = request.POST.get('fib_short')
+                fib_long = request.POST.get('fib_long')
+                result = FibLevels(start_date, end_date, stock_symbol, fib_short, fib_long)
+            elif algorithm == 'BB':
+                bb_ma_days = request.POST.get('bb_ma_days')
+                bb_num_std = request.POST.get('bb_num_std')
+                result = bollinger_bands(start_date, end_date, stock_symbol, bb_ma_days, bb_num_std)
+
+        return render(request, 'backtesting_results.html', {'result': result})
+
+        return render(request, 'backtesting.html')
