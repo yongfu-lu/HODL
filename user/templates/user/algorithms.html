@@ -21,13 +21,19 @@
             <label for="long-moving-avg">Long Moving Average:</label>
             <input type="number" name="long-moving-avg" id="long-moving-avg" required>
             <br>
-            <button type="submit" class="btn btn-primary"> Set Up</button>
+            <button type="submit" class="btn btn-primary" name="submit-button" value="activate"> Activate</button>
+        </form>
+        <form action="/user/algorithms/" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="algorithm" value="moving-average">
+            <button type="submit" class="btn btn-danger mt-2" name="submit-button" value="deactivate"> De-activate
+            </button>
         </form>
     </div>
 
     <div class="mt-4 mb-4">
         <form action="/user/algorithms/" method="post">
-            <h3>relative strength indicator</h3>
+            <h3>Relative Strength Indicator</h3>
             {% csrf_token %}
             <input type="hidden" name="algorithm" value="relative-strength-indicator">
             <input type="hidden" name="short-moving-avg" value=0>
@@ -46,7 +52,13 @@
             <label for="under-percentage-threshold-2">Under Percentage Threshold:</label>
             <input type="number" name="under-percentage-threshold" id="under-percentage-threshold-2" required>
             <br>
-            <button type="submit" class="btn btn-primary"> Set Up</button>
+            <button type="submit" class="btn btn-primary" name="submit-button" value="activate"> Activate</button>
+        </form>
+        <form action="/user/algorithms/" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="algorithm" value="relative-strength-indicator">
+            <button type="submit" class="btn btn-danger mt-2" name="submit-button" value="deactivate"> De-activate
+            </button>
         </form>
     </div>
 
@@ -69,7 +81,13 @@
             <label for="long-moving-avg-3">Long Moving Average:</label>
             <input type="number" name="long-moving-avg" id="long-moving-avg-3" required>
             <br>
-            <button type="submit" class="btn btn-primary"> Set Up</button>
+            <button type="submit" class="btn btn-primary" name="submit-button" value="activate"> Activate</button>
+        </form>
+        <form action="/user/algorithms/" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="algorithm" value="average-true-range">
+            <button type="submit" class="btn btn-danger mt-2" name="submit-button" value="deactivate"> De-activate
+            </button>
         </form>
     </div>
 
@@ -92,7 +110,13 @@
             <label for="long-moving-avg-4">Long Moving Average:</label>
             <input type="number" name="long-moving-avg" id="long-moving-avg-4" required>
             <br>
-            <button type="submit" class="btn btn-primary"> Set Up</button>
+            <button type="submit" class="btn btn-primary" name="submit-button" value="activate"> Activate</button>
+        </form>
+        <form action="/user/algorithms/" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="algorithm" value="MACD-with-fibonacci-levels">
+            <button type="submit" class="btn btn-danger mt-2" name="submit-button" value="deactivate"> De-activate
+            </button>
         </form>
     </div>
 
@@ -115,7 +139,13 @@
             <label for="standard-deviation-5">Standard Deviation:</label>
             <input name="standard-deviation" id="standard-deviation-5" required>
             <br>
-            <button type="submit" class="btn btn-primary"> Set Up</button>
+            <button type="submit" class="btn btn-primary" name="submit-button" value="activate"> Activate</button>
+        </form>
+        <form action="/user/algorithms/" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="algorithm" value="billinger-bands">
+            <button type="submit" class="btn btn-danger mt-2" name="submit-button" value="deactivate"> De-activate
+            </button>
         </form>
     </div>
 </div>

@@ -48,8 +48,10 @@ def dashboard(request):
         return redirect('/user/login')
 
     alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
+    activated_algorithms = ActivatedAlgorithm.objects.filter(user=request.user)
     context = {
         "is_account_linked": alpaca_account.account_linked,
+        "activated_algorithms": activated_algorithms
     }
     if alpaca_account.account_linked:
         context["account"] = alpaca_account.get_account()
@@ -70,25 +72,33 @@ def algorithms(request):
         return redirect('/user/login')
 
     if request.method == 'POST':
-        obj, created = ActivatedAlgorithm.objects.get_or_create(user=request.user, algorithm=request.POST['algorithm'],
-                                                                defaults={'stock_name': request.POST['stock-symbol'],
-                                                                          'investment_amount':  request.POST['amount'],
-                                                                          'short_moving_avg': request.POST['short-moving-avg'],
-                                                                          'long_moving_avg': request.POST['long-moving-avg'],
-                                                                          'days_of_moving_avg': request.POST['days-of-moving-avg'],
-                                                                          'over_percentage_threshold': request.POST['over-percentage-threshold'],
-                                                                          'under_percentage_threshold': request.POST['under-percentage-threshold'],
-                                                                          'standard_deviation': request.POST['standard-deviation']})
-        if not created:
-            obj.investment_amount =  request.POST['amount']
-            obj.short_moving_avg = request.POST['short-moving-avg']
-            obj.long_moving_avg = request.POST['long-moving-avg']
-            obj.stock_name = request.POST['stock-symbol']
-            obj.days_of_moving_avg = request.POST['days-of-moving-avg']
-            obj.over_percentage_threshold = request.POST['over-percentage-threshold']
-            obj.under_percentage_threshold = request.POST['under-percentage-threshold']
-            obj.standard_deviation = request.POST['standard-deviation']
-            obj.save()
+        if request.POST['submit-button'] == 'activate':
+            obj, created = ActivatedAlgorithm.objects.get_or_create(user=request.user, algorithm=request.POST['algorithm'],
+                                                                    defaults={'stock_name': request.POST['stock-symbol'],
+                                                                              'investment_amount':  request.POST['amount'],
+                                                                              'short_moving_avg': request.POST['short-moving-avg'],
+                                                                              'long_moving_avg': request.POST['long-moving-avg'],
+                                                                              'days_of_moving_avg': request.POST['days-of-moving-avg'],
+                                                                              'over_percentage_threshold': request.POST['over-percentage-threshold'],
+                                                                              'under_percentage_threshold': request.POST['under-percentage-threshold'],
+                                                                              'standard_deviation': request.POST['standard-deviation']})
+            if not created:
+                obj.investment_amount =  request.POST['amount']
+                obj.short_moving_avg = request.POST['short-moving-avg']
+                obj.long_moving_avg = request.POST['long-moving-avg']
+                obj.stock_name = request.POST['stock-symbol']
+                obj.days_of_moving_avg = request.POST['days-of-moving-avg']
+                obj.over_percentage_threshold = request.POST['over-percentage-threshold']
+                obj.under_percentage_threshold = request.POST['under-percentage-threshold']
+                obj.standard_deviation = request.POST['standard-deviation']
+                obj.save()
+        elif request.POST['submit-button'] == 'deactivate':
+            try:
+                obj = ActivatedAlgorithm.objects.get(user=request.user, algorithm=request.POST['algorithm'])
+            except:
+                obj = None
+            if obj:
+                obj.delete()
 
     return render(request, "user/algorithms.html", {})
 

@@ -5,13 +5,14 @@
 
 {% if messages %}
 {% for message in messages %}
-<div class="alert alert-{{message.tags}} {%if message.tags == 'error'%} alert-danger {%endif%} alert-dismissible fade show" role="alert">
+<div class="alert alert-{{message.tags}} {%if message.tags == 'error'%} alert-danger {%endif%} alert-dismissible fade show"
+     role="alert">
     {{message}}
 </div>
 {%endfor%}
 {%endif%}
 <div class="container mt-2 bg-light">
-    <h3>Account Balance </h3>
+    <h3 class="text-center">Account Balance </h3>
     {% if is_account_linked %}
     <table class="table">
         <thead>
@@ -38,7 +39,7 @@
 </div>
 
 <div class="container mt-4">
-    <h3>Positions</h3>
+    <h3 class="text-center">Positions</h3>
     {%if is_account_linked %}
     <table class="table">
         <thead>
@@ -75,16 +76,35 @@
 
 </div>
 
-<div class="container mt-4 bg-light">
+<div class="container text-center mt-4 bg-light">
     <h3> Activated Algorithms </h3>
-    <div class="container text-center pb-4">
-            <h5>You haven't activated any trading algorithms yet</h5>
-            <a href="/user/algorithms" class="btn btn-primary"> Edit Activated Algorithms</a>
+    <div class="container pb-4">
+        {% if activated_algorithms|length == 0 %}
+        <h5>You haven't activated any trading algorithms yet</h5>
+        {% else %}
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">Algorithm Name</th>
+                <th scope="col">Applied Stock</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for algorithm in activated_algorithms%}
+            <tr>
+                <td>{{algorithm.algorithm}}</td>
+                <td>{{algorithm.stock_name}}</td>
+            </tr>
+            {%endfor%}
+            </tbody>
+        </table>
+        {% endif %}
+        <a href="/user/algorithms" class="btn btn-primary"> Edit Activated Algorithms</a>
     </div>
 </div>
 
 <div class="container mt-4">
-    <h3>Trading History</h3>
+    <h3 class="text-center">Trading History</h3>
     {%if is_account_linked %}
     <table class="table">
         <thead>
@@ -123,39 +143,41 @@
 
 <div class="container mt-4 mb-4 bg-light">
     <div>
-        <span class="h3"> Watch List </span>
-        {%if is_account_linked %}
-        <!-- Button trigger modal -->
-        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#add-watchlist">
-            +
-        </button>
+        <div class="text-center">
+            <span class="h3"> Watch List </span>
+            {%if is_account_linked %}
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#add-watchlist">
+                +
+            </button>
 
-        <!-- Modal -->
-        <div class="modal fade" id="add-watchlist" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Add stock to watch list</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+            <!-- Modal -->
+            <div class="modal fade" id="add-watchlist" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Add stock to watch list</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <form action="/user/add-to-watchlist/" method="post" class="mb-4">
+                            {% csrf_token %}
+                            <div class="modal-body">
+                                <input type="text" class="form-control" name="stock-symbol"
+                                       placeholder="Enter Stock Symbol Here">
+                                <input type="hidden" name="watchlist-id" value={{watchlist.id}}>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Add</button>
+                            </div>
+                        </form>
                     </div>
-                    <form action="/user/add-to-watchlist/" method="post" class="mb-4">
-                        {% csrf_token %}
-                        <div class="modal-body">
-                            <input type="text" class="form-control" name="stock-symbol"
-                                   placeholder="Enter Stock Symbol Here">
-                            <input type="hidden" name="watchlist-id" value={{watchlist.id}}>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary">Add</button>
-                        </div>
-                    </form>
                 </div>
             </div>
+            {%endif%}
         </div>
-        {%endif%}
     </div>
 
     {%if not is_account_linked %}
