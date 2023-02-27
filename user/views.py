@@ -4,6 +4,7 @@ from .forms import *
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib import messages
 from .models import CustomUser
+from .models import ActivatedAlgorithm
 from .utility import AlpacaAccount
 from .all_US_assets import all_US_assets
 import pandas as pd
@@ -82,6 +83,11 @@ def recommendations(request):
     if not request.user.is_authenticated:
         return redirect('/user/login')
     
+    # user_algorithms = ActivatedAlgorithm.objects.filter(user=request.user)
+    # context = {'user_algorithms': user_algorithms}
+    # return render(request, 'user/recommendations.html', context)
+
+
     data = {
         'Strategy': ['Strategy A', 'Strategy B', 'Strategy C'],
         'Percent_Difference': ['5%', '10%', '15%'],
