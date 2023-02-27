@@ -98,11 +98,4 @@ def userAPI(request):
     return render(request, "user/user-api.html", {"api_key": current_api_key})
 
 
-def my_view(request):
-    data = {
-        'Strategy': ['Strategy A', 'Strategy B', 'Strategy C'],
-        'Percent Difference': ['5%', '10%', '15%']
-    }
-    df = pd.DataFrame(data)
-    context = {'df': df}
-    return render(request, 'user/recommendations.html', context)
+
