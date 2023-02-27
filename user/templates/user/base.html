@@ -40,6 +40,14 @@
         </ul>
     </div>
 
+    <div class="dropdown">
+  <button class="btn btn-secondary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    Hello {{user.username}}
+  </button>
+  <div class="dropdown-menu" style="min-width: 2rem;" aria-labelledby="dropdownMenuButton">
+    <a  href="/user/logout" class="dropdown-item" role="button">Log Out</a>
+  </div>
+</div>
     {% endif%}
     <div id="navEle" , name="navEle" class="ml-auto">
         {% block navEle %}
@@ -61,5 +69,14 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
 </script>
-</body>
+<script>
+    $(document).ready(function(){
+        setTimeout(function(){
+            $(".alert").fadeTo(500, 0, function(){
+                $(this).remove();
+            });
+        }, 3000);
+    });
+</script>
+
 </html>

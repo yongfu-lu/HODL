@@ -4,8 +4,9 @@ from .forms import *
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib import messages
 from .models import CustomUser
+from .utility import AlpacaAccount
+from .all_US_assets import all_US_assets
 import pandas as pd
-
 
 # Create your views here.
 def register(request):
@@ -46,7 +47,18 @@ def login(request):
 def dashboard(request):
     if not request.user.is_authenticated:
         return redirect('/user/login')
-    return render(request, "user/dashboard.html", {})
+
+    alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
+    context = {
+        "is_account_linked": alpaca_account.account_linked,
+    }
+    if alpaca_account.account_linked:
+        context["account"] = alpaca_account.get_account()
+        context["positions"] = alpaca_account.get_positions()
+        context["activities"] = alpaca_account.get_activities()
+        context["watchlist"] = alpaca_account.get_stocks_in_watchlist()
+
+    return render(request, "user/dashboard.html", context)
 
 
 def logout(request):
@@ -87,15 +99,36 @@ def userAPI(request):
         return redirect('/user/login')
 
     user = CustomUser.objects.filter(id=request.user.id)[0]
-    current_api_key = user.api_key
+
     if request.method == 'POST':
-        api_key = request.POST['api-key']
-        user.api_key = api_key
+        user.api_key = request.POST['api-key']
+        user.secret_key = request.POST['secret-key']
         user.save()
-        current_api_key = api_key
         messages.success(request, "API key updated successfully")
 
-    return render(request, "user/user-api.html", {"api_key": current_api_key})
+    return render(request, "user/user-api.html", {"api_key": user.api_key, "secret_key": user.secret_key})
+
+def add_to_watchlist(request):
+    if request.method == "POST":
+        alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
+        symbol = request.POST["stock-symbol"]
+        if symbol not in all_US_assets:
+            messages.error(request, "The asset you tried to add to watch list is not found!")
+        else:
+            try:
+                alpaca_account.add_to_watchlist(request.POST['watchlist-id'], symbol)
+            except:
+                messages.warning(request, "The stock you just entered already in your watchlist")
+            else:
+                messages.success(request, "Watch list updated!")
+
+    return redirect("/user/dashboard")
 
 
+def remove_from_watchlist(request):
+    if request.method == "POST":
+        alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
+        alpaca_account.remove_from_watchlist(request.POST['watchlist-id'], request.POST["stock-symbol"])
+        messages.success(request, "Watch list updated!")
 
+    return redirect("/user/dashboard")
