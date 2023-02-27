@@ -20,3 +20,6 @@ class ActivatedAlgorithm(models.Model):
     under_percentage_threshold = models.DecimalField(max_digits=5, decimal_places=2,  blank=True, null=True)
     standard_deviation = models.DecimalField(max_digits=10, decimal_places=2,  blank=True, null=True)
 
+    def __str__(self):
+        return f"{self.user}  {self.algorithm}  {self.stock_name}"
+

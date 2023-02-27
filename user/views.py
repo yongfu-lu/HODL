@@ -48,8 +48,12 @@ def dashboard(request):
         return redirect('/user/login')
 
     alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
+    activated_algorithms = ActivatedAlgorithm.objects.filter(user=request.user)
+    print(len(activated_algorithms))
+    print(activated_algorithms)
     context = {
         "is_account_linked": alpaca_account.account_linked,
+        "activated_algorithms": activated_algorithms
     }
     if alpaca_account.account_linked:
         context["account"] = alpaca_account.get_account()
