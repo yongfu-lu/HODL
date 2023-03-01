@@ -6,6 +6,12 @@ from django.contrib import messages
 from .models import CustomUser
 from .utility import AlpacaAccount
 from .all_US_assets import all_US_assets
+from Backtester.strategy import Strategy
+from Backtester.plotting import Plot
+import json
+from datetime import datetime
+from alpaca.data.historical import StockHistoricalDataClient
+
 
 # Create your views here.
 def register(request):
@@ -74,6 +80,103 @@ def algorithms(request):
 def dataAnalysis(request):
     if not request.user.is_authenticated:
         return redirect('/user/login')
+
+    if request.method == 'POST':
+        try:
+            start_date = datetime.strptime(request.POST.get('start_date'), '%Y-%m-%d')
+            end_date = datetime.strptime(request.POST.get('end_date'), '%Y-%m-%d')
+            stock_symbol = request.POST.get('stock_symbol').upper()
+            algorithm = request.POST.get('algorithm')
+            investment = int(request.POST.get('investment'))
+        except:
+            return render(request, "user/data-analysis.html", {"e": "Please input all values"})
+
+        user = CustomUser.objects.filter(id=request.user.id)[0]
+        client = StockHistoricalDataClient(user.api_key, user.secret_key)
+        temp = Strategy(client, investment, 5)
+
+        if algorithm == 'RSI':
+            try:
+                rsi_days = int(request.POST.get('rsi_days'))
+                rsi_over = int(request.POST.get('rsi_over'))
+                rsi_under = int(request.POST.get('rsi_under'))
+            except:
+                return render(request, "user/data-analysis.html", {"e": "Please input all values"})
+            e = temp.test_parameters(start_date, end_date, stock_symbol, algorithm, investment, client, window = rsi_days, rsi_over = rsi_over, rsi_under = rsi_under)
+            if(e != "Valid"):
+                return render(request, "user/data-analysis.html", {"e": e})
+            d = temp.execute_rsi(start_date, end_date, stock_symbol, rsi_days, rsi_over, rsi_under)
+            temp.setVal(investment)
+            control = temp.execute_control(start_date, end_date, stock_symbol)
+            data = json.loads(d.reset_index().to_json(orient = 'records', date_format='iso'))
+            plt = Plot(d, control, client)
+            p = plt.plot_strategy("RSI Strategy")
+            return render(request, "user/data-analysis.html", {"d": data, 'p': p})
+        elif algorithm == 'MA':
+            try:
+                ma_short = int(request.POST.get('ma_short'))
+                ma_long = int(request.POST.get('ma_long'))
+            except:
+                return render(request, "user/data-analysis.html", {"e": "Please input all values"})
+            e = temp.test_parameters(start_date, end_date, stock_symbol, algorithm, investment, client, short = ma_short, long = ma_long)
+            if(e != "Valid"):
+                return render(request, "user/data-analysis.html", {"e": e})
+            d = temp.execute_ma(start_date, end_date, stock_symbol, ma_short, ma_long)
+            temp.setVal(investment)
+            control = temp.execute_control(start_date, end_date, stock_symbol)
+            data = json.loads(d.reset_index().to_json(orient = 'records', date_format='iso'))
+            plt = Plot(d, control, client)
+            p = plt.plot_strategy("Moving Average Strategy")
+            return render(request, "user/data-analysis.html", {"d": data, 'p': p})
+        elif algorithm == 'ATR':
+            try:
+                atr_short = int(request.POST.get('atr_short'))
+                atr_long = int(request.POST.get('atr_long'))
+            except:
+                return render(request, "user/data-analysis.html", {"e": "Please input all values"})
+            e = temp.test_parameters(start_date, end_date, stock_symbol, algorithm, investment, client, short = atr_short, long = atr_long)
+            if(e != "Valid"):
+                return render(request, "user/data-analysis.html", {"e": e})
+            d = temp.execute_atr(start_date, end_date, stock_symbol, atr_short, atr_long)
+            temp.setVal(investment)
+            control = temp.execute_control(start_date, end_date, stock_symbol)
+            data = json.loads(d.reset_index().to_json(orient = 'records', date_format='iso'))
+            plt = Plot(d, control, client)
+            p = plt.plot_strategy("Average True Range Strategy")
+            return render(request, "user/data-analysis.html", {"d": data, 'p': p})
+        elif algorithm == 'FIB':
+            try:
+                fib_short = int(request.POST.get('fib_short'))
+                fib_long = int(request.POST.get('fib_long'))
+            except:
+                return render(request, "user/data-analysis.html", {"e": "Please input all values"})
+            e = temp.test_parameters(start_date, end_date, stock_symbol, algorithm, investment, client, short = fib_short, long = fib_long)
+            if(e != "Valid"):
+                return render(request, "user/data-analysis.html", {"e": e})
+            d = temp.execute_fib(start_date, end_date, stock_symbol, fib_short, fib_long)
+            temp.setVal(investment)
+            control = temp.execute_control(start_date, end_date, stock_symbol)
+            data = json.loads(d.reset_index().to_json(orient = 'records', date_format='iso'))
+            plt = Plot(d, control, client)
+            p = plt.plot_strategy("Fibonacci Strategy")
+            return render(request, "user/data-analysis.html", {"d": data, 'p': p})
+        elif algorithm == 'BB':
+            try:
+                bb_ma_days = int(request.POST.get('bb_ma_days'))
+                bb_num_std = int(request.POST.get('bb_num_std'))
+            except:
+                return render(request, "user/data-analysis.html", {"e": "Please input all values"})
+            e = temp.test_parameters(start_date, end_date, stock_symbol, algorithm, investment, client, window=bb_ma_days, std_dev=bb_num_std)
+            if(e != "Valid"):
+                return render(request, "user/data-analysis.html", {"e": e})
+            d = temp.execute_bb(start_date, end_date, stock_symbol, bb_ma_days, bb_num_std)
+            temp.setVal(investment)
+            control = temp.execute_control(start_date, end_date, stock_symbol)
+            data = json.loads(d.reset_index().to_json(orient = 'records', date_format='iso'))
+            plt = Plot(d, control, client)
+            p = plt.plot_strategy("Fibonacci Strategy")
+            return render(request, "user/data-analysis.html", {"d": data, 'p': p})
+            
     return render(request, "user/data-analysis.html", {})
 
 
@@ -121,37 +224,3 @@ def remove_from_watchlist(request):
         messages.success(request, "Watch list updated!")
 
     return redirect("/user/dashboard")
-
-
-def backtesting(request):
-    if request.method == 'POST':
-        start_date = request.POST.get('start_date')
-        end_date = request.POST.get('end_date')
-        stock_symbol = request.POST.get('stock_symbol')
-        algorithm = request.POST.get('algorithm')
-
-        if algorithm == 'RSI':
-            rsi_days = request.POST.get('rsi_days')
-            rsi_over = request.POST.get('rsi_over')
-            rsi_under = request.POST.get('rsi_under')
-            result = RSI(start_date, end_date, stock_symbol, rsi_days, rsi_over, rsi_under)
-        elif algorithm == 'MA':
-            ma_short = request.POST.get('ma_short')
-            ma_long = request.POST.get('ma_long')
-            result = moving_average(start_date, end_date, stock_symbol, ma_short, ma_long)
-        elif algorithm == 'ATR':
-            atr_short = request.POST.get('atr_short')
-            atr_long = request.POST.get('atr_long')
-            result = ATR(start_date, end_date, stock_symbol, atr_short, atr_long)
-        elif algorithm == 'FIB':
-            fib_short = request.POST.get('fib_short')
-            fib_long = request.POST.get('fib_long')
-            result = FibLevels(start_date, end_date, stock_symbol, fib_short, fib_long)
-        elif algorithm == 'BB':
-            bb_ma_days = request.POST.get('bb_ma_days')
-            bb_num_std = request.POST.get('bb_num_std')
-            result = bollinger_bands(start_date, end_date, stock_symbol, bb_ma_days, bb_num_std)
-
-    return render(request, 'backtesting_results.html', {'result': result})
-
-    return render(request, 'backtesting.html')

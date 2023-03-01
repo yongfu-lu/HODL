@@ -2,10 +2,52 @@
 
 {% block content %}
 
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+
+  <style>
+	.alert {
+  		padding: 5px;
+  		background-color: #f44336; /* Red */
+  		color: white;
+  		margin-bottom: 5px;
+		}
+
+	.closebtn {
+  		margin-left: 15px;
+  		color: white;
+  		font-weight: bold;
+  		float: right;
+  		font-size: 22px;
+  		line-height: 20px;
+  		cursor: pointer;
+  		transition: 0.3s;
+		}
+
+	.closebtn:hover {
+  			color: black;
+			}
+  </style>
+</head>
+
+<body>
 <h1>Stock Backtesting Analysis</h1>
 
 <form method="POST">
   {% csrf_token %}
+
+  {% if e %}
+  <div class="alert">
+    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+    {{e}}
+  </div>
+  {% endif %}
+
   <label for="start_date">Start Date:</label>
   <input type="date" id="start_date" name="start_date" pattern="\d{2}/\d{2}/\d{4}" placeholder="MM/DD/YYYY">
 
@@ -14,6 +56,9 @@
 
   <label for="stock_symbol">Stock Symbol:</label>
   <input type="text" id="stock_symbol" name="stock_symbol">
+
+  <label for="investment">Investment amount:</label>
+  <input type="number" id="investment" name="investment">
 
   <label for="algorithm">Algorithm:</label>
   <select id="algorithm" name="algorithm">
@@ -24,7 +69,7 @@
     <option value="BB">Bollinger Bands</option>
   </select>
 
-  <div id="rsi-fields" style="display:none;">
+  <div id="rsi-fields" style="display:block;">
     <label for="rsi_days">RSI Days:</label>
     <input type="number" id="rsi_days" name="rsi_days">
 
@@ -81,7 +126,7 @@
     algorithmSelect.addEventListener('change', () => {
       const selectedAlgorithm = algorithmSelect.value;
 
-      rsiFields.style.display = 'none';
+      rsiFields.style.display = 'block';
       maFields.style.display = 'none';
       atrFields.style.display = 'none';
       fibFields.style.display = 'none';
@@ -91,17 +136,54 @@
         rsiFields.style.display = 'block';
       } else if (selectedAlgorithm === 'MA') {
         maFields.style.display = 'block';
+	rsiFields.style.display = 'none';
       } else if (selectedAlgorithm === 'ATR') {
         atrFields.style.display = 'block';
+	rsiFields.style.display = 'none';
       } else if (selectedAlgorithm === 'FIB') {
         fibFields.style.display = 'block';
+	rsiFields.style.display = 'none';
       } else if (selectedAlgorithm === 'BB') {
         bbFields.style.display = 'block';
+	rsiFields.style.display = 'none';
       }
     });
   </script>
 </form>
 
+{% if p %}
+{% autoescape off %}
+  {{ p }}
+{% endautoescape %}
+{% endif %}
+
+<div class="container" style="height: 500px; overflow-y:auto;">
+  {% if d %}       
+  <table class="table table-dark table-striped">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Investment</th>
+        <th>Buy/Sell/Hold</th>
+        <th>Current Position</th>
+        <th>Shares</th>
+      </tr>
+    </thead>
+    <tbody> 
+    {% for i in d %}
+      <tr>
+        <td>{{i.date}}</td>
+        <td>{{i.investment}}</td>
+        <td>{{i.buy_sell_hold}}</td>
+        <td>{{i.position}}</td>
+        <td>{{i.shares}}</td>
+      </tr>
+    {% endfor %}
+    {% endif %}
+    </tbody>
+  </table>
+</div>
+
+</body>
+
 {% endblock %}
-
-
