@@ -9,9 +9,13 @@ from .utility import AlpacaAccount
 from .all_US_assets import all_US_assets
 from Backtester.recommendation import Recommendation
 from Backtester.strategy import Strategy
+from Backtester.plotting import Plot
 from alpaca.data.historical import StockHistoricalDataClient
 from datetime import datetime
 import pandas as pd
+
+
+
 
 
 # Create your views here.
@@ -96,6 +100,7 @@ def recommendations(request):
 
     test = Recommendation(trading_client, x, y)
     
+    
     # activated_algorithm = ActivatedAlgorithm.objects.get(user=request.user)
     loss_analysis=[]
     potential = []
@@ -117,8 +122,16 @@ def recommendations(request):
     df['Percent_Difference'] = loss_analysis
     df['potential'] = potential
     df['current'] = current
-    context = {'df': df}
-    return render(request, 'user/recommendations.html', context)
+    
+    d = test.generate_strategy("rsi","AAPL",days=20,over=70,under=30)
+    control = test.generate_strategy("control","AAPL")
+    
+
+    plt = Plot(d, control, trading_client)
+    p = plt.plot_strategy("Strat Name")
+    
+
+    return render(request, 'user/recommendations.html', {'df': df, 'p': p})
 
 
     # data = {

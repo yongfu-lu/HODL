@@ -3,6 +3,12 @@
 {% block content %}
 
   <h2>Recommendations</h2>
+  
+  <!-- {% if p %}
+  {% autoescape off %}
+    {{ p }}
+  {% endautoescape %}
+  {% endif %} -->
 
   {% for index, row in df.iterrows %}
   <div class="card">
@@ -126,7 +132,7 @@
     
       var plotDiv = popupDocument.createElement("div");
       plotDiv.classList.add("graph");
-      plotDiv.innerHTML = "<strong>Plot:</strong> ";
+      plotDiv.innerHTML = "{{ plot_div|safe }}";
       infoDiv.appendChild(plotDiv);
     
       var closeButton = popupDocument.createElement("div");

@@ -358,7 +358,7 @@ class Strategy:
 
             hi_level, lo_level = get_level(price)
 
-        print(ret)
+        
 
         ret = pd.DataFrame({'date': in1, 'investment': in2, 'buy_sell_hold': in3, 'position': in4, 'shares': in5})
         return ret
