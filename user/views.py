@@ -7,7 +7,12 @@ from .models import CustomUser
 from .models import ActivatedAlgorithm
 from .utility import AlpacaAccount
 from .all_US_assets import all_US_assets
+from Backtester.recommendation import Recommendation
+from Backtester.strategy import Strategy
+from alpaca.data.historical import StockHistoricalDataClient
+from datetime import datetime
 import pandas as pd
+
 
 # Create your views here.
 def register(request):
@@ -83,19 +88,38 @@ def recommendations(request):
     if not request.user.is_authenticated:
         return redirect('/user/login')
     
-    # user_algorithms = ActivatedAlgorithm.objects.filter(user=request.user)
-    # context = {'user_algorithms': user_algorithms}
-    # return render(request, 'user/recommendations.html', context)
+    
+    # activated_algorithm = ActivatedAlgorithm.objects.get(user=request.user)
+    activated_algorithm = ActivatedAlgorithm.objects.all()
+    df = pd.DataFrame(list(activated_algorithm.values()))
+    algorithm = activated_algorithm[0].algorithm
+    stock_name = activated_algorithm[0].stock_name
+    investment_amount = activated_algorithm[0].investment_amount
+    short_moving_avg = activated_algorithm[0].short_moving_avg
+    long_moving_avg = activated_algorithm[0].long_moving_avg
+    
+    trading_client = StockHistoricalDataClient('PKV2FZHX6E4RMGFON60X',
+                                           'GMKXVZ3W4MqenB6SbcSKM8h9WnvYBZn0qdZ86E6n')
 
+    x = datetime(2020, 5, 17)
+    y = datetime(2022, 5, 17)
 
-    data = {
-        'Strategy': ['Strategy A', 'Strategy B', 'Strategy C'],
-        'Percent_Difference': ['5%', '10%', '15%'],
-        'Period': ['2/4/23-Present', '1/14/23-Present', '2/21/23-Present']
-    }
-    df = pd.DataFrame(data)
+    test = Recommendation(trading_client, x, y)
+    # df1 = test.generate_analysis(strat_name=algorithm, symbol=stock_name, short=short_moving_avg, long=long_moving_avg)
+    # df1 = test.generate_analysis('atr','APPL', short = 50, long= 100)
+    # df['loss_analysis'] = test.loss_analysis(df1, 5)
     context = {'df': df}
     return render(request, 'user/recommendations.html', context)
+
+
+    # data = {
+    #     'Strategy': ['Strategy A', 'Strategy B', 'Strategy C'],
+    #     'Percent_Difference': ['5%', '10%', '15%'],
+    #     'Period': ['2/4/23-Present', '1/14/23-Present', '2/21/23-Present']
+    # }
+    # df = pd.DataFrame(data)
+    # context = {'df': df}
+    # return render(request, 'user/recommendations.html', context)
     
     
 

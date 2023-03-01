@@ -5,6 +5,21 @@
   <h2>Recommendations</h2>
 
   {% for index, row in df.iterrows %}
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Algorithm: {{ row.algorithm }}</h5>
+      <p class="card-text">Stock Name: {{ row.stock_name }}</p>
+      <!-- <p class="card-text">Investment Amount: {{ row.investment_amount }}</p>
+      <p class="card-text">Short Moving Avg: {{ row.short_moving_avg }}</p>
+      <p class="card-text">Long Moving Avg: {{ row.long_moving_avg }}</p>
+      <p class="card-text">Percent Difference: {{ row.Percent_Difference }}</p> -->
+      <button class="btn btn-primary" onclick="showPopup('{{ row.Period }}', '{{row.investment_amount}}', '{{row.short_moving_avg}}', '{{row.long_moving_avg}}', '{{ row.Current_Earnings }}', '{{ row.Potential_Earnings }}')">See More Details</button>
+
+    </div>
+  </div>
+  {% endfor %}
+
+  <!-- {% for index, row in df.iterrows %}
     <div class="card">
       <div class="card-body">
         <h5 class="card-title">{{ row.Strategy }}</h5>
@@ -13,10 +28,10 @@
 
       </div>
     </div>
-  {% endfor %}
+  {% endfor %} -->
 
   <script>
-    function showPopup(period, currentEarnings, potentialEarnings) {
+    function showPopup(period, investment_amount, short_moving_avg, long_moving_avg, currentEarnings, potentialEarnings) {
       var popup = window.open("", "popup", "width=800,height=600");
       var popupDocument = popup.document;
     
@@ -71,11 +86,36 @@
     
       var infoDiv = popupDocument.createElement("div");
       infoDiv.classList.add("info");
+
+      // investment_amount, short_moving_avg, long_moving_avg,
+
+      var investmentAmountDiv = popupDocument.createElement("div");
+      investmentAmountDiv.classList.add("info");
+
+      var shortDiv = popupDocument.createElement("div");
+      shortDiv.classList.add("info");
+
+      var longDiv = popupDocument.createElement("div");
+      longDiv.classList.add("info");
+      
     
+      var investmentElement = popupDocument.createElement("p");
+      investmentElement.innerHTML = "<strong>Investment:</strong> " + investment_amount;
+      infoDiv.appendChild(investmentElement);
+
+      var shortElement = popupDocument.createElement("p");
+      shortElement.innerHTML = "<strong>Short Moving Average:</strong> " + short_moving_avg;
+      infoDiv.appendChild(shortElement);
+
+      var longElement = popupDocument.createElement("p");
+      longElement.innerHTML = "<strong>Long moving average:</strong> " + long_moving_avg;
+      infoDiv.appendChild(longElement);
+
       var periodElement = popupDocument.createElement("p");
       periodElement.innerHTML = "<strong>Period:</strong> " + period;
       infoDiv.appendChild(periodElement);
     
+
       var currentEarningsElement = popupDocument.createElement("p");
       currentEarningsElement.innerHTML = "<strong>Current Earnings:</strong> " + currentEarnings;
       infoDiv.appendChild(currentEarningsElement);
