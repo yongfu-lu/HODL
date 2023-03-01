@@ -85,3 +85,4 @@ class Plot:
         
         plt_div = plot(fig, output_type='div')
         return(plt_div)
+
