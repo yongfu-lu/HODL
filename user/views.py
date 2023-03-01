@@ -7,11 +7,13 @@ from .models import CustomUser, ActivatedAlgorithm
 from .utility import AlpacaAccount
 from alpaca_trade_api.rest import APIError
 from .all_US_assets import all_US_assets
+from Backtester.recommendation import Recommendation
 from Backtester.strategy import Strategy
 from Backtester.plotting import Plot
-import json
-from datetime import datetime
 from alpaca.data.historical import StockHistoricalDataClient
+from datetime import datetime
+import pandas as pd
+import json
 
 
 # Create your views here.
@@ -230,8 +232,49 @@ def dataAnalysis(request):
 def recommendations(request):
     if not request.user.is_authenticated:
         return redirect('/user/login')
-    return render(request, "user/recommendations.html", {})
+    
+    try:
+        user = CustomUser.objects.filter(id=request.user.id)[0]
+        trading_client = StockHistoricalDataClient(user.api_key, user.secret_key)
+        x = datetime(2020, 5, 17)
+        y = datetime(2022, 5, 17)
+        test = Recommendation(trading_client, x, y)
+    except:
+        return render(request, 'user/recommendations.html', {"e": "Please connect your API key before you utilize recommendations."})
 
+    try:
+        loss_analysis=[]
+        potential = []
+        current = []
+        activated_algorithm = ActivatedAlgorithm.objects.filter(user=request.user)
+    
+        for i in activated_algorithm:
+            l,c,p= test.loss_analysis(i.algorithm,i.stock_name,5, short=int(i.short_moving_avg),long=int(i.long_moving_avg),days=int(i.days_of_moving_avg),
+                                                over=int(i.over_percentage_threshold),under=int(i.under_percentage_threshold),num_std_dev=int(i.standard_deviation))
+            loss_analysis.append(l)
+            potential.append(p)
+            current.append(c)
+        
+        
+
+    #raise ValueError("activated_algorithm " + activated_algorithm[0].stock_name)
+        df = pd.DataFrame(list(activated_algorithm.values()))
+    
+    
+        df['Percent_Difference'] = loss_analysis
+        df['potential'] = potential
+        df['current'] = current
+    
+        d = test.generate_strategy("rsi","AAPL",days=20,over=70,under=30)
+        control = test.generate_strategy("control","AAPL")
+    
+
+        plt = Plot(d, control, trading_client)
+        p = plt.plot_strategy("Strat Name")
+        return render(request, 'user/recommendations.html', {'df': df, 'p': p})
+    
+    except:
+        return render(request, "user/recommendations.html" , {"e": "Error. please try again."})
 
 def userAPI(request):
     if not request.user.is_authenticated:
