@@ -88,16 +88,6 @@ def recommendations(request):
     if not request.user.is_authenticated:
         return redirect('/user/login')
     
-    
-    # activated_algorithm = ActivatedAlgorithm.objects.get(user=request.user)
-    activated_algorithm = ActivatedAlgorithm.objects.all()
-    df = pd.DataFrame(list(activated_algorithm.values()))
-    algorithm = activated_algorithm[0].algorithm
-    stock_name = activated_algorithm[0].stock_name
-    investment_amount = activated_algorithm[0].investment_amount
-    short_moving_avg = activated_algorithm[0].short_moving_avg
-    long_moving_avg = activated_algorithm[0].long_moving_avg
-    
     trading_client = StockHistoricalDataClient('PKV2FZHX6E4RMGFON60X',
                                            'GMKXVZ3W4MqenB6SbcSKM8h9WnvYBZn0qdZ86E6n')
 
@@ -105,9 +95,28 @@ def recommendations(request):
     y = datetime(2022, 5, 17)
 
     test = Recommendation(trading_client, x, y)
-    # df1 = test.generate_analysis(strat_name=algorithm, symbol=stock_name, short=short_moving_avg, long=long_moving_avg)
-    # df1 = test.generate_analysis('atr','APPL', short = 50, long= 100)
-    # df['loss_analysis'] = test.loss_analysis(df1, 5)
+    
+    # activated_algorithm = ActivatedAlgorithm.objects.get(user=request.user)
+    loss_analysis=[]
+    potential = []
+    current = []
+    activated_algorithm = ActivatedAlgorithm.objects.all()
+    for i in activated_algorithm:
+        l,c,p= test.loss_analysis(i.algorithm,i.stock_name,5, short=int(i.short_moving_avg),long=int(i.long_moving_avg),days=int(i.days_of_moving_avg),
+                                                over=int(i.over_percentage_threshold),under=int(i.under_percentage_threshold),num_std_dev=int(i.standard_deviation))
+        loss_analysis.append(l)
+        potential.append(p)
+        current.append(c)
+        
+        
+
+    #raise ValueError("activated_algorithm " + activated_algorithm[0].stock_name)
+    df = pd.DataFrame(list(activated_algorithm.values()))
+    
+    
+    df['Percent_Difference'] = loss_analysis
+    df['potential'] = potential
+    df['current'] = current
     context = {'df': df}
     return render(request, 'user/recommendations.html', context)
 

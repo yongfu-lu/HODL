@@ -11,9 +11,9 @@
       <p class="card-text">Stock Name: {{ row.stock_name }}</p>
       <!-- <p class="card-text">Investment Amount: {{ row.investment_amount }}</p>
       <p class="card-text">Short Moving Avg: {{ row.short_moving_avg }}</p>
-      <p class="card-text">Long Moving Avg: {{ row.long_moving_avg }}</p>
-      <p class="card-text">Percent Difference: {{ row.Percent_Difference }}</p> -->
-      <button class="btn btn-primary" onclick="showPopup('{{ row.Period }}', '{{row.investment_amount}}', '{{row.short_moving_avg}}', '{{row.long_moving_avg}}', '{{ row.Current_Earnings }}', '{{ row.Potential_Earnings }}')">See More Details</button>
+      <p class="card-text">Long Moving Avg: {{ row.long_moving_avg }}</p> -->
+      <p class="card-text">Percent Difference: {{ row.Percent_Difference }}</p>
+      <button class="btn btn-primary" onclick="showPopup('{{ row.Period }}', '{{row.investment_amount}}', '{{row.short_moving_avg}}', '{{row.long_moving_avg}}', '{{ row.current }}', '{{ row.potential }}')">See More Details</button>
 
     </div>
   </div>
@@ -31,7 +31,7 @@
   {% endfor %} -->
 
   <script>
-    function showPopup(period, investment_amount, short_moving_avg, long_moving_avg, currentEarnings, potentialEarnings) {
+    function showPopup(period, investment_amount, short_moving_avg, long_moving_avg, current, potential) {
       var popup = window.open("", "popup", "width=800,height=600");
       var popupDocument = popup.document;
     
@@ -117,11 +117,11 @@
     
 
       var currentEarningsElement = popupDocument.createElement("p");
-      currentEarningsElement.innerHTML = "<strong>Current Earnings:</strong> " + currentEarnings;
+      currentEarningsElement.innerHTML = "<strong>Current Earnings:</strong> " + current;
       infoDiv.appendChild(currentEarningsElement);
     
       var potentialEarningsElement = popupDocument.createElement("p");
-      potentialEarningsElement.innerHTML = "<strong>Potential Earnings:</strong> " + potentialEarnings;
+      potentialEarningsElement.innerHTML = "<strong>Potential Earnings:</strong> " + potential;
       infoDiv.appendChild(potentialEarningsElement);
     
       var plotDiv = popupDocument.createElement("div");

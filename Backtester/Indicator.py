@@ -1,7 +1,7 @@
 from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockBarsRequest
 from alpaca.data.timeframe import TimeFrame
-from datetime import datetime
+from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
@@ -12,21 +12,27 @@ class Indicator:
 
     def moving_average(self, s, e, ma_days):
         # Get historical data for the symbol
+        modS = s - timedelta(days = ma_days*2)
         request_params = StockBarsRequest(symbol_or_symbols=[self.symbol],
                                           timeframe = TimeFrame.Day,
-                                          start = s,
+                                          start = modS,
                                           end = e,
                                           adjustment='all')
         bars = self.api.get_stock_bars(request_params)
         data = bars.df['close'].rolling(window=ma_days).mean()
         data = data.rename('moving average')
         df = data.to_frame()
+        df = df.reset_index()
+        del df["symbol"]
+        df = df.set_index('timestamp')
+        df = df.truncate(before=pd.Timestamp(s, tz='US/Pacific'))
         return df
 
     def bollinger_bands(self, s, e, ma_days, num_std_devs):
+        modS = s - timedelta(days = ma_days*2)
         request_params = StockBarsRequest(symbol_or_symbols=[self.symbol],
                                           timeframe = TimeFrame.Day,
-                                          start = s,
+                                          start = modS,
                                           end = e,
                                           adjustment='all')
         bars = self.api.get_stock_bars(request_params)
@@ -39,13 +45,18 @@ class Indicator:
         upper = upper.rename('upper band')
         lower = lower.rename('lower band')
         df = pd.concat([upper,lower], axis = 1)
+        df = df.reset_index()
+        del df["symbol"]
+        df = df.set_index('timestamp')
+        df = df.truncate(before=pd.Timestamp(s, tz='US/Pacific'))
         return (df)
 
     def RSI(self, s, e, days):
         # Get historical data for the symbol
+        modS = s - timedelta(days = days*2)
         request_params = StockBarsRequest(symbol_or_symbols=[self.symbol],
                                           timeframe = TimeFrame.Day,
-                                          start = s,
+                                          start = modS,
                                           end = e,
                                           adjustment='all')
         bars = self.api.get_stock_bars(request_params)
@@ -62,14 +73,18 @@ class Indicator:
         RSI = 100 - (100/(1+rs))
         RSI = RSI.rename('RSI')
         df = RSI.to_frame()
-
+        df = df.reset_index()
+        del df["symbol"]
+        df = df.set_index('timestamp')
+        df = df.truncate(before=pd.Timestamp(s, tz='US/Pacific'))
         return df
 
     def ATR(self, s, e, days):
         # Get historical data for the symbol
+        modS = s - timedelta(days = days*2)
         request_params = StockBarsRequest(symbol_or_symbols=[self.symbol],
                                           timeframe = TimeFrame.Day,
-                                          start = s,
+                                          start = modS,
                                           end = e,
                                           adjustment='all')
         bars = self.api.get_stock_bars(request_params)
@@ -84,7 +99,10 @@ class Indicator:
         ATR = true_range.rolling(window=days).mean() # standard number of periods is 14
         ATR = ATR.rename('ATR')
         df = ATR.to_frame()
-
+        df = df.reset_index()
+        del df["symbol"]
+        df = df.set_index('timestamp')
+        df = df.truncate(before=pd.Timestamp(s, tz='US/Pacific'))
         return df
 
     def FibLevels(self, s , e):

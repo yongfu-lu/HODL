@@ -1,8 +1,10 @@
 from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockBarsRequest
 from alpaca.data.timeframe import TimeFrame
+from alpaca.trading.client import TradingClient
+from alpaca.trading.requests import GetAssetsRequest
+from alpaca.trading.enums import AssetClass,  AssetStatus
 from datetime import datetime
-#import Indicator as ind
 from .Indicator import Indicator
 import pandas as pd
 import numpy as np
@@ -20,6 +22,10 @@ class Strategy:
                                           end = end,
                                           adjustment='all')
         bars = self.client.get_stock_bars(request_params).df
+        bars = bars.reset_index()
+        del bars["symbol"]
+        bars = bars.set_index('timestamp')
+        bars = bars.truncate(before=pd.Timestamp(start, tz='US/Pacific'))
 
         in1, in2, in3, in4, in5 = [], [], [], [], []
         shares = self.investment / bars['close'][0]
@@ -27,7 +33,7 @@ class Strategy:
         prevpos = 'cash'
         
         for index, row in bars.iterrows():
-            in1.append(index[1].date())
+            in1.append(index.date())
             in2.append(row['close'] * shares)
             in3.append(0)
             in4.append('long')
@@ -52,8 +58,13 @@ class Strategy:
                                           end = end,
                                           adjustment='all')
 
-        bars = self.client.get_stock_bars(request_params)
-        data = bars.df['close']
+        bars = self.client.get_stock_bars(request_params).df
+        bars = bars.reset_index()
+        del bars["symbol"]
+        bars = bars.set_index('timestamp')
+        bars = bars.truncate(before=pd.Timestamp(start, tz='US/Pacific'))
+
+        data = bars['close']
         df = pd.concat([ma_short, ma_long, data], axis=1)
         in1, in2, in3, in4, in5 = [], [], [], [], []
         shares = 0
@@ -72,10 +83,10 @@ class Strategy:
             else:
                 prevpos = position
             if position == 'long':
-                in1.append(index[1].date())
+                in1.append(index.date())
                 in2.append((row['close'] * shares))
             else:
-                in1.append(index[1].date())
+                in1.append(index.date())
                 in2.append(self.investment)
 
             if(prevpos == position):
@@ -98,6 +109,11 @@ class Strategy:
                                           end = end,
                                           adjustment='all')
         bars = self.client.get_stock_bars(request_params).df
+        bars = bars.reset_index()
+        del bars["symbol"]
+        bars = bars.set_index('timestamp')
+        bars = bars.truncate(before=pd.Timestamp(start, tz='US/Pacific'))
+        
         res = Indicator(self.client, symbol)
         rsi = res.RSI(start, end, days)
         signals = pd.DataFrame()
@@ -108,7 +124,7 @@ class Strategy:
 
         in1 = []
         for index, row in bars.iterrows():
-            in1.append(index[1].date())
+            in1.append(index.date())
         
         positions = signals.signal.values.tolist()
         shares = 0
@@ -150,6 +166,11 @@ class Strategy:
                                           end = end,
                                           adjustment='all')
         bars = self.client.get_stock_bars(request_params).df
+        bars = bars.reset_index()
+        del bars["symbol"]
+        bars = bars.set_index('timestamp')
+        bars = bars.truncate(before=pd.Timestamp(start, tz='US/Pacific'))
+        
         bb = Indicator(self.client, symbol)
         bands = bb.bollinger_bands(start, end, ma_days, num_std_devs)
         signals = pd.DataFrame()
@@ -157,7 +178,7 @@ class Strategy:
         signals['signal'] = 0.0
         in1 = []
         for index, row in bars.iterrows():
-            in1.append(index[1].date())
+            in1.append(index.date())
 
         signals['signal'][ma_days:] = np.where(bars['close'][ma_days:] > bands['upper band'][ma_days:], -1.0, 0.0)
         signals['signal'][ma_days:] = np.where(bars['close'][ma_days:] < bands['lower band'][ma_days:], 1.0, signals['signal'][ma_days:])
@@ -213,8 +234,13 @@ class Strategy:
                                           end = end,
                                           adjustment = 'all')
 
-        bars = self.client.get_stock_bars(request_params)
-        data = bars.df['close']
+        bars = self.client.get_stock_bars(request_params).df
+        bars = bars.reset_index()
+        del bars["symbol"]
+        bars = bars.set_index('timestamp')
+        bars = bars.truncate(before=pd.Timestamp(start, tz='US/Pacific'))
+        
+        data = bars['close']
 
         df = pd.concat([atr_short, atr_long, data], axis=1)
         in1, in2, in3, in4, in5 = [], [], [], [], []
@@ -235,10 +261,10 @@ class Strategy:
             else:
                 prevpos = position
             if position == 'long':
-                in1.append(index[1].date())
+                in1.append(index.date())
                 in2.append((row['close'] * shares))
             else:
-                in1.append(index[1].date())
+                in1.append(index.date())
                 in2.append(self.investment)
             if(prevpos == position):
                 in3.append(0)
@@ -278,8 +304,9 @@ class Strategy:
                                           end = end,
                                           adjustment = 'all')
 
-        bars = self.client.get_stock_bars(request_params)
-        data = bars.df['close']
+        bars = self.client.get_stock_bars(request_params).df
+        
+        data = bars['close']
         df2 = data.to_frame()
 
         df = pd.concat([fib_signals, data], axis=1)
@@ -331,25 +358,54 @@ class Strategy:
 
             hi_level, lo_level = get_level(price)
 
+        print(ret)
+
         ret = pd.DataFrame({'date': in1, 'investment': in2, 'buy_sell_hold': in3, 'position': in4, 'shares': in5})
         return ret
 
     def getVal(self):
         return self.investment
 
-trading_client = StockHistoricalDataClient('PKV2FZHX6E4RMGFON60X',
-                                           'GMKXVZ3W4MqenB6SbcSKM8h9WnvYBZn0qdZ86E6n')
+    def setVal(self, amount):
+        self.investment = amount
 
-x = datetime(2020, 5, 17)
-y = datetime(2022, 5, 17)
+    def test_parameters(self, s, e, symbol, algorithm, investment, client, window = 0, rsi_over = 0, rsi_under = 0, short = 0, long = 0, std_dev = 0):
+        if(investment <= 0):
+            return ("Investment must be positive.")
+        if(datetime.now() < s):
+            return ("Start date must be before the current day.")
+        if(datetime.now() < e):
+            return ("End date must be before the current day.")
+        if(e < s):
+            return ("End date must be chronologically after start date.")
+        if(algorithm == 'RSI'):
+            if(window <= 1):
+                return ("The moving average window must be greater than 1.")
+            if(rsi_over > 100 or rsi_over < 0):
+                return ("RSI over and under must be between 0 to 100")
+            if(rsi_under > 100 or rsi_under < 0):
+                return ("RSI over and under must be between 0 to 100")
+            if(rsi_under > rsi_over or rsi_under==rsi_over):
+                return ("RSI over must be greater than RSI under.")
+        if(algorithm == 'MA' or algorithm == 'ATR' or algorithm == 'FIB'):
+            if(short <= 0 or long <= 0):
+                return ("Short and long periods must be greater than 0")
+            if(short > long):
+                return ("Long period must be greater than short period.")
+        if(algorithm == 'BB'):
+            if(window <= 1):
+                return ("The moving average window must be greater than 1.")
+            if(std_dev <= 0):
+                return ("Standard deviation must be greater than 0.")
 
-test = Strategy(trading_client, 10000, 5)
-#print(test.execute_control(x, y, "AAPL").to_string())
-#print(test.execute_atr(x, y, "AAPL", 50, 100).to_string())
-#print(test.execute_fib(x, y, "AAPL", 50, 100).to_string())
-#print(test.execute_bb(x, y, "AAPL", 50, 2).to_string())
-#print(test.execute_ma(x, y, "AAPL", 50, 100).to_string())
-#print(test.execute_rsi(x, y, "AAPL", 20, 70, 30).to_string())
+        try:
+            request_params = StockBarsRequest(symbol_or_symbols=[symbol],
+                                          timeframe = TimeFrame.Day,
+                                          start = s,
+                                          end = e,
+                                          adjustment = 'all')
+            bars = client.get_stock_bars(request_params).df
+        except:
+            return ("Please input a correct ticker symbol.")
 
-
-
+        return("Valid")

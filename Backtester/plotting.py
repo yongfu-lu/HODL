@@ -1,17 +1,18 @@
 from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockBarsRequest
 from alpaca.data.timeframe import TimeFrame
-import matplotlib.pyplot as plt
-import matplotlib.lines as mlines
+from plotly.offline import plot
+from plotly.graph_objs import Scatter
 import plotly.graph_objects as go
+import plotly.express as px
 import pandas as pd
 import numpy as np
-import strategy as strat
 from datetime import datetime
 
 class Plot:
-    def __init__(self, inputs, client):
+    def __init__(self, inputs, control, client):
         self.inputs = inputs
+        self.control = control
         self.client = client
 
     def candlestick_plot(self, symbol, start, end):
@@ -50,27 +51,37 @@ class Plot:
         fig.show()
     
     def plot_strategy(self, title):
-        plt.scatter(self.inputs['date'][self.inputs.buy_sell_hold == -1.0], self.inputs['investment'][self.inputs.buy_sell_hold == -1.0], c='r', marker="v")
-        plt.scatter(self.inputs['date'][self.inputs.buy_sell_hold == 1.0], self.inputs['investment'][self.inputs.buy_sell_hold == 1.0], c='g', marker="^")
-        plt.plot(self.inputs['date'], self.inputs['investment'])
-        plt.xlabel('Date')
-        plt.ylabel('Investment')
-        plt.title(title)
-        buy = mlines.Line2D([], [], color='r', marker='v', linestyle='None', markersize=5, label='Sell marker')
-        sell = mlines.Line2D([], [], color='g', marker='^', linestyle='None', markersize=5, label='Buy marker')
-        plt.legend(handles=[buy, sell])
-        plt.show()
+        pd.options.plotting.backend = "plotly"
         
-trading_client = StockHistoricalDataClient('PKV2FZHX6E4RMGFON60X',
-                                           'GMKXVZ3W4MqenB6SbcSKM8h9WnvYBZn0qdZ86E6n')
 
-x = datetime(2020, 5, 17)
-y = datetime(2022, 5, 17)
+        fig = px.line(self.inputs, x=self.inputs['date'], y=self.inputs['investment'])
 
-test = strat.Strategy(trading_client, 10000, 5)
-data = test.execute_ma(x, y, "AAPL", 50, 100)
-ptest = Plot(data, trading_client)
-ptest.plot_strategy("strategy 1")
+        fig.add_trace(go.Scatter(x=self.control['date'],
+                                 y=self.control['investment'],
+                                 mode='lines',
+                                 name='Control',
+                                 line=dict(color="#FF9912",
+                                           dash="dot")))
+        
+        fig.add_trace(go.Scatter(x=self.inputs['date'][self.inputs.buy_sell_hold == -1.0],
+                                 y=self.inputs['investment'][self.inputs.buy_sell_hold == -1.0],
+                                 mode='markers',
+                                 marker=dict(
+                                     symbol="triangle-down",
+                                     size=10,
+                                     color="indianred",
+                                     ),
+                                 name='Sell'))
 
-#ptest.plot_strategy("50/100 Moving Average")
-#ptest.candlestick_plot("AAPL", x, y)
+        fig.add_trace(go.Scatter(x=self.inputs['date'][self.inputs.buy_sell_hold == 1.0],
+                                 y=self.inputs['investment'][self.inputs.buy_sell_hold == 1.0],
+                                 mode='markers',
+                                 marker=dict(
+                                     symbol="triangle-up",
+                                     size=10,
+                                     color="forestgreen",
+                                     ),
+                                 name='Buy'))
+        
+        plt_div = plot(fig, output_type='div')
+        return(plt_div)
