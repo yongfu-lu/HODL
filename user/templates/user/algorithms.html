@@ -14,12 +14,12 @@
             <label for="stock-symbol">Stock Symbol:</label>
             <input type="text" name="stock-symbol" id="stock-symbol" required value={% if MA|length != 0 %} {{MA.0.stock_name}}  {%endif%} >
             <label for="amount">Investment amount:</label>
-            <input type="number" name="amount" id="amount" required value={% if MA|length != 0 %} {{MA.0.investment_amount}}  {%endif%}>
+            <input type="number" min="0" step="0.01" name="amount" id="amount" required value={% if MA|length != 0 %} {{MA.0.investment_amount}}  {%endif%}>
             <br>
             <label for="short-moving-avg">Short Moving Average:</label>
-            <input type="number" name="short-moving-avg" id="short-moving-avg" required  value={% if MA|length != 0 %} {{MA.0.short_moving_avg}}  {%endif%}>
+            <input type="number" min="1" name="short-moving-avg" step="1" id="short-moving-avg" required  value={% if MA|length != 0 %} {{MA.0.short_moving_avg}}  {%endif%}>
             <label for="long-moving-avg">Long Moving Average:</label>
-            <input type="number" name="long-moving-avg" id="long-moving-avg" required  value={% if MA|length != 0 %} {{MA.0.long_moving_avg}}  {%endif%}>
+            <input type="number" min="1" name="long-moving-avg" step="1" id="long-moving-avg" required  value={% if MA|length != 0 %} {{MA.0.long_moving_avg}}  {%endif%}>
             <br>
             <button type="submit" class="btn btn-primary" name="submit-button" value="activate"> Activate</button>
         </form>
@@ -43,14 +43,14 @@
             <label for="stock-symbol-2">Stock Symbol:</label>
             <input type="text" name="stock-symbol" id="stock-symbol-2" required value={% if RSI|length != 0 %} {{RSI.0.stock_name}}  {%endif%}>
             <label for="amount">Investment amount:</label>
-            <input type="number" name="amount" id="amount-2" required value={% if RSI|length != 0 %} {{RSI.0.investment_amount}}  {%endif%}>
+            <input type="number" min="0" step="0.01" name="amount" id="amount-2" required value={% if RSI|length != 0 %} {{RSI.0.investment_amount}}  {%endif%}>
             <label for="days-of-moving-avg-2">Days of Moving Avg:</label>
-            <input name="days-of-moving-avg" id="days-of-moving-avg-2" required value={% if RSI|length != 0 %} {{RSI.0.days_of_moving_avg}}  {%endif%}>
+            <input type="number" min="1" step="1" name="days-of-moving-avg" id="days-of-moving-avg-2" required value={% if RSI|length != 0 %} {{RSI.0.days_of_moving_avg}}  {%endif%}>
             <br>
             <label for="over-percentage-threshold-2">Over Percentage Threshold:</label>
-            <input type="number" name="over-percentage-threshold" id="over-percentage-threshold-2" required value={% if RSI|length != 0 %} {{RSI.0.over_percentage_threshold}}  {%endif%}>
+            <input type="number" min="1" step="0.01" name="over-percentage-threshold" id="over-percentage-threshold-2" required value={% if RSI|length != 0 %} {{RSI.0.over_percentage_threshold}}  {%endif%}>
             <label for="under-percentage-threshold-2">Under Percentage Threshold:</label>
-            <input type="number" name="under-percentage-threshold" id="under-percentage-threshold-2" required value={% if RSI|length != 0 %} {{RSI.0.under_percentage_threshold}}  {%endif%}>
+            <input type="number" min="1" step="0.01" name="under-percentage-threshold" id="under-percentage-threshold-2" required value={% if RSI|length != 0 %} {{RSI.0.under_percentage_threshold}}  {%endif%}>
             <br>
             <button type="submit" class="btn btn-primary" name="submit-button" value="activate"> Activate</button>
         </form>
@@ -74,12 +74,12 @@
             <label for="stock-symbol-3">Stock Symbol:</label>
             <input type="text" name="stock-symbol" id="stock-symbol-3" required value={% if ATR|length != 0 %} {{ATR.0.stock_name}}  {%endif%}>
             <label for="amount-3">Investment amount:</label>
-            <input type="number" name="amount" id="amount-3" required value={% if ATR|length != 0 %} {{ATR.0.investment_amount}}  {%endif%}>
+            <input type="number" min="0" step="0.01" name="amount" id="amount-3" required value={% if ATR|length != 0 %} {{ATR.0.investment_amount}}  {%endif%}>
             <br>
             <label for="short-moving-avg-3">Short Moving Average:</label>
-            <input type="number" name="short-moving-avg" id="short-moving-avg-3" required value={% if ATR|length != 0 %} {{ATR.0.short_moving_avg}}  {%endif%}>
+            <input type="number" min="1" step="1" name="short-moving-avg" id="short-moving-avg-3" required value={% if ATR|length != 0 %} {{ATR.0.short_moving_avg}}  {%endif%}>
             <label for="long-moving-avg-3">Long Moving Average:</label>
-            <input type="number" name="long-moving-avg" id="long-moving-avg-3" required value={% if ATR|length != 0 %} {{ATR.0.long_moving_avg}}  {%endif%}>
+            <input type="number" min="1" step="1" name="long-moving-avg" id="long-moving-avg-3" required value={% if ATR|length != 0 %} {{ATR.0.long_moving_avg}}  {%endif%}>
             <br>
             <button type="submit" class="btn btn-primary" name="submit-button" value="activate"> Activate</button>
         </form>
@@ -103,12 +103,12 @@
             <label for="stock-symbol-4">Stock Symbol:</label>
             <input type="text" name="stock-symbol" id="stock-symbol-4" required value={% if FIB|length != 0 %} {{FIB.0.stock_name}}  {%endif%}>
             <label for="amount-4">Investment amount:</label>
-            <input type="number" name="amount" id="amount-4" required value={% if FIB|length != 0 %} {{FIB.0.investment_amount}}  {%endif%}>
+            <input type="number" min="0" step="0.01" name="amount" id="amount-4" required value={% if FIB|length != 0 %} {{FIB.0.investment_amount}}  {%endif%}>
             <br>
             <label for="short-moving-avg-4">Short Moving Average:</label>
-            <input type="number" name="short-moving-avg" id="short-moving-avg-4" required value={% if FIB|length != 0 %} {{FIB.0.short_moving_avg}}  {%endif%}>
+            <input type="number" min="1" step="1" name="short-moving-avg" id="short-moving-avg-4" required value={% if FIB|length != 0 %} {{FIB.0.short_moving_avg}}  {%endif%}>
             <label for="long-moving-avg-4">Long Moving Average:</label>
-            <input type="number" name="long-moving-avg" id="long-moving-avg-4" required value={% if FIB|length != 0 %} {{FIB.0.long_moving_avg}}  {%endif%}>
+            <input type="number" min="1" step="1" name="long-moving-avg" id="long-moving-avg-4" required value={% if FIB|length != 0 %} {{FIB.0.long_moving_avg}}  {%endif%}>
             <br>
             <button type="submit" class="btn btn-primary" name="submit-button" value="activate"> Activate</button>
         </form>
@@ -132,12 +132,12 @@
             <label for="stock-symbol-5">Stock Symbol:</label>
             <input type="text" name="stock-symbol" id="stock-symbol-5" required value={% if BB|length != 0 %} {{BB.0.stock_name}}  {%endif%}>
             <label for="amount-5">Investment amount:</label>
-            <input type="number" name="amount" id="amount-5" required value={% if BB|length != 0 %} {{BB.0.investment_amount}}  {%endif%}>
+            <input type="number" min="0" step="0.01" name="amount" id="amount-5" required value={% if BB|length != 0 %} {{BB.0.investment_amount}}  {%endif%}>
             <br>
             <label for="days-of-moving-avg-5">Days of Moving Avg:</label>
-            <input name="days-of-moving-avg" id="days-of-moving-avg-5" required value={% if BB|length != 0 %} {{BB.0.days_of_moving_avg}}  {%endif%}>
+            <input type="number" min="1" step="1" name="days-of-moving-avg" id="days-of-moving-avg-5" required value={% if BB|length != 0 %} {{BB.0.days_of_moving_avg}}  {%endif%}>
             <label for="standard-deviation-5">Standard Deviation:</label>
-            <input name="standard-deviation" id="standard-deviation-5" required value={% if BB|length != 0 %} {{BB.0.standard_deviation}}  {%endif%}>
+            <input type="number" min="1" step="0.01" name="standard-deviation" id="standard-deviation-5" required value={% if BB|length != 0 %} {{BB.0.standard_deviation}}  {%endif%}>
             <br>
             <button type="submit" class="btn btn-primary" name="submit-button" value="activate"> Activate</button>
         </form>
