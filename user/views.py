@@ -91,9 +91,12 @@ def dataAnalysis(request):
         except:
             return render(request, "user/data-analysis.html", {"e": "Please input all values"})
 
-        user = CustomUser.objects.filter(id=request.user.id)[0]
-        client = StockHistoricalDataClient(user.api_key, user.secret_key)
-        temp = Strategy(client, investment, 5)
+        try:
+            user = CustomUser.objects.filter(id=request.user.id)[0]
+            client = StockHistoricalDataClient(user.api_key, user.secret_key)
+            temp = Strategy(client, investment, 5)
+        except:
+            return render(request, "user/data-analysis.html", {"e": "Please connect your API key before you utilize data analysis."})
 
         if algorithm == 'RSI':
             try:
