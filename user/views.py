@@ -74,8 +74,8 @@ def algorithms(request):
 
     if request.method == 'POST':
         if request.POST['submit-button'] == 'activate':
-            obj, created = ActivatedAlgorithm.objects.get_or_create(user=request.user, algorithm=request.POST['algorithm'],
-                                                                    defaults={'stock_name': request.POST['stock-symbol'],
+            obj, created = ActivatedAlgorithm.objects.get_or_create(user=request.user, algorithm=request.POST['algorithm'], stock_name=request.POST['stock-symbol'],
+                                                                    defaults={
                                                                               'investment_amount':  request.POST['amount'],
                                                                               'short_moving_avg': request.POST['short-moving-avg'],
                                                                               'long_moving_avg': request.POST['long-moving-avg'],
@@ -84,10 +84,9 @@ def algorithms(request):
                                                                               'under_percentage_threshold': request.POST['under-percentage-threshold'],
                                                                               'standard_deviation': request.POST['standard-deviation']})
             if not created:
-                obj.investment_amount =  request.POST['amount']
+                obj.investment_amount = request.POST['amount']
                 obj.short_moving_avg = request.POST['short-moving-avg']
                 obj.long_moving_avg = request.POST['long-moving-avg']
-                obj.stock_name = request.POST['stock-symbol']
                 obj.days_of_moving_avg = request.POST['days-of-moving-avg']
                 obj.over_percentage_threshold = request.POST['over-percentage-threshold']
                 obj.under_percentage_threshold = request.POST['under-percentage-threshold']
@@ -96,7 +95,7 @@ def algorithms(request):
                 obj.save()
         elif request.POST['submit-button'] == 'deactivate':
             try:
-                obj = ActivatedAlgorithm.objects.get(user=request.user, algorithm=request.POST['algorithm'])
+                obj = ActivatedAlgorithm.objects.get(id=request.POST['id'])
             except:
                 obj = None
             if obj:
@@ -109,7 +108,7 @@ def algorithms(request):
         'ATR': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='average-true-range'),
         'RSI': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='relative-strength-indicator'),
         'FIB': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='MACD-with-fibonacci-levels'),
-        'BB': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='billinger-bands'),
+        'BB': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='bollinger-bands'),
     }
 
     return render(request, "user/algorithms.html", context)
