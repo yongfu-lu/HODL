@@ -249,29 +249,23 @@ def recommendations(request):
         activated_algorithm = ActivatedAlgorithm.objects.filter(user=request.user)
     
         for i in activated_algorithm:
-            l,c,p= test.loss_analysis(i.algorithm,i.stock_name,5, short=int(i.short_moving_avg),long=int(i.long_moving_avg),days=int(i.days_of_moving_avg),
-                                                over=int(i.over_percentage_threshold),under=int(i.under_percentage_threshold),num_std_dev=int(i.standard_deviation))
+            try:
+                l,c,p= test.generate_analysis(i.algorithm,i.stock_name, short=int(i.short_moving_avg),long=int(i.long_moving_avg),days=int(i.days_of_moving_avg),
+                                                    over=int(i.over_percentage_threshold),under=int(i.under_percentage_threshold),num_std_dev=int(i.standard_deviation))
+            except:
+                l=c=p= -1
             loss_analysis.append(l)
             potential.append(p)
             current.append(c)
-        
-        
 
-    #raise ValueError("activated_algorithm " + activated_algorithm[0].stock_name)
-        df = pd.DataFrame(list(activated_algorithm.values()))
-    
-    
+        df = pd.DataFrame(list(activated_algorithm.values()))    
         df['Percent_Difference'] = loss_analysis
         df['potential'] = potential
         df['current'] = current
-    
-        d = test.generate_strategy("rsi","AAPL",days=20,over=70,under=30)
-        control = test.generate_strategy("control","AAPL")
-    
 
-        plt = Plot(d, control, trading_client)
-        p = plt.plot_strategy("Strat Name")
-        return render(request, 'user/recommendations.html', {'df': df, 'p': p})
+        #plt = Plot(d, control, trading_client)
+        #p = plt.plot_strategy("Strat Name")
+        return render(request, 'user/recommendations.html', {'df': df})
     
     except:
         return render(request, "user/recommendations.html" , {"e": "Error. please try again."})
