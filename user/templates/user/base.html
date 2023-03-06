@@ -78,5 +78,14 @@
         }, 3000);
     });
 </script>
-
+<script>
+  $(document).ready(function () {
+    $('a.nav-link').each(function () {
+      if ($(this).prop('href') + '/' == window.location.href) {
+          console.log('same url')
+        $(this).addClass('active');
+      }
+    });
+  });
+</script>
 </html>
