@@ -77,6 +77,10 @@ def algorithms(request):
         if request.POST['submit-button'] == 'activate':
             if request.POST['stock-symbol'] not in all_tradable_stocks:
                 messages.warning(request, "The stock you just entered is not found")
+            elif request.POST['over-percentage-threshold'] < request.POST['under-percentage-threshold']:
+                messages.warning(request, "Over percentage threshold must be greater than under percentage threshold")
+            elif request.POST['short-moving-avg'] > request.POST['long-moving-avg']:
+                messages.warning(request, "Short moving average must be smaller then long moving average")
             else:
                 obj, created = ActivatedAlgorithm.objects.get_or_create(user=request.user, algorithm=request.POST['algorithm'], stock_name=request.POST['stock-symbol'],
                                                                         defaults={
@@ -97,6 +101,7 @@ def algorithms(request):
                     obj.standard_deviation = request.POST['standard-deviation']
                     obj.shares = 0
                     obj.save()
+                messages.success(request, "You've successfully applied the strategy to stock")
         elif request.POST['submit-button'] == 'deactivate':
             try:
                 obj = ActivatedAlgorithm.objects.get(id=request.POST['id'])
@@ -104,8 +109,9 @@ def algorithms(request):
                 obj = None
             if obj:
                 obj.delete()
+                messages.success(request, "You've successfully de-activate strategy to your stock.")
 
-    ActivatedAlgorithm.objects.filter(user=request.user, algorithm='average-true-range')
+    #ActivatedAlgorithm.objects.filter(user=request.user, algorithm='average-true-range')
 
     context = {
         'MA': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='moving-average'),
