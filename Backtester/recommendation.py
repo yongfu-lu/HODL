@@ -12,12 +12,14 @@ class Recommendation:
         self.end_date = end_date
         self.investment = investment
         self.Strategy = Strategy(client, investment, commission)
+        self.data = None
     
     def generate_strategy(self, strat_name, symbol, **kwargs):
         strategy_output = None
         # Add strategies here as developed.
         try:
             self.Strategy.setVal(self.investment)
+            self.strategy_df = None
             if strat_name == "control":
                 strategy_output = self.Strategy.execute_control(self.start_date,self.end_date,symbol)
             elif strat_name == "moving-average":
@@ -43,17 +45,31 @@ class Recommendation:
         try:
             #Compare strategy results with control. 
             #Can change in future to compare strategy results with other strategies. Needs work with input formats, but possible.
-            control = self.generate_strategy("control",symbol).drop(labels=["buy_sell_hold","position","shares"], axis=1).rename(columns={"investment":"control"})
-            strategy = self.generate_strategy(strat_name, symbol, **kwargs)
-            df1 = strategy.merge(control, how="left")
-            df1["%_diff"] = self.percent_difference(df1['investment'],df1['control'])
+            self.ctrl_df = self.generate_strategy("control",symbol)
+            control = self.ctrl_df.drop(labels=["buy_sell_hold","position","shares"], axis=1).rename(columns={"investment":"control"})
+            self.strategy_df = self.generate_strategy(strat_name, symbol, **kwargs)
+            data = self.strategy_df.merge(control, how="left")
+            data["%_diff"] = self.percent_difference(data['investment'],data['control'])
             # print(kwargs)
             # print(strat_name)
             # print(df1)
-            return df1["%_diff"].mean(), df1.iloc[-1]['investment'], df1.iloc[-1]['control']
+            return data["%_diff"].mean(), data.iloc[-1]['investment'], data.iloc[-1]['control']
         except Exception as e:
             print(e, strat_name, symbol, kwargs)
 
+    def get_strategy(self):
+        return self.strategy_df
+    
+    def get_control(self):
+        return self.ctrl_df
+    
+    # def get_under_dates(self,tolerance):
+    #     try:
+    #         loss_df = self.data[self.data["%_diff"] < tolerance * -1].copy()
+    #         loss_df['grp_date'] = loss_df['date'].diff().dt.days.ne(1).cumsum()
+    #         return
+    #     except:
+    #         return
     
     # def loss_analysis(self, strat_name, symbol, tolerance, **kwargs):
     #     try:
@@ -66,17 +82,3 @@ class Recommendation:
     #     except Exception as e:
     #         print(e, "Unable to analyze")
     #         return -1,-1,-1   
-
-    
-# trading_client = StockHistoricalDataClient('PKV2FZHX6E4RMGFON60X',
-#                                            'GMKXVZ3W4MqenB6SbcSKM8h9WnvYBZn0qdZ86E6n')
-
-# x = datetime(2020, 5, 17)
-# y = datetime(2022, 5, 17)
-
-# test = Recommendation(trading_client, x, y)
-# #df = test.generate_analysis("rsi","AAPL",days=20,over=70,under=30)
-# #print(test.loss_analysis(df, 5))
-
-# df = test.generate_analysis("atr","AAPL",short=50,long=100)
-# print(test.loss_analysis(df, 5))
