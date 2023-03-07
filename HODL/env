@@ -1,4 +1,0 @@
-AWS_DATABASE_HOST=database-1.cml2enj58h8q.us-east-1.rds.amazonaws.com
-AWS_DATABASE_NAME=postgres
-AWS_DATABASE_USER=postgres
-AWS_DATABASE_PASSWORD=ccnyhodl2023
