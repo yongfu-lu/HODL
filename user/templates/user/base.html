@@ -54,6 +54,14 @@
         {% endblock %}
     </div>
 </nav>
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} {%if message.tags == 'error'%} alert-danger {%endif%} alert-dismissible fade show"
+     role="alert">
+    {{message}}
+</div>
+{%endfor%}
+{%endif%}
 
 <div id="content" , name="content" , style="padding-left:20px; padding-right:20px; padding-top:20px">
     {% block content %}
@@ -75,8 +83,17 @@
             $(".alert").fadeTo(500, 0, function(){
                 $(this).remove();
             });
-        }, 3000);
+        }, 5000);
     });
 </script>
-
+<script>
+  $(document).ready(function () {
+    $('a.nav-link').each(function () {
+      if ($(this).prop('href') + '/' == window.location.href) {
+          console.log('same url')
+        $(this).addClass('active');
+      }
+    });
+  });
+</script>
 </html>
