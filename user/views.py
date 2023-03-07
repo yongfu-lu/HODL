@@ -7,6 +7,7 @@ from .models import CustomUser, ActivatedAlgorithm
 from .utility import AlpacaAccount
 from alpaca_trade_api.rest import APIError
 from .all_US_assets import all_US_assets
+from .all_tradable_stocks import all_tradable_stocks
 
 # Create your views here.
 def register(request):
@@ -74,25 +75,28 @@ def algorithms(request):
 
     if request.method == 'POST':
         if request.POST['submit-button'] == 'activate':
-            obj, created = ActivatedAlgorithm.objects.get_or_create(user=request.user, algorithm=request.POST['algorithm'], stock_name=request.POST['stock-symbol'],
-                                                                    defaults={
-                                                                              'investment_amount':  request.POST['amount'],
-                                                                              'short_moving_avg': request.POST['short-moving-avg'],
-                                                                              'long_moving_avg': request.POST['long-moving-avg'],
-                                                                              'days_of_moving_avg': request.POST['days-of-moving-avg'],
-                                                                              'over_percentage_threshold': request.POST['over-percentage-threshold'],
-                                                                              'under_percentage_threshold': request.POST['under-percentage-threshold'],
-                                                                              'standard_deviation': request.POST['standard-deviation']})
-            if not created:
-                obj.investment_amount = request.POST['amount']
-                obj.short_moving_avg = request.POST['short-moving-avg']
-                obj.long_moving_avg = request.POST['long-moving-avg']
-                obj.days_of_moving_avg = request.POST['days-of-moving-avg']
-                obj.over_percentage_threshold = request.POST['over-percentage-threshold']
-                obj.under_percentage_threshold = request.POST['under-percentage-threshold']
-                obj.standard_deviation = request.POST['standard-deviation']
-                obj.shares = 0
-                obj.save()
+            if request.POST['stock-symbol'] not in all_tradable_stocks:
+                messages.warning(request, "The stock you just entered is not found")
+            else:
+                obj, created = ActivatedAlgorithm.objects.get_or_create(user=request.user, algorithm=request.POST['algorithm'], stock_name=request.POST['stock-symbol'],
+                                                                        defaults={
+                                                                                  'investment_amount':  request.POST['amount'],
+                                                                                  'short_moving_avg': request.POST['short-moving-avg'],
+                                                                                  'long_moving_avg': request.POST['long-moving-avg'],
+                                                                                  'days_of_moving_avg': request.POST['days-of-moving-avg'],
+                                                                                  'over_percentage_threshold': request.POST['over-percentage-threshold'],
+                                                                                  'under_percentage_threshold': request.POST['under-percentage-threshold'],
+                                                                                  'standard_deviation': request.POST['standard-deviation']})
+                if not created:
+                    obj.investment_amount = request.POST['amount']
+                    obj.short_moving_avg = request.POST['short-moving-avg']
+                    obj.long_moving_avg = request.POST['long-moving-avg']
+                    obj.days_of_moving_avg = request.POST['days-of-moving-avg']
+                    obj.over_percentage_threshold = request.POST['over-percentage-threshold']
+                    obj.under_percentage_threshold = request.POST['under-percentage-threshold']
+                    obj.standard_deviation = request.POST['standard-deviation']
+                    obj.shares = 0
+                    obj.save()
         elif request.POST['submit-button'] == 'deactivate':
             try:
                 obj = ActivatedAlgorithm.objects.get(id=request.POST['id'])

@@ -54,6 +54,14 @@
         {% endblock %}
     </div>
 </nav>
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} {%if message.tags == 'error'%} alert-danger {%endif%} alert-dismissible fade show"
+     role="alert">
+    {{message}}
+</div>
+{%endfor%}
+{%endif%}
 
 <div id="content" , name="content" , style="padding-left:20px; padding-right:20px; padding-top:20px">
     {% block content %}
