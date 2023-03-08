@@ -19,12 +19,11 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <a href="/" class="navbar-brand">HODL</a>
     {% if request.user.is_authenticated %}
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
     <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
+        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
             <li class="nav-item">
                 <a class="nav-link" href="/user/algorithms">Algorithms</a>
             </li>
@@ -38,22 +37,24 @@
                 <a class="nav-link" href="/user/user-api">My API</a>
             </li>
         </ul>
+        <div class="dropdown">
+            <button class="btn btn-secondary" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                Hello {{user.username}}
+            </button>
+            <div class="dropdown-menu" style="min-width: 2rem;" aria-labelledby="dropdownMenuButton">
+                <a href="/user/logout" class="dropdown-item" role="button">Log Out</a>
+            </div>
+        </div>
     </div>
-
-    <div class="dropdown">
-  <button class="btn btn-secondary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-    Hello {{user.username}}
-  </button>
-  <div class="dropdown-menu" style="min-width: 2rem;" aria-labelledby="dropdownMenuButton">
-    <a  href="/user/logout" class="dropdown-item" role="button">Log Out</a>
-  </div>
-</div>
-    {% endif%}
+    {% else%}
     <div id="navEle" , name="navEle" class="ml-auto">
         {% block navEle %}
         {% endblock %}
     </div>
+    {%endif%}
 </nav>
+
 {% if messages %}
 {% for message in messages %}
 <div class="alert alert-{{message.tags}} {%if message.tags == 'error'%} alert-danger {%endif%} alert-dismissible fade show"
@@ -78,22 +79,22 @@
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
 </script>
 <script>
-    $(document).ready(function(){
-        setTimeout(function(){
-            $(".alert").fadeTo(500, 0, function(){
+    $(document).ready(function () {
+        setTimeout(function () {
+            $(".alert").fadeTo(500, 0, function () {
                 $(this).remove();
             });
-        }, 5000);
+        }, 6000);
     });
 </script>
 <script>
-  $(document).ready(function () {
-    $('a.nav-link').each(function () {
-      if ($(this).prop('href') + '/' == window.location.href) {
-          console.log('same url')
-        $(this).addClass('active');
-      }
+    $(document).ready(function () {
+        $('a.nav-link').each(function () {
+            if ($(this).prop('href') + '/' == window.location.href) {
+                console.log('same url')
+                $(this).addClass('active');
+            }
+        });
     });
-  });
 </script>
 </html>
