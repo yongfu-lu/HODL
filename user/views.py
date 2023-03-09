@@ -82,14 +82,15 @@ def algorithms(request):
 
     if request.method == 'POST':
         if request.POST['submit-button'] == 'activate':
-            if request.POST['stock-symbol'] not in all_tradable_stocks:
+            stock = request.POST['stock-symbol'].upper()
+            if stock not in all_tradable_stocks:
                 messages.warning(request, "The stock you just entered is not found")
-            elif request.POST['over-percentage-threshold'] < request.POST['under-percentage-threshold']:
+            elif float(request.POST['over-percentage-threshold']) < float(request.POST['under-percentage-threshold']):
                 messages.warning(request, "Over percentage threshold must be greater than under percentage threshold")
-            elif request.POST['short-moving-avg'] > request.POST['long-moving-avg']:
+            elif float(request.POST['short-moving-avg']) > float(request.POST['long-moving-avg']):
                 messages.warning(request, "Short moving average must be smaller then long moving average")
             else:
-                obj, created = ActivatedAlgorithm.objects.get_or_create(user=request.user, algorithm=request.POST['algorithm'], stock_name=request.POST['stock-symbol'],
+                obj, created = ActivatedAlgorithm.objects.get_or_create(user=request.user, algorithm=request.POST['algorithm'], stock_name=stock,
                                                                         defaults={
                                                                                   'investment_amount':  request.POST['amount'],
                                                                                   'short_moving_avg': request.POST['short-moving-avg'],
@@ -302,15 +303,18 @@ def add_to_watchlist(request):
     if request.method == "POST":
         alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
         symbol = request.POST["stock-symbol"]
-        try:
-            alpaca_account.add_to_watchlist(request.POST['watchlist-id'], symbol)
-        except APIError as e:
-            if "asset not found" in e.args[0]:
-                messages.warning(request, "The stock you just entered is not found")
-            if "duplicate symbol" in e.args[0]:
-                messages.warning(request, "The stock you just entered is already in the watch list")
+        if alpaca_account.is_crypto(symbol):
+            messages.warning(request, "We currently do not support crypto")
         else:
-            messages.success(request, "Watch list updated!")
+            try:
+                alpaca_account.add_to_watchlist(request.POST['watchlist-id'], symbol)
+            except APIError as e:
+                if "asset not found" in e.args[0]:
+                    messages.warning(request, "The stock you just entered is not found")
+                if "duplicate symbol" in e.args[0]:
+                    messages.warning(request, "The stock you just entered is already in the watch list")
+            else:
+                messages.success(request, "Watch list updated!")
 
     return redirect("/user/dashboard")
 

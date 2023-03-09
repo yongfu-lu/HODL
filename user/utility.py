@@ -56,19 +56,23 @@ class AlpacaAccount:
         # create list of stock dictionary, each dictionary contains symbol, current price, last market close price
         assets = []
         for i in range(len(symbols)):
-            current_price = self.API.get_latest_bar(symbols[i]).c
-            last_market_close_price =self.API.get_bars(symbol=symbols[i],
-                                 timeframe=TimeFrame(1, TimeFrameUnit('Day')),
-                                 start=(current_time - datetime.timedelta(days=7)).isoformat(),
-                                 end=(current_time - datetime.timedelta(hours=1)).isoformat(),
-                                 limit=7)[-2].c
+            try:
+                current_price = self.API.get_latest_bar(symbols[i]).c
+                last_market_close_price =self.API.get_bars(symbol=symbols[i],
+                                     timeframe=TimeFrame(1, TimeFrameUnit('Day')),
+                                     start=(current_time - datetime.timedelta(days=7)).isoformat(),
+                                     end=(current_time - datetime.timedelta(hours=1)).isoformat(),
+                                     limit=7)[-2].c
 
-            assets.append(
-                {"symbol": symbols[i],
-                 "current_price": current_price,
-                 "last_close_price": last_market_close_price,
-                 "price_change": current_price - last_market_close_price,
-                 "price_change_perc": (current_price - last_market_close_price) / last_market_close_price * 100})
+                assets.append(
+                    {"symbol": symbols[i],
+                     "current_price": current_price,
+                     "last_close_price": last_market_close_price,
+                     "price_change": current_price - last_market_close_price,
+                     "price_change_perc": (current_price - last_market_close_price) / last_market_close_price * 100})
+
+            except:
+                pass
 
         return {"id": watchlist_id, "assets": assets}
 
@@ -86,3 +90,11 @@ class AlpacaAccount:
         search_params = GetAssetsRequest(asset_class=AssetClass.US_EQUITY)
         assets = self.client.get_all_assets(search_params)
         return [asset.symbol for asset in assets]
+
+    def is_crypto(self, symbol):
+        try:
+            asset = self.API.get_asset(symbol)
+        except:
+            return False
+        else:
+            return not getattr(asset,'class') == 'us_equity'
