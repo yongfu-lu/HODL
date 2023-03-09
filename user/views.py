@@ -302,15 +302,18 @@ def add_to_watchlist(request):
     if request.method == "POST":
         alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
         symbol = request.POST["stock-symbol"]
-        try:
-            alpaca_account.add_to_watchlist(request.POST['watchlist-id'], symbol)
-        except APIError as e:
-            if "asset not found" in e.args[0]:
-                messages.warning(request, "The stock you just entered is not found")
-            if "duplicate symbol" in e.args[0]:
-                messages.warning(request, "The stock you just entered is already in the watch list")
+        if alpaca_account.is_crypto(symbol):
+            messages.warning(request, "We currently do not support crypto")
         else:
-            messages.success(request, "Watch list updated!")
+            try:
+                alpaca_account.add_to_watchlist(request.POST['watchlist-id'], symbol)
+            except APIError as e:
+                if "asset not found" in e.args[0]:
+                    messages.warning(request, "The stock you just entered is not found")
+                if "duplicate symbol" in e.args[0]:
+                    messages.warning(request, "The stock you just entered is already in the watch list")
+            else:
+                messages.success(request, "Watch list updated!")
 
     return redirect("/user/dashboard")
 
