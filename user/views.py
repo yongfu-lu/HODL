@@ -82,14 +82,15 @@ def algorithms(request):
 
     if request.method == 'POST':
         if request.POST['submit-button'] == 'activate':
-            if request.POST['stock-symbol'] not in all_tradable_stocks:
+            stock = request.POST['stock-symbol'].upper()
+            if stock not in all_tradable_stocks:
                 messages.warning(request, "The stock you just entered is not found")
             elif float(request.POST['over-percentage-threshold']) < float(request.POST['under-percentage-threshold']):
                 messages.warning(request, "Over percentage threshold must be greater than under percentage threshold")
             elif float(request.POST['short-moving-avg']) > float(request.POST['long-moving-avg']):
                 messages.warning(request, "Short moving average must be smaller then long moving average")
             else:
-                obj, created = ActivatedAlgorithm.objects.get_or_create(user=request.user, algorithm=request.POST['algorithm'], stock_name=request.POST['stock-symbol'],
+                obj, created = ActivatedAlgorithm.objects.get_or_create(user=request.user, algorithm=request.POST['algorithm'], stock_name=stock,
                                                                         defaults={
                                                                                   'investment_amount':  request.POST['amount'],
                                                                                   'short_moving_avg': request.POST['short-moving-avg'],
