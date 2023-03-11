@@ -1,4 +1,4 @@
-#input-dropdown {
+.input-dropdown {
     position: relative;
     display: inline-block;
 }
@@ -12,8 +12,7 @@ input {
 .dropdown-content {
     display: none;
     position: absolute;
-    /*top: 100%;*/
-    left: 0;
+    left: 105px;
     z-index: 1;
     background-color: #f1f1f1;
     min-width: 160px;

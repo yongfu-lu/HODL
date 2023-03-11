@@ -128,6 +128,7 @@ def algorithms(request):
         'RSI': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='relative-strength-indicator'),
         'FIB': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='MACD-with-fibonacci-levels'),
         'BB': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='bollinger-bands'),
+        'all_stocks_alphabet': all_tradable_stocks_alphabet,
     }
 
     return render(request, "user/algorithms.html", context)

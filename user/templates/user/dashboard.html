@@ -158,17 +158,20 @@
                         <form action="/user/add-to-watchlist/" method="post" class="mb-4">
                             {% csrf_token %}
                             <div class="modal-body">
-                                <input type="text" class="form-control" name="stock-symbol" id="myInput"
-                                       placeholder="Enter Stock Symbol Here">
-                                <div class="dropdown-content" id="myDropdown">
-                                    {%for stocks in all_stocks_alphabet%}
-                                    <div class="index{{forloop.counter}}">
-                                        {%for stock in stocks %}
-                                        <a style="display: none">{{stock}}</a>
+                                <div style="position: relative">
+                                    <input type="text" class="form-control" name="stock-symbol" id="myInput"
+                                           placeholder="Enter Stock Symbol Here">
+                                    <div class="dropdown-content" id="myDropdown">
+                                        {%for stocks in all_stocks_alphabet%}
+                                        <div class="index{{forloop.counter}}">
+                                            {%for stock in stocks %}
+                                            <a style="display: none">{{stock}}</a>
+                                            {%endfor%}
+                                        </div>
                                         {%endfor%}
                                     </div>
-                                    {%endfor%}
                                 </div>
+
                                 <input type="hidden" name="watchlist-id" value={{watchlist.id}}>
                             </div>
                             <div class="modal-footer">

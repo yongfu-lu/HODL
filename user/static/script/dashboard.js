@@ -24,8 +24,7 @@ input.addEventListener("input", function () {
         var n = prefix.charCodeAt(0) - 96
         var selector = ".index" + n.toString() + " a"
         var options = document.querySelectorAll(selector)
-        console.log(options)
-        console.log(prefix)
+
         // Loop through the options and show only the ones that match the prefix
         for (var i = 0; i < options.length; i++) {
             if (options[i].innerText.toLowerCase().startsWith(prefix)) {
@@ -47,3 +46,5 @@ dropdown.addEventListener("click", function (event) {
         dropdown.style.display = "none";
     }
 });
+
+
