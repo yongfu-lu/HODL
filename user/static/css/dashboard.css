@@ -1,0 +1,36 @@
+#input-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+input {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1;
+    background-color: #f1f1f1;
+    min-width: 160px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px 0;
+    overflow-y: auto;
+    max-height: 150px;
+}
+
+.dropdown-content a {
+    display: block;
+    padding: 5px 10px;
+    color: #333;
+    text-decoration: none;
+}
+
+.dropdown-content a:hover {
+    background-color: #ddd;
+}

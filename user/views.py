@@ -7,7 +7,7 @@ from .models import CustomUser, ActivatedAlgorithm
 from .utility import AlpacaAccount
 from alpaca_trade_api.rest import APIError
 from .all_US_assets import all_US_assets
-from .all_tradable_stocks import all_tradable_stocks
+from .all_tradable_stocks import all_tradable_stocks, all_tradable_stocks_alphabet
 from Backtester.recommendation import Recommendation
 from Backtester.strategy import Strategy
 from Backtester.plotting import Plot
@@ -67,6 +67,7 @@ def dashboard(request):
         context["positions"] = alpaca_account.get_positions()
         context["activities"] = alpaca_account.get_activities()
         context["watchlist"] = alpaca_account.get_stocks_in_watchlist()
+        context['all_stocks_alphabet'] = all_tradable_stocks_alphabet
 
     return render(request, "user/dashboard.html", context)
 

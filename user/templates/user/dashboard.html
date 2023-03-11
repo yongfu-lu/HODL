@@ -1,7 +1,10 @@
 {% extends 'user/base.html' %}
 {% load mathfilters %}
+{% load static %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
 <div class="container mt-2 bg-light">
     <h3 class="text-center">Account Balance </h3>
     {% if is_account_linked %}
@@ -155,8 +158,17 @@
                         <form action="/user/add-to-watchlist/" method="post" class="mb-4">
                             {% csrf_token %}
                             <div class="modal-body">
-                                <input type="text" class="form-control" name="stock-symbol"
+                                <input type="text" class="form-control" name="stock-symbol" id="myInput"
                                        placeholder="Enter Stock Symbol Here">
+                                <div class="dropdown-content" id="myDropdown">
+                                    {%for stocks in all_stocks_alphabet%}
+                                    <div class="index{{forloop.counter}}">
+                                        {%for stock in stocks %}
+                                        <a style="display: none">{{stock}}</a>
+                                        {%endfor%}
+                                    </div>
+                                    {%endfor%}
+                                </div>
                                 <input type="hidden" name="watchlist-id" value={{watchlist.id}}>
                             </div>
                             <div class="modal-footer">
@@ -212,4 +224,6 @@
     </table>
     {%endif%}
 </div>
+
+<script src="{% static 'script/dashboard.js' %}"></script>
 {% endblock %}
