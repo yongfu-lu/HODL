@@ -32,7 +32,7 @@
     {%endif%}
 </div>
 
-<div class="container mt-4">
+<div class="container text-center mt-4">
     <h3 class="text-center">Positions</h3>
     {%if is_account_linked %}
     <table class="table">
@@ -61,6 +61,7 @@
         {%endfor%}
         </tbody>
     </table>
+    <a href="/user/all-positions/" class="btn btn-primary">View All Positions</a>
     {%else%}
     <div class="container text-center">
         <h6> Ops, We can't link to your Alpaca account</h6>
@@ -93,11 +94,11 @@
             </tbody>
         </table>
         {% endif %}
-        <a href="/user/algorithms" class="btn btn-primary"> Edit Activated Algorithms</a>
+        <a href="/user/algorithms" class="btn btn-primary"> View All Activated Algorithms</a>
     </div>
 </div>
 
-<div class="container mt-4">
+<div class="container text-center mt-4">
     <h3 class="text-center">Trading History</h3>
     {%if is_account_linked %}
     <table class="table">
@@ -126,6 +127,7 @@
         {%endfor%}
         </tbody>
     </table>
+    <a href="/user/all-activities/" class="btn btn-primary"> View All History</a>
     {%else%}
     <div class="container text-center">
         <h6> Ops, We can't link to your Alpaca account</h6>

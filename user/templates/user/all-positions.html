@@ -1,0 +1,43 @@
+{% extends 'user/base.html' %}
+{% load mathfilters %}
+{% load static %}
+
+{% block content %}
+<div class="container text-center mt-4">
+    <h3 class="text-center">Positions</h3>
+    {%if is_account_linked %}
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Asset</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Last Price</th>
+            <th scope="col">% Change of Today</th>
+            <th scope="col">Cost Basis</th>
+            <th scope="col">Market Value</th>
+            <th scope="col">Total Earning</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for position in positions%}
+        <tr>
+            <th scope="row">{{position.symbol}}</th>
+            <td>{{position.qty}}</td>
+            <td>${{position.current_price}}</td>
+            <td>${{ position.change_today|mult:100|floatformat:2 }}%</td>
+            <td>${{position.cost_basis|floatformat:2}}</td>
+            <td>${{position.market_value|floatformat:2}}</td>
+            <td>{{ position.market_value|sub:position.cost_basis|floatformat:2}}</td>
+        </tr>
+        {%endfor%}
+        </tbody>
+    </table>
+    {%else%}
+    <div class="container text-center">
+        <h6> Ops, We can't link to your Alpaca account</h6>
+        <h6> Please Update your api key and secret key of your Alpaca Account</h6>
+    </div>
+    {%endif%}
+</div>
+
+{% endblock %}

@@ -60,12 +60,12 @@ def dashboard(request):
     activated_algorithms = ActivatedAlgorithm.objects.filter(user=request.user)
     context = {
         "is_account_linked": alpaca_account.account_linked,
-        "activated_algorithms": activated_algorithms
+        "activated_algorithms": activated_algorithms[:5]
     }
     if alpaca_account.account_linked:
         context["account"] = alpaca_account.get_account()
-        context["positions"] = alpaca_account.get_positions()
-        context["activities"] = alpaca_account.get_activities()
+        context["positions"] = alpaca_account.get_positions()[:5]
+        context["activities"] = alpaca_account.get_activities()[:5]
         context["watchlist"] = alpaca_account.get_stocks_in_watchlist()
         context['all_stocks_alphabet'] = all_tradable_stocks_alphabet
 
@@ -119,8 +119,6 @@ def algorithms(request):
             if obj:
                 obj.delete()
                 messages.success(request, "You've successfully de-activate strategy to your stock.")
-
-    #ActivatedAlgorithm.objects.filter(user=request.user, algorithm='average-true-range')
 
     context = {
         'MA': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='moving-average'),
@@ -328,3 +326,33 @@ def remove_from_watchlist(request):
         messages.success(request, "Watch list updated!")
 
     return redirect("/user/dashboard")
+
+
+def all_positions(request):
+    if not request.user.is_authenticated:
+        return redirect('/user/login')
+
+    alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
+    context = {
+        "is_account_linked": alpaca_account.account_linked,
+    }
+
+    if alpaca_account.account_linked:
+        context["positions"] = alpaca_account.get_positions()
+
+    return render(request, "user/all-positions.html", context)
+
+
+def all_activities(request):
+    if not request.user.is_authenticated:
+        return redirect('/user/login')
+
+    alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
+    context = {
+        "is_account_linked": alpaca_account.account_linked,
+    }
+
+    if alpaca_account.account_linked:
+        context["activities"] = alpaca_account.get_activities()
+
+    return render(request, "user/all-activities.html", context)
