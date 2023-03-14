@@ -6,8 +6,7 @@ from django.contrib import messages
 from .models import CustomUser, ActivatedAlgorithm
 from .utility import AlpacaAccount
 from alpaca_trade_api.rest import APIError
-from .all_US_assets import all_US_assets
-from .all_tradable_stocks import all_tradable_stocks
+from .all_tradable_stocks import all_tradable_stocks, all_tradable_stocks_alphabet
 from Backtester.recommendation import Recommendation
 from Backtester.strategy import Strategy
 from Backtester.plotting import Plot
@@ -15,6 +14,8 @@ from alpaca.data.historical import StockHistoricalDataClient
 from datetime import datetime
 import pandas as pd
 import json
+from django.core.paginator import Paginator
+
 
 # Create your views here.
 def register(request):
@@ -60,13 +61,14 @@ def dashboard(request):
     activated_algorithms = ActivatedAlgorithm.objects.filter(user=request.user)
     context = {
         "is_account_linked": alpaca_account.account_linked,
-        "activated_algorithms": activated_algorithms
+        "activated_algorithms": activated_algorithms[:5]
     }
     if alpaca_account.account_linked:
         context["account"] = alpaca_account.get_account()
-        context["positions"] = alpaca_account.get_positions()
-        context["activities"] = alpaca_account.get_activities()
+        context["positions"] = alpaca_account.get_positions()[:5]
+        context["activities"] = alpaca_account.get_activities()[:5]
         context["watchlist"] = alpaca_account.get_stocks_in_watchlist()
+        context['all_stocks_alphabet'] = all_tradable_stocks_alphabet
 
     return render(request, "user/dashboard.html", context)
 
@@ -119,14 +121,13 @@ def algorithms(request):
                 obj.delete()
                 messages.success(request, "You've successfully de-activate strategy to your stock.")
 
-    #ActivatedAlgorithm.objects.filter(user=request.user, algorithm='average-true-range')
-
     context = {
         'MA': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='moving-average'),
         'ATR': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='average-true-range'),
         'RSI': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='relative-strength-indicator'),
         'FIB': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='MACD-with-fibonacci-levels'),
         'BB': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='bollinger-bands'),
+        'all_stocks_alphabet': all_tradable_stocks_alphabet,
     }
 
     return render(request, "user/algorithms.html", context)
@@ -326,3 +327,39 @@ def remove_from_watchlist(request):
         messages.success(request, "Watch list updated!")
 
     return redirect("/user/dashboard")
+
+
+def all_positions(request):
+    if not request.user.is_authenticated:
+        return redirect('/user/login')
+
+    alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
+    context = {
+        "is_account_linked": alpaca_account.account_linked,
+    }
+
+    if alpaca_account.account_linked:
+        all_positions = alpaca_account.get_positions()
+        paginator = Paginator(all_positions, 10)  # 10 activities per page
+        page = request.GET.get('page')
+        context["positions"] = paginator.get_page(page)
+
+    return render(request, "user/all-positions.html", context)
+
+
+def all_activities(request):
+    if not request.user.is_authenticated:
+        return redirect('/user/login')
+
+    alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
+    context = {
+        "is_account_linked": alpaca_account.account_linked,
+    }
+
+    if alpaca_account.account_linked:
+        all_activities = alpaca_account.get_activities()
+        paginator = Paginator(all_activities, 10)  # 10 activities per page
+        page = request.GET.get('page')
+        context["activities"] = paginator.get_page(page)
+
+    return render(request, "user/all-activities.html", context)

@@ -1,0 +1,66 @@
+{% extends 'user/base.html' %}
+{% load mathfilters %}
+{% load static %}
+
+{% block content %}
+<div class="container text-center mt-4">
+    <h3 class="text-center">Trading History</h3>
+    {%if is_account_linked %}
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Asset</th>
+            <th scope="col">Order Type</th>
+            <th scope="col">Time</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Average Cost</th>
+            <th scope="col">Total Amount</th>
+        </tr>
+        </thead>
+        <tbody>
+        {%for activity in activities %}
+        {%if activity.side == 'buy' or activity.side == 'sell' or activity.side == 'sell_short' %}
+        <tr>
+            <th scope="row">{{activity.symbol}}</th>
+            <td>{{activity.side}}</td>
+            <td>{{activity.transaction_time}}</td>
+            <td>{{activity.qty}}</td>
+            <td>${{activity.price}}</td>
+            <td>${{activity.price|mult:activity.qty|floatformat:2}}</td>
+        </tr>
+        {%endif%}
+        {%endfor%}
+        </tbody>
+    </table>
+    {% if activities.has_other_pages %}
+        {% if activities.has_previous %}
+            <a href="?page=1" class="btn btn-outline-primary mb-4"> First</a>
+            <a href="?page={{activities.previous_page_number}}" class="btn btn-outline-primary mb-4"> Previous </a>
+        {% endif %}
+
+        {% for num in activities.paginator.page_range %}
+            {% if activities.number == num %}
+                <a class="btn btn-primary mb-4" href="?page={{ num }}">{{ num }}</a>
+            {% elif num > activities.number|add:'-3' and num < activities.number|add:'3' %}
+                <a class="btn btn-outline-primary mb-4" href="?page={{ num }}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if activities.has_next %}
+            <a class="btn btn-outline-primary mb-4" href="?page={{ activities.next_page_number }}">Next</a>
+            <a class="btn btn-outline-primary mb-4" href="?page={{ activities.paginator.num_pages }}">Last</a>
+        {% endif %}
+    {%else%}
+        <a class="btn btn-primary mb-4">1</a>
+    {%endif%}
+    {%else%}
+    <div class="container text-center">
+        <h6> Ops, We can't link to your Alpaca account</h6>
+        <h6> Please Update your api key and secret key of your Alpaca Account</h6>
+    </div>
+    {%endif%}
+
+</div>
+
+
+{% endblock %}

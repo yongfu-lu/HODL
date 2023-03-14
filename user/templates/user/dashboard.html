@@ -1,7 +1,10 @@
 {% extends 'user/base.html' %}
 {% load mathfilters %}
+{% load static %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
 <div class="container mt-2 bg-light">
     <h3 class="text-center">Account Balance </h3>
     {% if is_account_linked %}
@@ -29,7 +32,7 @@
     {%endif%}
 </div>
 
-<div class="container mt-4">
+<div class="container text-center mt-4">
     <h3 class="text-center">Positions</h3>
     {%if is_account_linked %}
     <table class="table">
@@ -58,6 +61,7 @@
         {%endfor%}
         </tbody>
     </table>
+    <a href="/user/all-positions/" class="btn btn-primary">View All Positions</a>
     {%else%}
     <div class="container text-center">
         <h6> Ops, We can't link to your Alpaca account</h6>
@@ -90,11 +94,11 @@
             </tbody>
         </table>
         {% endif %}
-        <a href="/user/algorithms" class="btn btn-primary"> Edit Activated Algorithms</a>
+        <a href="/user/algorithms" class="btn btn-primary"> View All Activated Algorithms</a>
     </div>
 </div>
 
-<div class="container mt-4">
+<div class="container text-center mt-4">
     <h3 class="text-center">Trading History</h3>
     {%if is_account_linked %}
     <table class="table">
@@ -123,6 +127,7 @@
         {%endfor%}
         </tbody>
     </table>
+    <a href="/user/all-activities/" class="btn btn-primary"> View All History</a>
     {%else%}
     <div class="container text-center">
         <h6> Ops, We can't link to your Alpaca account</h6>
@@ -155,8 +160,20 @@
                         <form action="/user/add-to-watchlist/" method="post" class="mb-4">
                             {% csrf_token %}
                             <div class="modal-body">
-                                <input type="text" class="form-control" name="stock-symbol"
-                                       placeholder="Enter Stock Symbol Here">
+                                <div style="position: relative">
+                                    <input type="text" class="form-control" name="stock-symbol" id="myInput"
+                                           placeholder="Enter Stock Symbol Here">
+                                    <div class="dropdown-content" id="myDropdown">
+                                        {%for stocks in all_stocks_alphabet%}
+                                        <div class="index{{forloop.counter}}">
+                                            {%for stock in stocks %}
+                                            <a style="display: none">{{stock}}</a>
+                                            {%endfor%}
+                                        </div>
+                                        {%endfor%}
+                                    </div>
+                                </div>
+
                                 <input type="hidden" name="watchlist-id" value={{watchlist.id}}>
                             </div>
                             <div class="modal-footer">
@@ -212,4 +229,6 @@
     </table>
     {%endif%}
 </div>
+
+<script src="{% static 'script/dashboard.js' %}"></script>
 {% endblock %}

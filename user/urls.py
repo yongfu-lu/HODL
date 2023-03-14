@@ -13,4 +13,6 @@ urlpatterns = [
     path('user-api/', views.userAPI, name='userAPI'),
     path('add-to-watchlist/', views.add_to_watchlist, name='add-to-watchlist'),
     path('remove-from-watchlist/', views.remove_from_watchlist, name='remove-from-watchlist'),
+    path('all-positions/', views.all_positions, name='all-positions'),
+    path('all-activities/', views.all_activities, name='all-activities'),
 ]
