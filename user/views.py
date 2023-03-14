@@ -6,7 +6,6 @@ from django.contrib import messages
 from .models import CustomUser, ActivatedAlgorithm
 from .utility import AlpacaAccount
 from alpaca_trade_api.rest import APIError
-from .all_US_assets import all_US_assets
 from .all_tradable_stocks import all_tradable_stocks, all_tradable_stocks_alphabet
 from Backtester.recommendation import Recommendation
 from Backtester.strategy import Strategy
@@ -15,6 +14,8 @@ from alpaca.data.historical import StockHistoricalDataClient
 from datetime import datetime
 import pandas as pd
 import json
+from django.core.paginator import Paginator
+
 
 # Create your views here.
 def register(request):
@@ -338,7 +339,10 @@ def all_positions(request):
     }
 
     if alpaca_account.account_linked:
-        context["positions"] = alpaca_account.get_positions()
+        all_positions = alpaca_account.get_positions()
+        paginator = Paginator(all_positions, 10)  # 10 activities per page
+        page = request.GET.get('page')
+        context["positions"] = paginator.get_page(page)
 
     return render(request, "user/all-positions.html", context)
 
@@ -353,6 +357,9 @@ def all_activities(request):
     }
 
     if alpaca_account.account_linked:
-        context["activities"] = alpaca_account.get_activities()
+        all_activities = alpaca_account.get_activities()
+        paginator = Paginator(all_activities, 10)  # 10 activities per page
+        page = request.GET.get('page')
+        context["activities"] = paginator.get_page(page)
 
     return render(request, "user/all-activities.html", context)
