@@ -18,9 +18,9 @@
         </thead>
         <tbody>
         <tr>
-            <td>${{account.equity|floatformat:2}}</td>
-            <td>${{account.equity|sub:account.last_equity|floatformat:2}}</td>
-            <td>{{account.equity|sub:account.last_equity|div:account.last_equity|mult:100|floatformat:2}}%</td>
+            <td id="equity">${{account.equity|floatformat:2}}</td>
+            <td id="change-of-today">${{account.equity|sub:account.last_equity|floatformat:2}}</td>
+            <td id="perc-change-of-today">{{account.equity|sub:account.last_equity|div:account.last_equity|mult:100|floatformat:2}}%</td>
         </tr>
         </tbody>
     </table>
@@ -231,4 +231,22 @@
 </div>
 
 <script src="{% static 'script/dashboard.js' %}"></script>
+<script>
+    function updateAccount(){
+        $.ajax({
+           url: '/user/get-account/',
+           type:'GET',
+           success: function(data){
+               if (data.is_account_linked) {
+                   $('#equity').text("$" +data.account.equity);
+                   $('#change-of-today').text("$" + data.account.change_of_today);
+                   $('#perc-change-of-today').text(data.account.perc_change_of_today + "%");
+               }
+           }, error: function(xhr, status, error){
+               console.log('Error:', error);
+            }
+        });
+    }
+    setInterval(updateAccount, 3000);
+</script>
 {% endblock %}
