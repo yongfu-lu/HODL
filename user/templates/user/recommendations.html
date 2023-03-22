@@ -4,37 +4,33 @@
 
   <h2>Recommendations</h2>
   
-  <!-- {% if p %}
-  {% autoescape off %}
-    {{ p }}
-  {% endautoescape %}
-  {% endif %} -->
-
+ 
   {% for index, row in df.iterrows %}
   <div class="card">
     <div class="card-body">
       <h5 class="card-title">Algorithm: {{ row.algorithm }}</h5>
       <p class="card-text">Stock Name: {{ row.stock_name }}</p>
-      <!-- <p class="card-text">Investment Amount: {{ row.investment_amount }}</p>
-      <p class="card-text">Short Moving Avg: {{ row.short_moving_avg }}</p>
-      <p class="card-text">Long Moving Avg: {{ row.long_moving_avg }}</p> -->
       <p class="card-text">Percent Difference: {{ row.Percent_Difference }}</p>
+      {{ row.plots|safe }}
       <button class="btn btn-primary" onclick="showPopup('{{ row.Period }}', '{{row.investment_amount}}', '{{row.short_moving_avg}}', '{{row.long_moving_avg}}', '{{ row.current }}', '{{ row.potential }}')">See More Details</button>
 
     </div>
   </div>
   {% endfor %}
 
-  <!-- {% for index, row in df.iterrows %}
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">{{ row.Strategy }}</h5>
-        <p class="card-text">Percent Difference: {{ row.Percent_Difference }}</p>
-        <button class="btn btn-primary" onclick="showPopup('{{ row.Period }}', '{{ row.Current_Earnings }}', '{{ row.Potential_Earnings }}')">See More Details</button>
-
-      </div>
-    </div>
-  {% endfor %} -->
+  
+  <!-- {% if plots %}
+    {% for plot in plots %}
+      {{ plot|safe }}
+    {% endfor %}
+  {% endif %} -->
+  
+  <!-- {% if p %}
+  {% autoescape off %}
+    {{ p }}
+  {% endautoescape %}
+  {% endif %} -->
+  
 
   <script>
     function showPopup(period, investment_amount, short_moving_avg, long_moving_avg, current, potential) {
@@ -95,6 +91,9 @@
 
       // investment_amount, short_moving_avg, long_moving_avg,
 
+      var graphDiv = popupDocument.createElement("div");
+      graphDiv.classList.add("graph");
+
       var investmentAmountDiv = popupDocument.createElement("div");
       investmentAmountDiv.classList.add("info");
 
@@ -114,7 +113,7 @@
       infoDiv.appendChild(shortElement);
 
       var longElement = popupDocument.createElement("p");
-      longElement.innerHTML = "<strong>Long moving average:</strong> " + long_moving_avg;
+      longElement.innerHTML = "<strong>Long Moving Average:</strong> " + long_moving_avg;
       infoDiv.appendChild(longElement);
 
       var periodElement = popupDocument.createElement("p");
@@ -130,12 +129,7 @@
       potentialEarningsElement.innerHTML = "<strong>Potential Earnings:</strong> " + potential;
       infoDiv.appendChild(potentialEarningsElement);
     
-      var plotDiv = popupDocument.createElement("div");
-      plotDiv.classList.add("graph");
-      plotDiv.innerHTML = "{{ plot_div|safe }}";
-      infoDiv.appendChild(plotDiv);
-    
-      var closeButton = popupDocument.createElement("div");
+      var closeButton = popupDocument.createElement("p");
       closeButton.classList.add("close-btn");
       closeButton.innerHTML = "Close";
       closeButton.onclick = function() {

@@ -7,6 +7,7 @@ from .models import CustomUser, ActivatedAlgorithm
 from .utility import AlpacaAccount
 from alpaca_trade_api.rest import APIError
 from .all_US_assets import all_US_assets
+from .all_tradable_stocks import all_tradable_stocks
 from Backtester.recommendation import Recommendation
 from Backtester.strategy import Strategy
 from Backtester.plotting import Plot
@@ -14,7 +15,6 @@ from alpaca.data.historical import StockHistoricalDataClient
 from datetime import datetime
 import pandas as pd
 import json
-
 
 # Create your views here.
 def register(request):
@@ -82,42 +82,51 @@ def algorithms(request):
 
     if request.method == 'POST':
         if request.POST['submit-button'] == 'activate':
-            obj, created = ActivatedAlgorithm.objects.get_or_create(user=request.user, algorithm=request.POST['algorithm'],
-                                                                    defaults={'stock_name': request.POST['stock-symbol'],
-                                                                              'investment_amount':  request.POST['amount'],
-                                                                              'short_moving_avg': request.POST['short-moving-avg'],
-                                                                              'long_moving_avg': request.POST['long-moving-avg'],
-                                                                              'days_of_moving_avg': request.POST['days-of-moving-avg'],
-                                                                              'over_percentage_threshold': request.POST['over-percentage-threshold'],
-                                                                              'under_percentage_threshold': request.POST['under-percentage-threshold'],
-                                                                              'standard_deviation': request.POST['standard-deviation']})
-            if not created:
-                obj.investment_amount =  request.POST['amount']
-                obj.short_moving_avg = request.POST['short-moving-avg']
-                obj.long_moving_avg = request.POST['long-moving-avg']
-                obj.stock_name = request.POST['stock-symbol']
-                obj.days_of_moving_avg = request.POST['days-of-moving-avg']
-                obj.over_percentage_threshold = request.POST['over-percentage-threshold']
-                obj.under_percentage_threshold = request.POST['under-percentage-threshold']
-                obj.standard_deviation = request.POST['standard-deviation']
-                obj.shares = 0
-                obj.save()
+            stock = request.POST['stock-symbol'].upper()
+            if stock not in all_tradable_stocks:
+                messages.warning(request, "The stock you just entered is not found")
+            elif float(request.POST['over-percentage-threshold']) < float(request.POST['under-percentage-threshold']):
+                messages.warning(request, "Over percentage threshold must be greater than under percentage threshold")
+            elif float(request.POST['short-moving-avg']) > float(request.POST['long-moving-avg']):
+                messages.warning(request, "Short moving average must be smaller then long moving average")
+            else:
+                obj, created = ActivatedAlgorithm.objects.get_or_create(user=request.user, algorithm=request.POST['algorithm'], stock_name=stock,
+                                                                        defaults={
+                                                                                  'investment_amount':  request.POST['amount'],
+                                                                                  'short_moving_avg': request.POST['short-moving-avg'],
+                                                                                  'long_moving_avg': request.POST['long-moving-avg'],
+                                                                                  'days_of_moving_avg': request.POST['days-of-moving-avg'],
+                                                                                  'over_percentage_threshold': request.POST['over-percentage-threshold'],
+                                                                                  'under_percentage_threshold': request.POST['under-percentage-threshold'],
+                                                                                  'standard_deviation': request.POST['standard-deviation']})
+                if not created:
+                    obj.investment_amount = request.POST['amount']
+                    obj.short_moving_avg = request.POST['short-moving-avg']
+                    obj.long_moving_avg = request.POST['long-moving-avg']
+                    obj.days_of_moving_avg = request.POST['days-of-moving-avg']
+                    obj.over_percentage_threshold = request.POST['over-percentage-threshold']
+                    obj.under_percentage_threshold = request.POST['under-percentage-threshold']
+                    obj.standard_deviation = request.POST['standard-deviation']
+                    obj.shares = 0
+                    obj.save()
+                messages.success(request, "You've successfully applied the strategy to stock")
         elif request.POST['submit-button'] == 'deactivate':
             try:
-                obj = ActivatedAlgorithm.objects.get(user=request.user, algorithm=request.POST['algorithm'])
+                obj = ActivatedAlgorithm.objects.get(id=request.POST['id'])
             except:
                 obj = None
             if obj:
                 obj.delete()
+                messages.success(request, "You've successfully de-activate strategy to your stock.")
 
-    ActivatedAlgorithm.objects.filter(user=request.user, algorithm='average-true-range')
+    #ActivatedAlgorithm.objects.filter(user=request.user, algorithm='average-true-range')
 
     context = {
         'MA': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='moving-average'),
         'ATR': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='average-true-range'),
         'RSI': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='relative-strength-indicator'),
         'FIB': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='MACD-with-fibonacci-levels'),
-        'BB': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='billinger-bands'),
+        'BB': ActivatedAlgorithm.objects.filter(user=request.user, algorithm='bollinger-bands'),
     }
 
     return render(request, "user/algorithms.html", context)
@@ -247,7 +256,7 @@ def recommendations(request):
         potential = []
         current = []
         activated_algorithm = ActivatedAlgorithm.objects.filter(user=request.user)
-    
+        plots = []
         for i in activated_algorithm:
             try:
                 l,c,p= test.generate_analysis(i.algorithm,i.stock_name, short=int(i.short_moving_avg),long=int(i.long_moving_avg),days=int(i.days_of_moving_avg),
@@ -258,14 +267,21 @@ def recommendations(request):
             potential.append(p)
             current.append(c)
 
+            d = test.get_strategy()
+            control = test.get_control()
+            plt = Plot(d, control, trading_client)
+            p = plt.plot_strategy("Plot")
+            plots.append(p)
+        
         df = pd.DataFrame(list(activated_algorithm.values()))    
         df['Percent_Difference'] = loss_analysis
+        df['plots'] = plots
         df['potential'] = potential
         df['current'] = current
+        
 
-        #plt = Plot(d, control, trading_client)
-        #p = plt.plot_strategy("Strat Name")
         return render(request, 'user/recommendations.html', {'df': df})
+              
     
     except:
         return render(request, "user/recommendations.html" , {"e": "Error. please try again."})
@@ -288,15 +304,18 @@ def add_to_watchlist(request):
     if request.method == "POST":
         alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
         symbol = request.POST["stock-symbol"]
-        try:
-            alpaca_account.add_to_watchlist(request.POST['watchlist-id'], symbol)
-        except APIError as e:
-            if "asset not found" in e.args[0]:
-                messages.warning(request, "The stock you just entered is not found")
-            if "duplicate symbol" in e.args[0]:
-                messages.warning(request, "The stock you just entered is already in the watch list")
+        if alpaca_account.is_crypto(symbol):
+            messages.warning(request, "We currently do not support crypto")
         else:
-            messages.success(request, "Watch list updated!")
+            try:
+                alpaca_account.add_to_watchlist(request.POST['watchlist-id'], symbol)
+            except APIError as e:
+                if "asset not found" in e.args[0]:
+                    messages.warning(request, "The stock you just entered is not found")
+                if "duplicate symbol" in e.args[0]:
+                    messages.warning(request, "The stock you just entered is already in the watch list")
+            else:
+                messages.success(request, "Watch list updated!")
 
     return redirect("/user/dashboard")
 

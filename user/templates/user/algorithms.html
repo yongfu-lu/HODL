@@ -2,152 +2,653 @@
 
 {% block content %}
 <div class="container">
-    <div class="mt-4 mb-4">
-        <form action="/user/algorithms/" method="post">
-            <h3>Moving average</h3>
-            {% csrf_token %}
-            <input type="hidden" name="algorithm" value="moving-average">
-            <input type="hidden" name="days-of-moving-avg" value=0>
-            <input type="hidden" name="over-percentage-threshold" value=0>
-            <input type="hidden" name="under-percentage-threshold" value=0>
-            <input type="hidden" name="standard-deviation" value=0>
-            <label for="stock-symbol">Stock Symbol:</label>
-            <input type="text" name="stock-symbol" id="stock-symbol" required value={% if MA|length != 0 %} {{MA.0.stock_name}}  {%endif%} >
-            <label for="amount">Investment amount:</label>
-            <input type="number" min="0" step="0.01" name="amount" id="amount" required value={% if MA|length != 0 %} {{MA.0.investment_amount}}  {%endif%}>
-            <br>
-            <label for="short-moving-avg">Short Moving Average:</label>
-            <input type="number" min="1" name="short-moving-avg" step="1" id="short-moving-avg" required  value={% if MA|length != 0 %} {{MA.0.short_moving_avg}}  {%endif%}>
-            <label for="long-moving-avg">Long Moving Average:</label>
-            <input type="number" min="1" name="long-moving-avg" step="1" id="long-moving-avg" required  value={% if MA|length != 0 %} {{MA.0.long_moving_avg}}  {%endif%}>
-            <br>
-            <button type="submit" class="btn btn-primary" name="submit-button" value="activate"> Activate</button>
-        </form>
-        <form action="/user/algorithms/" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="algorithm" value="moving-average">
-            <button type="submit" class="btn btn-danger mt-2" name="submit-button" value="deactivate"> De-activate
-            </button>
-        </form>
+    <!--Moving Average -->
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="mt-4 mb-4 card p-2 text-center" style="background-color: #C9CCD5">
+                <span class="h3">Moving Average</span>
+                <button type="button" class="btn btn-primary m-auto" data-toggle="modal"
+                        data-target="#add-moving-average">
+                    Add Stocks
+                </button>
+                <!-- Modal -->
+                <div class="modal fade" id="add-moving-average" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Apply Moving Average Strategy a Stock</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form action="/user/algorithms/" method="post" class="text-left">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    <input type="hidden" name="algorithm" value="moving-average">
+                                    <input type="hidden" name="days-of-moving-avg" value=0>
+                                    <input type="hidden" name="over-percentage-threshold" value=0>
+                                    <input type="hidden" name="under-percentage-threshold" value=0>
+                                    <input type="hidden" name="standard-deviation" value=0>
+                                    <label for="stock-symbol">Stock Symbol:</label>
+                                    <input type="text" name="stock-symbol" id="stock-symbol" required> <br>
+                                    <label for="amount">Investment amount:</label>
+                                    <input type="number" min="0" step="0.01" name="amount" id="amount" required>
+                                    <br>
+                                    <label for="short-moving-avg">Short Moving Average:</label>
+                                    <input type="number" min="1" max="1000" name="short-moving-avg" step="1"
+                                           id="short-moving-avg"
+                                           required><br>
+                                    <label for="long-moving-avg">Long Moving Average:</label>
+                                    <input type="number" min="1" max="1000" name="long-moving-avg" step="1"
+                                           id="long-moving-avg"
+                                           required>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary" name="submit-button" value="activate">
+                                        Activate
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--end of modal-->
+                {% if MA|length > 0%}
+                <p>Applied Stocks: </p>
+                <ul class="list-group">
+                    {%for ma in MA%}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ma.stock_name}}
+                        <button type="submit" class="btn btn-success badge badge-pill ml-auto mr-2" name="submit-button"
+                                data-toggle="modal"
+                                data-target="#madetail{{ma.id}}"
+                                value="deactivate">
+                            Detail
+                        </button>
+                        <div class="modal fade" id="madetail{{ma.id}}" tabindex="-1" role="dialog">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Detail</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <form action="/user/algorithms/" method="post" class="text-left">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <input type="hidden" name="algorithm" value="moving-average">
+                                            <input type="hidden" name="days-of-moving-avg" value=0>
+                                            <input type="hidden" name="over-percentage-threshold" value=0>
+                                            <input type="hidden" name="under-percentage-threshold" value=0>
+                                            <input type="hidden" name="standard-deviation" value=0>
+                                            <label for="stock-symbol">Stock Symbol:</label>
+                                            <input type="text" name="stock-symbol" id="stock-symbol-detail{{ma.id}}"
+                                                   value="{{ma.stock_name}}" required readonly> <br>
+                                            <label for="amount">Investment amount:</label>
+                                            <input type="number" min="0" step="0.01" name="amount"
+                                                   id="amount-detail{{ma.id}}" value="{{ma.investment_amount}}"
+                                                   required>
+                                            <br>
+                                            <label for="short-moving-avg">Short Moving Average:</label>
+                                            <input type="number" min="1" max="1000" name="short-moving-avg" step="1"
+                                                   id="short-moving-avg-detail{{ma.id}}"
+                                                   value="{{ma.short_moving_avg}}"
+                                                   required><br>
+                                            <label for="long-moving-avg">Long Moving Average:</label>
+                                            <input type="number" min="1" max="1000" name="long-moving-avg" step="1"
+                                                   id="long-moving-avg{{ma.id}}"
+                                                   value="{{ma.long_moving_avg}}"
+                                                   required>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                Cancel
+                                            </button>
+                                            <button type="submit" class="btn btn-primary" name="submit-button"
+                                                    value="activate">
+                                                Update
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <form action="/user/algorithms/" method="post" style="line-height: 1">
+                            {% csrf_token %}
+                            <input type="hidden" name="id" value={{ma.id}}>
+                            <button type="submit" class="btn btn-danger badge badge-pill" name="submit-button"
+                                    value="deactivate">
+                                De-activate
+                            </button>
+                        </form>
+                    </li>
+                    {%endfor%}
+                </ul>
+                {%endif%}
+            </div>
+        </div>
     </div>
+    <!--end of moving average-->
 
-    <div class="mt-4 mb-4">
-        <form action="/user/algorithms/" method="post">
-            <h3>Relative Strength Indicator</h3>
-            {% csrf_token %}
-            <input type="hidden" name="algorithm" value="relative-strength-indicator">
-            <input type="hidden" name="short-moving-avg" value=0>
-            <input type="hidden" name="long-moving-avg" value=0>
-            <input type="hidden" name="standard-deviation" value=0>
+    <!--relative  strength indicator-->
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="mt-4 mb-4 card p-2 text-center" style="background-color: #C9CCD5">
+                <span class="h3">Relative Strength Indicator</span>
+                <button type="button" class="btn btn-primary m-auto" data-toggle="modal" data-target="#add-rsi">
+                    Add Stocks
+                </button>
+                <!-- Modal -->
+                <div class="modal fade" id="add-rsi" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Apply Relative Strength Indicator Strategy a Stock</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form action="/user/algorithms/" method="post" class="text-left">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    <input type="hidden" name="algorithm" value="relative-strength-indicator">
+                                    <input type="hidden" name="short-moving-avg" value=0>
+                                    <input type="hidden" name="long-moving-avg" value=0>
+                                    <input type="hidden" name="standard-deviation" value=0>
 
-            <label for="stock-symbol-2">Stock Symbol:</label>
-            <input type="text" name="stock-symbol" id="stock-symbol-2" required value={% if RSI|length != 0 %} {{RSI.0.stock_name}}  {%endif%}>
-            <label for="amount">Investment amount:</label>
-            <input type="number" min="0" step="0.01" name="amount" id="amount-2" required value={% if RSI|length != 0 %} {{RSI.0.investment_amount}}  {%endif%}>
-            <label for="days-of-moving-avg-2">Days of Moving Avg:</label>
-            <input type="number" min="1" step="1" name="days-of-moving-avg" id="days-of-moving-avg-2" required value={% if RSI|length != 0 %} {{RSI.0.days_of_moving_avg}}  {%endif%}>
-            <br>
-            <label for="over-percentage-threshold-2">Over Percentage Threshold:</label>
-            <input type="number" min="1" step="0.01" name="over-percentage-threshold" id="over-percentage-threshold-2" required value={% if RSI|length != 0 %} {{RSI.0.over_percentage_threshold}}  {%endif%}>
-            <label for="under-percentage-threshold-2">Under Percentage Threshold:</label>
-            <input type="number" min="1" step="0.01" name="under-percentage-threshold" id="under-percentage-threshold-2" required value={% if RSI|length != 0 %} {{RSI.0.under_percentage_threshold}}  {%endif%}>
-            <br>
-            <button type="submit" class="btn btn-primary" name="submit-button" value="activate"> Activate</button>
-        </form>
-        <form action="/user/algorithms/" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="algorithm" value="relative-strength-indicator">
-            <button type="submit" class="btn btn-danger mt-2" name="submit-button" value="deactivate"> De-activate
-            </button>
-        </form>
+                                    <label for="stock-symbol-2">Stock Symbol:</label>
+                                    <input type="text" name="stock-symbol" id="stock-symbol-2" required><br>
+                                    <label for="amount">Investment amount:</label>
+                                    <input type="number" min="0" step="0.01" name="amount" id="amount-2" required><br>
+                                    <label for="days-of-moving-avg-2">Days of Moving Avg:</label>
+                                    <input type="number" min="1" max="1000" step="1" name="days-of-moving-avg"
+                                           id="days-of-moving-avg-2"
+                                           required>
+                                    <br>
+                                    <label for="over-percentage-threshold-2">Over Percentage Threshold:</label>
+                                    <input type="number" min="1" max="100" step="0.01" name="over-percentage-threshold"
+                                           id="over-percentage-threshold-2"
+                                           required>
+                                    <label for="under-percentage-threshold-2">Under Percentage Threshold:</label>
+                                    <input type="number" min="1" max="100" step="0.01" name="under-percentage-threshold"
+                                           id="under-percentage-threshold-2"
+                                           required>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary" name="submit-button" value="activate">
+                                        Activate
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--end of modal-->
+                {% if RSI|length > 0%}
+                <p>Applied Stocks: </p>
+                <ul class="list-group">
+                    {%for rsi in RSI%}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{rsi.stock_name}}
+                        <button type="submit" class="btn btn-success badge badge-pill ml-auto mr-2" name="submit-button"
+                                data-toggle="modal"
+                                data-target="#rsidetail{{rsi.id}}"
+                                value="deactivate">
+                            Detail
+                        </button>
+                        <div class="modal fade" id="rsidetail{{rsi.id}}" tabindex="-1" role="dialog">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Detail</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <form action="/user/algorithms/" method="post" class="text-left">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <input type="hidden" name="algorithm" value="relative-strength-indicator">
+                                            <input type="hidden" name="short-moving-avg" value=0>
+                                            <input type="hidden" name="long-moving-avg" value=0>
+                                            <input type="hidden" name="standard-deviation" value=0>
+
+                                            <label for="stock-symbol-2">Stock Symbol:</label>
+                                            <input type="text" name="stock-symbol" id="stock-symbol-2-detail{{rsi.id}}"
+                                                   value="{{rsi.stock_name}}" required readonly><br>
+                                            <label for="amount">Investment amount:</label>
+                                            <input type="number" min="0" step="0.01" name="amount"
+                                                   id="amount-2-detail{{rsi.id}}" value="{{rsi.investment_amount}}"
+                                                   required><br>
+                                            <label for="days-of-moving-avg-2">Days of Moving Avg:</label>
+                                            <input type="number" min="1" max="1000" step="1" name="days-of-moving-avg"
+                                                   id="days-of-moving-avg-2-detail{{rsi.id}}"
+                                                   value="{{rsi.days_of_moving_avg}}"
+                                                   required>
+                                            <br>
+                                            <label for="over-percentage-threshold-2">Over Percentage Threshold:</label>
+                                            <input type="number" min="1" max="100" step="0.01"
+                                                   name="over-percentage-threshold"
+                                                   id="over-percentage-threshold-2-detail{{rsi.id}}"
+                                                   value="{{rsi.over_percentage_threshold}}"
+                                                   required>
+                                            <label for="under-percentage-threshold-2">Under Percentage
+                                                Threshold:</label>
+                                            <input type="number" min="1" max="100" step="0.01"
+                                                   name="under-percentage-threshold"
+                                                   id="under-percentage-threshold-2-detail{{rsi.id}}"
+                                                   value="{{rsi.under_percentage_threshold}}"
+                                                   required>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                Cancel
+                                            </button>
+                                            <button type="submit" class="btn btn-primary" name="submit-button"
+                                                    value="activate">
+                                                Update
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <form action="/user/algorithms/" method="post" style="line-height:1">
+                            {% csrf_token %}
+                            <input type="hidden" name="id" value={{rsi.id}}>
+                            <button type="submit" class="btn btn-danger badge badge-pill" name="submit-button"
+                                    value="deactivate">
+                                De-activate
+                            </button>
+                        </form>
+                    </li>
+                    {%endfor%}
+                </ul>
+                {%endif%}
+            </div>
+        </div>
     </div>
+    <!--end of relative strength indicator-->
+    <!--  Average True range   -->
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="mt-4 mb-4 card p-2 text-center" style="background-color: #C9CCD5">
+                <span class="h3">Average True Range</span>
+                <button type="button" class="btn btn-primary m-auto" data-toggle="modal" data-target="#add-atr">
+                    Add Stocks
+                </button>
+                <!-- Modal -->
+                <div class="modal fade" id="add-atr" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Apply Average True Range Strategy a Stock</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form action="/user/algorithms/" method="post" class="text-left">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    <input type="hidden" name="algorithm" value="average-true-range">
+                                    <input type="hidden" name="days-of-moving-avg" value=0>
+                                    <input type="hidden" name="over-percentage-threshold" value=0>
+                                    <input type="hidden" name="under-percentage-threshold" value=0>
+                                    <input type="hidden" name="standard-deviation" value=0>
+                                    <label for="stock-symbol-3">Stock Symbol:</label>
+                                    <input type="text" name="stock-symbol" id="stock-symbol-3" required><br>
+                                    <label for="amount-3">Investment amount:</label>
+                                    <input type="number" min="0" step="0.01" name="amount" id="amount-3" required>
+                                    <br>
+                                    <label for="short-moving-avg-3">Short Moving Average:</label>
+                                    <input type="number" min="1" max="1000" step="1" name="short-moving-avg"
+                                           id="short-moving-avg-3" required><br>
+                                    <label for="long-moving-avg-3">Long Moving Average:</label>
+                                    <input type="number" min="1" max="1000" step="1" name="long-moving-avg"
+                                           id="long-moving-avg-3"
+                                           required>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary" name="submit-button" value="activate">
+                                        Activate
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--end of modal-->
+                {% if ATR|length > 0%}
+                <p>Applied Stocks: </p>
+                <ul class="list-group">
+                    {%for atr in ATR%}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{atr.stock_name}}
+                        <button type="submit" class="btn btn-success badge badge-pill ml-auto mr-2" name="submit-button"
+                                data-toggle="modal"
+                                data-target="#atrdetail{{atr.id}}"
+                                value="deactivate">
+                            Detail
+                        </button>
+                        <div class="modal fade" id="atrdetail{{atr.id}}" tabindex="-1" role="dialog">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Detail</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <form action="/user/algorithms/" method="post" class="text-left">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <input type="hidden" name="algorithm" value="average-true-range">
+                                            <input type="hidden" name="days-of-moving-avg" value=0>
+                                            <input type="hidden" name="over-percentage-threshold" value=0>
+                                            <input type="hidden" name="under-percentage-threshold" value=0>
+                                            <input type="hidden" name="standard-deviation" value=0>
+                                            <label for="stock-symbol-3">Stock Symbol:</label>
+                                            <input type="text" name="stock-symbol" id="stock-symbol-3-detail{{atr.id}}"
+                                                   value="{{atr.stock_name}}" required readonly><br>
+                                            <label for="amount-3">Investment amount:</label>
+                                            <input type="number" min="0" step="0.01" name="amount"
+                                                   id="amount-3-detail{{atr.id}}" value="{{atr.investment_amount}}"
+                                                   required>
+                                            <br>
+                                            <label for="short-moving-avg-3">Short Moving Average:</label>
+                                            <input type="number" min="1" max="1000" step="1" name="short-moving-avg"
+                                                   id="short-moving-avg-3-detail{{atr.id}}"
+                                                   value="{{atr.short_moving_avg}}" required><br>
+                                            <label for="long-moving-avg-3">Long Moving Average:</label>
+                                            <input type="number" min="1" max="1000" step="1" name="long-moving-avg"
+                                                   id="long-moving-avg-3-detail{{atr.id}}"
+                                                   value="{{atr.long_moving_avg}}"
+                                                   required>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                Cancel
+                                            </button>
+                                            <button type="submit" class="btn btn-primary" name="submit-button"
+                                                    value="activate">
+                                                Update
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
 
-    <div class="mt-4 mb-4">
-        <form action="/user/algorithms/" method="post">
-            <h3>Average True Range</h3>
-            {% csrf_token %}
-            <input type="hidden" name="algorithm" value="average-true-range">
-            <input type="hidden" name="days-of-moving-avg" value=0>
-            <input type="hidden" name="over-percentage-threshold" value=0>
-            <input type="hidden" name="under-percentage-threshold" value=0>
-            <input type="hidden" name="standard-deviation" value=0>
-            <label for="stock-symbol-3">Stock Symbol:</label>
-            <input type="text" name="stock-symbol" id="stock-symbol-3" required value={% if ATR|length != 0 %} {{ATR.0.stock_name}}  {%endif%}>
-            <label for="amount-3">Investment amount:</label>
-            <input type="number" min="0" step="0.01" name="amount" id="amount-3" required value={% if ATR|length != 0 %} {{ATR.0.investment_amount}}  {%endif%}>
-            <br>
-            <label for="short-moving-avg-3">Short Moving Average:</label>
-            <input type="number" min="1" step="1" name="short-moving-avg" id="short-moving-avg-3" required value={% if ATR|length != 0 %} {{ATR.0.short_moving_avg}}  {%endif%}>
-            <label for="long-moving-avg-3">Long Moving Average:</label>
-            <input type="number" min="1" step="1" name="long-moving-avg" id="long-moving-avg-3" required value={% if ATR|length != 0 %} {{ATR.0.long_moving_avg}}  {%endif%}>
-            <br>
-            <button type="submit" class="btn btn-primary" name="submit-button" value="activate"> Activate</button>
-        </form>
-        <form action="/user/algorithms/" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="algorithm" value="average-true-range">
-            <button type="submit" class="btn btn-danger mt-2" name="submit-button" value="deactivate"> De-activate
-            </button>
-        </form>
+                        <form action="/user/algorithms/" method="post" style="line-height: 1">
+                            {% csrf_token %}
+                            <input type="hidden" name="id" value={{atr.id}}>
+                            <button type="submit" class="btn btn-danger badge badge-pill" name="submit-button"
+                                    value="deactivate">
+                                De-activate
+                            </button>
+                        </form>
+                    </li>
+                    {%endfor%}
+                </ul>
+                {%endif%}
+            </div>
+        </div>
     </div>
+    <!--    end of average true range-->
+    <!--MACD fib levels-->
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="mt-4 mb-4 card p-2 text-center" style="background-color: #C9CCD5">
+                <span class="h3">MACD With Fibonacci Levels</span>
+                <button type="button" class="btn btn-primary m-auto" data-toggle="modal" data-target="#add-fib">
+                    Add Stocks
+                </button>
+                <!-- Modal -->
+                <div class="modal fade" id="add-fib" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Apply MACD Fibonacci Levels a Stock</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form action="/user/algorithms/" method="post" class="text-left">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    <input type="hidden" name="algorithm" value="MACD-with-fibonacci-levels">
+                                    <input type="hidden" name="days-of-moving-avg" value=0>
+                                    <input type="hidden" name="over-percentage-threshold" value=0>
+                                    <input type="hidden" name="under-percentage-threshold" value=0>
+                                    <input type="hidden" name="standard-deviation" value=0>
+                                    <label for="stock-symbol-4">Stock Symbol:</label>
+                                    <input type="text" name="stock-symbol" id="stock-symbol-4" required> <br>
+                                    <label for="amount-4">Investment amount:</label>
+                                    <input type="number" min="0" step="0.01" name="amount" id="amount-4" required> <br>
 
-    <div class="mt-4 mb-4">
-        <form action="/user/algorithms/" method="post">
-            <h3>MACD with Fibonacci Levels</h3>
-            {% csrf_token %}
-            <input type="hidden" name="algorithm" value="MACD-with-fibonacci-levels">
-            <input type="hidden" name="days-of-moving-avg" value=0>
-            <input type="hidden" name="over-percentage-threshold" value=0>
-            <input type="hidden" name="under-percentage-threshold" value=0>
-            <input type="hidden" name="standard-deviation" value=0>
-            <label for="stock-symbol-4">Stock Symbol:</label>
-            <input type="text" name="stock-symbol" id="stock-symbol-4" required value={% if FIB|length != 0 %} {{FIB.0.stock_name}}  {%endif%}>
-            <label for="amount-4">Investment amount:</label>
-            <input type="number" min="0" step="0.01" name="amount" id="amount-4" required value={% if FIB|length != 0 %} {{FIB.0.investment_amount}}  {%endif%}>
-            <br>
-            <label for="short-moving-avg-4">Short Moving Average:</label>
-            <input type="number" min="1" step="1" name="short-moving-avg" id="short-moving-avg-4" required value={% if FIB|length != 0 %} {{FIB.0.short_moving_avg}}  {%endif%}>
-            <label for="long-moving-avg-4">Long Moving Average:</label>
-            <input type="number" min="1" step="1" name="long-moving-avg" id="long-moving-avg-4" required value={% if FIB|length != 0 %} {{FIB.0.long_moving_avg}}  {%endif%}>
-            <br>
-            <button type="submit" class="btn btn-primary" name="submit-button" value="activate"> Activate</button>
-        </form>
-        <form action="/user/algorithms/" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="algorithm" value="MACD-with-fibonacci-levels">
-            <button type="submit" class="btn btn-danger mt-2" name="submit-button" value="deactivate"> De-activate
-            </button>
-        </form>
+                                    <label for="short-moving-avg-4">Short Moving Average:</label>
+                                    <input type="number" min="1" max="1000" step="1" name="short-moving-avg"
+                                           id="short-moving-avg-4" required> <br>
+                                    <label for="long-moving-avg-4">Long Moving Average:</label>
+                                    <input type="number" min="1" max="1000" step="1" name="long-moving-avg"
+                                           id="long-moving-avg-4"
+                                           required>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary" name="submit-button" value="activate">
+                                        Activate
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--end of modal-->
+                {% if FIB|length > 0%}
+                <p>Applied Stocks: </p>
+                <ul class="list-group">
+                    {%for fib in FIB%}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{fib.stock_name}}
+                        <button type="submit" class="btn btn-success badge badge-pill ml-auto mr-2" name="submit-button"
+                                data-toggle="modal"
+                                data-target="#fibdetail{{fib.id}}"
+                                value="deactivate">
+                            Detail
+                        </button>
+                        <div class="modal fade" id="fibdetail{{fib.id}}" tabindex="-1" role="dialog">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Detail</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <form action="/user/algorithms/" method="post" class="text-left">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <input type="hidden" name="algorithm" value="MACD-with-fibonacci-levels">
+                                            <input type="hidden" name="days-of-moving-avg" value=0>
+                                            <input type="hidden" name="over-percentage-threshold" value=0>
+                                            <input type="hidden" name="under-percentage-threshold" value=0>
+                                            <input type="hidden" name="standard-deviation" value=0>
+                                            <label for="stock-symbol-4">Stock Symbol:</label>
+                                            <input type="text" name="stock-symbol" id="stock-symbol-4-detail{{fib.id}}"
+                                                   value="{{fib.stock_name}}" required readonly> <br>
+                                            <label for="amount-4">Investment amount:</label>
+                                            <input type="number" min="0" step="0.01" name="amount"
+                                                   id="amount-4-detail{{fib.id}}"
+                                                   value="{{fib.investment_amount}}"
+                                                   required> <br>
+
+                                            <label for="short-moving-avg-4">Short Moving Average:</label>
+                                            <input type="number" min="1" max="1000" step="1" name="short-moving-avg"
+                                                   id="short-moving-avg-4-detail{{fib.id}}"
+                                                   value="{{fib.short_moving_avg}}"
+                                                   required> <br>
+                                            <label for="long-moving-avg-4">Long Moving Average:</label>
+                                            <input type="number" min="1" max="1000" step="1" name="long-moving-avg"
+                                                   id="long-moving-avg-4-detail{{fib.id}}"
+                                                   value="{{fib.long_moving_avg}}"
+                                                   required>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                Cancel
+                                            </button>
+                                            <button type="submit" class="btn btn-primary" name="submit-button"
+                                                    value="activate">
+                                                Update
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <form action="/user/algorithms/" method="post" style="line-height: 1">
+                            {% csrf_token %}
+                            <input type="hidden" name="id" value={{fib.id}}>
+                            <button type="submit" class="btn btn-danger badge badge-pill" name="submit-button"
+                                    value="deactivate">
+                                De-activate
+                            </button>
+                        </form>
+                    </li>
+                    {%endfor%}
+                </ul>
+                {%endif%}
+            </div>
+        </div>
     </div>
-
-    <div class="mt-4 mb-4">
-        <form action="/user/algorithms/" method="post">
-            <h3>Bollinger Bands</h3>
-            {% csrf_token %}
-            <input type="hidden" name="algorithm" value="billinger-bands">
-            <input type="hidden" name="over-percentage-threshold" value=0>
-            <input type="hidden" name="under-percentage-threshold" value=0>
-            <input type="hidden" name="short-moving-avg" value=0>
-            <input type="hidden" name="long-moving-avg" value=0>
-            <label for="stock-symbol-5">Stock Symbol:</label>
-            <input type="text" name="stock-symbol" id="stock-symbol-5" required value={% if BB|length != 0 %} {{BB.0.stock_name}}  {%endif%}>
-            <label for="amount-5">Investment amount:</label>
-            <input type="number" min="0" step="0.01" name="amount" id="amount-5" required value={% if BB|length != 0 %} {{BB.0.investment_amount}}  {%endif%}>
-            <br>
-            <label for="days-of-moving-avg-5">Days of Moving Avg:</label>
-            <input type="number" min="1" step="1" name="days-of-moving-avg" id="days-of-moving-avg-5" required value={% if BB|length != 0 %} {{BB.0.days_of_moving_avg}}  {%endif%}>
-            <label for="standard-deviation-5">Standard Deviation:</label>
-            <input type="number" min="1" step="0.01" name="standard-deviation" id="standard-deviation-5" required value={% if BB|length != 0 %} {{BB.0.standard_deviation}}  {%endif%}>
-            <br>
-            <button type="submit" class="btn btn-primary" name="submit-button" value="activate"> Activate</button>
-        </form>
-        <form action="/user/algorithms/" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="algorithm" value="billinger-bands">
-            <button type="submit" class="btn btn-danger mt-2" name="submit-button" value="deactivate"> De-activate
-            </button>
-        </form>
+    <!--  end of MACD fib levels  -->
+    <!--    Bollinger bands -->
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="mt-4 mb-4 card p-2 text-center" style="background-color: #C9CCD5">
+                <span class="h3">Bollinger Bands</span>
+                <button type="button" class="btn btn-primary m-auto" data-toggle="modal" data-target="#add-bb">
+                    Add Stocks
+                </button>
+                <!-- Modal -->
+                <div class="modal fade" id="add-bb" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Apply Bollinger Bands to a Stock</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form action="/user/algorithms/" method="post" class="text-left">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    <input type="hidden" name="algorithm" value="bollinger-bands">
+                                    <input type="hidden" name="over-percentage-threshold" value=0>
+                                    <input type="hidden" name="under-percentage-threshold" value=0>
+                                    <input type="hidden" name="short-moving-avg" value=0>
+                                    <input type="hidden" name="long-moving-avg" value=0>
+                                    <label for="stock-symbol-5">Stock Symbol:</label>
+                                    <input type="text" name="stock-symbol" id="stock-symbol-5" required><br>
+                                    <label for="amount-5">Investment amount:</label>
+                                    <input type="number" min="0" step="0.01" name="amount" id="amount-5" required>
+                                    <br>
+                                    <label for="days-of-moving-avg-5">Days of Moving Avg:</label>
+                                    <input type="number" min="1" max="1000" step="1" name="days-of-moving-avg"
+                                           id="days-of-moving-avg-5" required><br>
+                                    <label for="standard-deviation-5">Standard Deviation:</label>
+                                    <input type="number" min="1" step="0.01" name="standard-deviation"
+                                           id="standard-deviation-5" required>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary" name="submit-button" value="activate">
+                                        Activate
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--end of modal-->
+                {% if BB|length > 0%}
+                <p>Applied Stocks: </p>
+                <ul class="list-group">
+                    {%for bb in BB%}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{bb.stock_name}}
+                        <button type="submit" class="btn btn-success badge badge-pill ml-auto mr-2" name="submit-button"
+                                data-toggle="modal"
+                                data-target="#bbdetail{{bb.id}}"
+                                value="deactivate">
+                            Detail
+                        </button>
+                        <div class="modal fade" id="bbdetail{{bb.id}}" tabindex="-1" role="dialog">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Detail</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <form action="/user/algorithms/" method="post" class="text-left">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <input type="hidden" name="algorithm" value="bollinger-bands">
+                                            <input type="hidden" name="over-percentage-threshold" value=0>
+                                            <input type="hidden" name="under-percentage-threshold" value=0>
+                                            <input type="hidden" name="short-moving-avg" value=0>
+                                            <input type="hidden" name="long-moving-avg" value=0>
+                                            <label for="stock-symbol-5">Stock Symbol:</label>
+                                            <input type="text" name="stock-symbol" id="stock-symbol-5-detail{{bb.id}}" value="{{bb.stock_name}}"required readonly>
+                                            <br>
+                                            <label for="amount-5">Investment amount:</label>
+                                            <input type="number" min="0" step="0.01" name="amount" id="amount-5-detail{{bb.id}}"
+                                                   value="{{bb.investment_amount}}"
+                                                   required>
+                                            <br>
+                                            <label for="days-of-moving-avg-5">Days of Moving Avg:</label>
+                                            <input type="number" min="1" max="1000" step="1" name="days-of-moving-avg"
+                                                   id="days-of-moving-avg-5-detail{{bb.id}}" value="{{bb.days_of_moving_avg}}"
+                                                   required><br>
+                                            <label for="standard-deviation-5">Standard Deviation:</label>
+                                            <input type="number" min="1" step="0.01" name="standard-deviation"
+                                                   id="standard-deviation-5-detail{{bb.id}}" value="{{bb.standard_deviation}}"
+                                                   required>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                Cancel
+                                            </button>
+                                            <button type="submit" class="btn btn-primary" name="submit-button"
+                                                    value="activate">
+                                                Update
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <form action="/user/algorithms/" method="post" style="line-height: 1">
+                            {% csrf_token %}
+                            <input type="hidden" name="id" value={{bb.id}}>
+                            <button type="submit" class="btn btn-danger badge badge-pill" name="submit-button"
+                                    value="deactivate">
+                                De-activate
+                            </button>
+                        </form>
+                    </li>
+                    {%endfor%}
+                </ul>
+                {%endif%}
+            </div>
+        </div>
     </div>
 </div>
-
 {% endblock %}
