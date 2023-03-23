@@ -8,7 +8,7 @@
 <div class="container mt-2 bg-light">
     <h3 class="text-center">Account Balance </h3>
     {% if is_account_linked %}
-    <table class="table">
+    <table class="table text-center">
         <thead>
         <tr>
             <th scope="col">Equity</th>
@@ -19,8 +19,16 @@
         <tbody>
         <tr>
             <td id="equity">${{account.equity|floatformat:2}}</td>
-            <td id="change-of-today">${{account.equity|sub:account.last_equity|floatformat:2}}</td>
-            <td id="perc-change-of-today">{{account.equity|sub:account.last_equity|div:account.last_equity|mult:100|floatformat:2}}%</td>
+            <td>
+                <div id="change-of-today" class="btn {% if account.equity|sub:account.last_equity|positive  %} btn-success {%else%} btn-danger {%endif%}">
+                    ${{account.equity|sub:account.last_equity|floatformat:2}}
+                </div>
+            </td>
+            <td >
+                <div id="perc-change-of-today" class="btn {% if account.equity|sub:account.last_equity|positive %} btn-success {%else%} btn-danger {%endif%}">
+                {{account.equity|sub:account.last_equity|div:account.last_equity|mult:100|floatformat:2}}%
+                </div>
+            </td>
         </tr>
         </tbody>
     </table>
@@ -52,11 +60,23 @@
         <tr>
             <th scope="row" id="position-symbol-{{forloop.counter}}">{{position.symbol}}</th>
             <td id="position-qty-{{forloop.counter}}">{{position.qty}}</td>
-            <td id="position-current-price-{{forloop.counter}}">${{position.current_price}}</td>
-            <td id="position-change-today-{{forloop.counter}}">{{ position.change_today|mult:100|floatformat:2 }}%</td>
+            <td>
+                <div id="position-current-price-{{forloop.counter}}" class="btn {% if  position.change_today|positive %} btn-success {%else%} btn-danger {%endif%}">
+                ${{position.current_price}}
+                </div>
+            </td>
+            <td>
+                <div id="position-change-today-{{forloop.counter}}" class="btn {% if  position.change_today|positive %} btn-success {%else%} btn-danger {%endif%}">
+                    {{ position.change_today|mult:100|floatformat:2 }}%
+                </div>
+            </td>
             <td id="position-cost-basis-{{forloop.counter}}">${{position.cost_basis|floatformat:2}}</td>
             <td id="position-market-value-{{forloop.counter}}">${{position.market_value|floatformat:2}}</td>
-            <td id="position-earning-{{forloop.counter}}">{{ position.market_value|sub:position.cost_basis|floatformat:2}}</td>
+            <td >
+                <div id="position-earning-{{forloop.counter}}" class="btn {% if  position.market_value|sub:position.cost_basis|positive %} btn-success {%else%} btn-danger {%endif%}">
+                {{ position.market_value|sub:position.cost_basis|floatformat:2}}
+                </div>
+            </td>
         </tr>
         {%endfor%}
         </tbody>
@@ -212,9 +232,21 @@
         {%for asset in watchlist.assets%}
         <tr>
             <th scope="row">{{asset.symbol}}</th>
-            <td id="watch-list-price-{{forloop.counter}}">${{asset.current_price|floatformat:2}}</td>
-            <td id="watch-list-change-of-today-{{forloop.counter}}">${{asset.price_change|floatformat:2}}</td>
-            <td id="watch-list-perc-change-of-today-{{forloop.counter}}">{{asset.price_change_perc|floatformat:2}}%</td>
+            <td >
+                <div id="watch-list-price-{{forloop.counter}}" class="btn {% if asset.price_change|positive %} btn-success {%else%} btn-danger {%endif%}">
+                    ${{asset.current_price|floatformat:2}}
+                </div>
+            </td>
+            <td >
+                <div id="watch-list-change-of-today-{{forloop.counter}}" class="btn {% if asset.price_change|positive %} btn-success {%else%} btn-danger {%endif%}">
+                    ${{asset.price_change|floatformat:2}}
+                </div>
+            </td>
+            <td >
+                <div id="watch-list-perc-change-of-today-{{forloop.counter}}" class="btn {% if asset.price_change|positive %} btn-success {%else%} btn-danger {%endif%}">
+                    {{asset.price_change_perc|floatformat:2}}%
+                </div>
+            </td>
             <th scope="col">
                 <form action="/user/remove-from-watchlist/" method="post">
                     {% csrf_token %}
