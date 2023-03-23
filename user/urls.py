@@ -15,4 +15,5 @@ urlpatterns = [
     path('remove-from-watchlist/', views.remove_from_watchlist, name='remove-from-watchlist'),
     path('all-positions/', views.all_positions, name='all-positions'),
     path('all-activities/', views.all_activities, name='all-activities'),
+    path('get-account/', views.get_account, name='get-account'),
 ]

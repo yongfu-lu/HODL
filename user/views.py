@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .forms import *
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib import messages
@@ -363,3 +363,36 @@ def all_activities(request):
         context["activities"] = paginator.get_page(page)
 
     return render(request, "user/all-activities.html", context)
+
+
+def get_account(request):
+    if not request.user.is_authenticated:
+        return redirect('/user/login')
+
+    alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
+    data = {
+        "is_account_linked": alpaca_account.account_linked,
+    }
+    if alpaca_account.account_linked:
+        account = {
+            'equity': round(float(alpaca_account.get_account().equity), 2),
+            'change_of_today': round(float(alpaca_account.get_account().equity) - float(alpaca_account.get_account().last_equity),2),
+            'perc_change_of_today': round((float(alpaca_account.get_account().equity) - float(alpaca_account.get_account().last_equity)) / float(alpaca_account.get_account().last_equity) * 100, 2)
+        }
+        watchlist = alpaca_account.get_stocks_in_watchlist()
+        positions_info = alpaca_account.get_positions()[:5]
+        positions = []
+        for position_info in positions_info:
+            positions.append({
+                'symbol': position_info.symbol,
+                'qty': position_info.qty,
+                'current_price': position_info.current_price,
+                'change_today': position_info.change_today,
+                'cost_basis': round(float(position_info.cost_basis), 2),
+                'market_value': round(float(position_info.market_value), 2),
+                'earning': round(float(position_info.market_value) - float(position_info.cost_basis), 2)
+            })
+        data["account"] = account
+        data["watchlist"] = watchlist
+        data['positions'] = positions
+    return JsonResponse(data)

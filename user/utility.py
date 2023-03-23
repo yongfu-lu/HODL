@@ -23,10 +23,8 @@ class AlpacaAccount:
             self.client.get_account()
             self.API = tradeapi.REST(api_key, secret_key, api_version="v2", base_url=self.base_url)
         except:
-            print("account is not found")
             self.account_linked = False
         else:
-            print("account is found")
             self.account_linked = True
 
     def get_account(self):
