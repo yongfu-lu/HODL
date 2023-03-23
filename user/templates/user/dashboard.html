@@ -53,7 +53,7 @@
             <th scope="row">{{position.symbol}}</th>
             <td>{{position.qty}}</td>
             <td>${{position.current_price}}</td>
-            <td>${{ position.change_today|mult:100|floatformat:2 }}%</td>
+            <td>{{ position.change_today|mult:100|floatformat:2 }}%</td>
             <td>${{position.cost_basis|floatformat:2}}</td>
             <td>${{position.market_value|floatformat:2}}</td>
             <td>{{ position.market_value|sub:position.cost_basis|floatformat:2}}</td>
@@ -212,9 +212,9 @@
         {%for asset in watchlist.assets%}
         <tr>
             <th scope="row">{{asset.symbol}}</th>
-            <td>${{asset.current_price|floatformat:2}}</td>
-            <td>${{asset.price_change|floatformat:2}}</td>
-            <td>{{asset.price_change_perc|floatformat:2}}%</td>
+            <td id="watch-list-price-{{forloop.counter}}">${{asset.current_price|floatformat:2}}</td>
+            <td id="watch-list-change-of-today-{{forloop.counter}}">${{asset.price_change|floatformat:2}}</td>
+            <td id="watch-list-perc-change-of-today-{{forloop.counter}}">{{asset.price_change_perc|floatformat:2}}%</td>
             <th scope="col">
                 <form action="/user/remove-from-watchlist/" method="post">
                     {% csrf_token %}
@@ -241,6 +241,11 @@
                    $('#equity').text("$" +data.account.equity);
                    $('#change-of-today').text("$" + data.account.change_of_today);
                    $('#perc-change-of-today').text(data.account.perc_change_of_today + "%");
+                   for (var i = 1; i<=data.watchlist.assets.length; i++){
+                       $('#watch-list-price-' + i).text("$" + data.watchlist.assets[i-1].current_price)
+                       $('#watch-list-change-of-today-' + i).text("$" + data.watchlist.assets[i-1].price_change.toFixed(2))
+                       $('#watch-list-perc-change-of-today-' + i).text(data.watchlist.assets[i-1].price_change_perc.toFixed(2) + "%")
+                   }
                }
            }, error: function(xhr, status, error){
                console.log('Error:', error);

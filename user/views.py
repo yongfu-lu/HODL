@@ -379,6 +379,8 @@ def get_account(request):
             'change_of_today': round(float(alpaca_account.get_account().equity) - float(alpaca_account.get_account().last_equity),2),
             'perc_change_of_today': round((float(alpaca_account.get_account().equity) - float(alpaca_account.get_account().last_equity)) / float(alpaca_account.get_account().last_equity) * 100, 2)
         }
+        watchlist = alpaca_account.get_stocks_in_watchlist()
         data["account"] = account
+        data["watchlist"] = watchlist
 
     return JsonResponse(data)
