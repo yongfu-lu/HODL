@@ -50,13 +50,13 @@
         <tbody>
         {% for position in positions%}
         <tr>
-            <th scope="row">{{position.symbol}}</th>
-            <td>{{position.qty}}</td>
-            <td>${{position.current_price}}</td>
-            <td>{{ position.change_today|mult:100|floatformat:2 }}%</td>
-            <td>${{position.cost_basis|floatformat:2}}</td>
-            <td>${{position.market_value|floatformat:2}}</td>
-            <td>{{ position.market_value|sub:position.cost_basis|floatformat:2}}</td>
+            <th scope="row" id="position-symbol-{{forloop.counter}}">{{position.symbol}}</th>
+            <td id="position-qty-{{forloop.counter}}">{{position.qty}}</td>
+            <td id="position-current-price-{{forloop.counter}}">${{position.current_price}}</td>
+            <td id="position-change-today-{{forloop.counter}}">{{ position.change_today|mult:100|floatformat:2 }}%</td>
+            <td id="position-cost-basis-{{forloop.counter}}">${{position.cost_basis|floatformat:2}}</td>
+            <td id="position-market-value-{{forloop.counter}}">${{position.market_value|floatformat:2}}</td>
+            <td id="position-earning-{{forloop.counter}}">{{ position.market_value|sub:position.cost_basis|floatformat:2}}</td>
         </tr>
         {%endfor%}
         </tbody>
@@ -245,6 +245,15 @@
                        $('#watch-list-price-' + i).text("$" + data.watchlist.assets[i-1].current_price)
                        $('#watch-list-change-of-today-' + i).text("$" + data.watchlist.assets[i-1].price_change.toFixed(2))
                        $('#watch-list-perc-change-of-today-' + i).text(data.watchlist.assets[i-1].price_change_perc.toFixed(2) + "%")
+                   }
+                   for(var i = 1; i<=data.positions.length; i++){
+                       $('#position-symbol-' + i).text(data.positions[i-1].symbol)
+                       $('#position-qty-' + i).text(data.positions[i-1].qty)
+                       $('#position-current-price-' + i).text("$" + data.positions[i-1].current_price)
+                       $('#position-change-today-' + i).text( (data.positions[i-1].change_today*100).toFixed(2) + "%")
+                       $('#position-cost-basis-' + i).text("$" + data.positions[i-1].cost_basis )
+                       $('#position-market-value-' + i).text("$" + data.positions[i-1].market_value)
+                       $('#position-earning-' + i).text("$" + data.positions[i-1].earning)
                    }
                }
            }, error: function(xhr, status, error){
