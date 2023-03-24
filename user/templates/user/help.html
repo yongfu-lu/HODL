@@ -1,8 +1,97 @@
 {% extends 'user/base.html' %}
 
 {% block content %}
-    <div class="container" style="min-height: calc(100vh - 130px);">
-        help page
+<style>
+    a {
+        color:grey;
+    }
+</style>
+<div style="min-height: calc(100vh - 80px); padding-top:65px;">
+    <div class="row">
+        <nav class="nav flex-column col-sm-2">
+            <a class="nav-link" href="#introduction">Introduction</a>
+            <a class="nav-link" href="#getting-start">Getting Start</a>
+            <nav class="nav flex-column">
+                <a class="nav-link ml-3 my-1" href="#link-to-brokerage">Link to Brokerage</a>
+                <a class="nav-link ml-3 my-1" href="#set-up-algorithm">Set Up Algorithm</a>
+            </nav>
+            <a class="nav-link" href="#algorithms">Algorithms</a>
+            <nav class="nav flex-column">
+                <a class="nav-link ml-3 my-1" href="#moving-average">Moving Average</a>
+                <a class="nav-link ml-3 my-1" href="#relative-strength-indicator">Relative Strength Indicator</a>
+                <a class="nav-link ml-3 my-1" href="#average-true-range">Average True Range</a>
+                <a class="nav-link ml-3 my-1" href="#macd">MACD with Fibonacci</a>
+                <a class="nav-link ml-3 my-1" href="#bollinger-bands">Bollinger Bands</a>
+            </nav>
+        </nav>
+
+        <div data-spy="scroll" data-offset="0" class="col-sm-10">
+            <h1 id="introduction">Introduction</h1>
+            <p>Algorithmic trading uses a computer program that follows a defined set of instructions (an algorithm) to place a trade.
+                The trade, in theory, can generate profits at a speed and frequency that is impossible for a human trader.</p>
+            <p>Use HODL to link your brokerage account and set up your first algorithmic trading !</p>
+
+            <br>
+            <h1 id="getting-start">Getting Start</h1>
+            <h3 id="link-to-brokerage"> Link to Brokerage </h3>
+            <p> 1. Sign up a trader account from <a href="https://alpaca.markets" style="color:blue; text-decoration: underline">Alpaca Market</a> </p>
+            <p> 2. Login your Alpaca Market account, find API keys and secret keys in your dashboard. (we currently only support paper trading account.)</p>
+            <p> 3. Copy the API key and secret key of your Alpaca Market account into <a href="/user/user-api" style="color:blue; text-decoration: underline">API Key</a> page.</p>
+
+            <br>
+            <h3 id="set-up-algorithm"> Set Up Algorithms </h3>
+            <p> 1. After you successfully link your Alpaca Market account, go to <a href="/user/algorithms" style="color:blue; text-decoration: underline">Algorithms</a> page</p>
+            <p> 2. Select any algorithm you want to use, click on Add Stock. Enter the stock symbol and parameters for the algorithm, then click Activate.</p>
+            <p> 3. You're done! HODL will take care of your trading now!</p>
+
+            <br>
+            <h1 id="algorithms"> Algorithms </h1>
+            <h4 id="moving-average">Moving Average</h4>
+            <p>Moving Average algorithm is based on calculating the moving average (MA) of a security's price over a specific period of time,
+                such as the previous 50 days or 200 days. A moving average is a simple arithmetic average of the security's price over the specified period,
+                and it is called "moving" because it is constantly recalculated as new data becomes available.</p>
+            <p>To set up a moving average algorithm, you need to input <span style="color: deeppink">Short Term Moving Average </span> and <span style="color: deeppink">Long Term Moving Average</span>.
+            These are the numbers of days you want to calculate the average price.</p>
+
+            <br>
+            <h4 id="relative-strength-indicator">Relative Strength Indicator</h4>
+            <p> The RSI is a momentum oscillator that measures the speed and change of price movements in a security.
+                Traders use the RSI to identify overbought and oversold conditions in the market. </p>
+            <p>To set up RSI, you need to input <span style="color: deeppink"> Moving Average Days</span>, <span style="color: deeppink">Over Percentage Threshold</span> and
+                <span style="color: deeppink">Under Percentage Threshold</span>.</p>
+            <p>Over Percentage Threshold and Under Percentage Threshold are numbers between 1 and 100.</p>
+
+            <br>
+            <h4 id="average-true-range">Average True Range</h4>
+            <p>Average True Range measures the average range of price movements in a security over a specified period of time.
+                It takes into account any gaps in price movements and can provide a more accurate measure of volatility than other measures,
+                such as standard deviation or variance.</p>
+            <p>To set up an average true range algorithm, you need to input <span style="color: deeppink">Short Term Moving Average </span> and <span style="color: deeppink">Long Term Moving Average</span>.
+            These are the numbers of days you want to calculate the price movements.</p>
+
+            <br>
+            <h4 id="macd">MACD with Fibonacci</h4>
+            <p> The MACD with Fibonacci trading algorithm is a technical analysis tool that combines two popular technical indicators:
+                the Moving Average Convergence Divergence (MACD) and Fibonacci retracements.</p>
+            <p>The MACD is a momentum indicator that uses two exponential moving averages (EMA) of different periods to identify potential trend changes and momentum shifts in a security's price. </p>
+            <p>Fibonacci retracements are a set of horizontal lines drawn on a chart to indicate areas of support and resistance based on key Fibonacci ratios. </p>
+            <p>To set up an MACD algorithm, you need to input <span style="color: deeppink">Short Term Moving Average </span> and <span style="color: deeppink">Long Term Moving Average</span>.
+            These are the numbers of days you want to calculate the moving average divergence.</p>
+
+            <br>
+            <h4 id="bollinger-bands">Bollinger Bands</h4>
+            <p>Bollinger Bands consist of a set of three bands, each of which is plotted numbers of standard deviations away from a simple moving average (SMA) of a security's price.
+            The upper band represents the upper price level of the security,
+            while the lower band represents the lower price level of the security.
+            The middle band represents the average price level of the security.
+            When the price of the security moves outside of the upper or lower bands, it may indicate a potential trend reversal or a breakout opportunity.</p>
+            <p>To set up an MACD algorithm, you need to input <span style="color: deeppink"> Days Moving Average </span> and <span style="color: deeppink">Standard Deviation</span>.
+            These are used for plotting the bands. </p>
+
+            <br>
+        </div>
     </div>
 
+
+</div>
 {% endblock %}
