@@ -16,4 +16,5 @@ urlpatterns = [
     path('all-positions/', views.all_positions, name='all-positions'),
     path('all-activities/', views.all_activities, name='all-activities'),
     path('get-account/', views.get_account, name='get-account'),
+    path('help/', views.help, name='help'),
 ]

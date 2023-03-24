@@ -396,3 +396,7 @@ def get_account(request):
         data["watchlist"] = watchlist
         data['positions'] = positions
     return JsonResponse(data)
+
+
+def help(request):
+    return render(request, "user/help.html", {})
