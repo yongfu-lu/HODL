@@ -83,9 +83,13 @@
 
     <footer class="bg-light py-3">
         <div class="container">
-            <p class="text-center m-0">&copy; 2023 HODL. All rights reserved.</p>
+        <p class="text-center m-0">&copy; <span id="year"></span> HODL. All rights reserved.</p>
         </div>
     </footer>
     
 </body>
+<script>
+  var year = new Date().getFullYear();
+  document.getElementById("year").innerHTML = year;
+</script>
 </html>

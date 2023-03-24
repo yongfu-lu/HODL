@@ -19,9 +19,10 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <a href="/" class="navbar-brand">HODL</a>
     {% if request.user.is_authenticated %}
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
             <li class="nav-item">
@@ -35,6 +36,9 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="/user/user-api">My API</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/user/help">Help</a>
             </li>
         </ul>
         <div class="dropdown">
@@ -69,7 +73,18 @@
     {% endblock %}
 </div>
 
+<footer class="bg-light py-3">
+    <div class="container">
+        <p class="text-center m-0">&copy; <span id="year"></span> HODL. All rights reserved.</p>
+    </div>
+</footer>
+
 </body>
+<script>
+  var year = new Date().getFullYear();
+  document.getElementById("year").innerHTML = year;
+</script>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"

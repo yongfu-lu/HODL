@@ -1,11 +1,14 @@
 {% extends 'user/base.html' %}
 {% load mathfilters %}
+{% load static %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
 <div class="container mt-2 bg-light">
     <h3 class="text-center">Account Balance </h3>
     {% if is_account_linked %}
-    <table class="table">
+    <table class="table text-center">
         <thead>
         <tr>
             <th scope="col">Equity</th>
@@ -15,9 +18,17 @@
         </thead>
         <tbody>
         <tr>
-            <td>${{account.equity|floatformat:2}}</td>
-            <td>${{account.equity|sub:account.last_equity|floatformat:2}}</td>
-            <td>{{account.equity|sub:account.last_equity|div:account.last_equity|mult:100|floatformat:2}}%</td>
+            <td id="equity">${{account.equity|floatformat:2}}</td>
+            <td>
+                <div id="change-of-today" class="btn {% if account.equity|sub:account.last_equity|positive  %} btn-success {%else%} btn-danger {%endif%}">
+                    ${{account.equity|sub:account.last_equity|floatformat:2}}
+                </div>
+            </td>
+            <td >
+                <div id="perc-change-of-today" class="btn {% if account.equity|sub:account.last_equity|positive %} btn-success {%else%} btn-danger {%endif%}">
+                {{account.equity|sub:account.last_equity|div:account.last_equity|mult:100|floatformat:2}}%
+                </div>
+            </td>
         </tr>
         </tbody>
     </table>
@@ -29,7 +40,7 @@
     {%endif%}
 </div>
 
-<div class="container mt-4">
+<div class="container text-center mt-4">
     <h3 class="text-center">Positions</h3>
     {%if is_account_linked %}
     <table class="table">
@@ -47,17 +58,30 @@
         <tbody>
         {% for position in positions%}
         <tr>
-            <th scope="row">{{position.symbol}}</th>
-            <td>{{position.qty}}</td>
-            <td>${{position.current_price}}</td>
-            <td>${{ position.change_today|mult:100|floatformat:2 }}%</td>
-            <td>${{position.cost_basis|floatformat:2}}</td>
-            <td>${{position.market_value|floatformat:2}}</td>
-            <td>{{ position.market_value|sub:position.cost_basis|floatformat:2}}</td>
+            <th scope="row" id="position-symbol-{{forloop.counter}}">{{position.symbol}}</th>
+            <td id="position-qty-{{forloop.counter}}">{{position.qty}}</td>
+            <td>
+                <div id="position-current-price-{{forloop.counter}}" class="btn {% if  position.change_today|positive %} btn-success {%else%} btn-danger {%endif%}">
+                ${{position.current_price}}
+                </div>
+            </td>
+            <td>
+                <div id="position-change-today-{{forloop.counter}}" class="btn {% if  position.change_today|positive %} btn-success {%else%} btn-danger {%endif%}">
+                    {{ position.change_today|mult:100|floatformat:2 }}%
+                </div>
+            </td>
+            <td id="position-cost-basis-{{forloop.counter}}">${{position.cost_basis|floatformat:2}}</td>
+            <td id="position-market-value-{{forloop.counter}}">${{position.market_value|floatformat:2}}</td>
+            <td >
+                <div id="position-earning-{{forloop.counter}}" class="btn {% if  position.market_value|sub:position.cost_basis|positive %} btn-success {%else%} btn-danger {%endif%}">
+                {{ position.market_value|sub:position.cost_basis|floatformat:2}}
+                </div>
+            </td>
         </tr>
         {%endfor%}
         </tbody>
     </table>
+    <a href="/user/all-positions/" class="btn btn-primary">View All Positions</a>
     {%else%}
     <div class="container text-center">
         <h6> Ops, We can't link to your Alpaca account</h6>
@@ -90,11 +114,11 @@
             </tbody>
         </table>
         {% endif %}
-        <a href="/user/algorithms" class="btn btn-primary"> Edit Activated Algorithms</a>
+        <a href="/user/algorithms" class="btn btn-primary"> View All Activated Algorithms</a>
     </div>
 </div>
 
-<div class="container mt-4">
+<div class="container text-center mt-4">
     <h3 class="text-center">Trading History</h3>
     {%if is_account_linked %}
     <table class="table">
@@ -123,6 +147,7 @@
         {%endfor%}
         </tbody>
     </table>
+    <a href="/user/all-activities/" class="btn btn-primary"> View All History</a>
     {%else%}
     <div class="container text-center">
         <h6> Ops, We can't link to your Alpaca account</h6>
@@ -155,8 +180,20 @@
                         <form action="/user/add-to-watchlist/" method="post" class="mb-4">
                             {% csrf_token %}
                             <div class="modal-body">
-                                <input type="text" class="form-control" name="stock-symbol"
-                                       placeholder="Enter Stock Symbol Here">
+                                <div style="position: relative">
+                                    <input type="text" class="form-control" name="stock-symbol" id="myInput"
+                                           placeholder="Enter Stock Symbol Here">
+                                    <div class="dropdown-content" id="myDropdown">
+                                        {%for stocks in all_stocks_alphabet%}
+                                        <div class="index{{forloop.counter}}">
+                                            {%for stock in stocks %}
+                                            <a style="display: none">{{stock}}</a>
+                                            {%endfor%}
+                                        </div>
+                                        {%endfor%}
+                                    </div>
+                                </div>
+
                                 <input type="hidden" name="watchlist-id" value={{watchlist.id}}>
                             </div>
                             <div class="modal-footer">
@@ -195,9 +232,21 @@
         {%for asset in watchlist.assets%}
         <tr>
             <th scope="row">{{asset.symbol}}</th>
-            <td>${{asset.current_price|floatformat:2}}</td>
-            <td>${{asset.price_change|floatformat:2}}</td>
-            <td>{{asset.price_change_perc|floatformat:2}}%</td>
+            <td >
+                <div id="watch-list-price-{{forloop.counter}}" class="btn {% if asset.price_change|positive %} btn-success {%else%} btn-danger {%endif%}">
+                    ${{asset.current_price|floatformat:2}}
+                </div>
+            </td>
+            <td >
+                <div id="watch-list-change-of-today-{{forloop.counter}}" class="btn {% if asset.price_change|positive %} btn-success {%else%} btn-danger {%endif%}">
+                    ${{asset.price_change|floatformat:2}}
+                </div>
+            </td>
+            <td >
+                <div id="watch-list-perc-change-of-today-{{forloop.counter}}" class="btn {% if asset.price_change|positive %} btn-success {%else%} btn-danger {%endif%}">
+                    {{asset.price_change_perc|floatformat:2}}%
+                </div>
+            </td>
             <th scope="col">
                 <form action="/user/remove-from-watchlist/" method="post">
                     {% csrf_token %}
@@ -212,4 +261,38 @@
     </table>
     {%endif%}
 </div>
+
+<script src="{% static 'script/dashboard.js' %}"></script>
+<script>
+    function updateAccount(){
+        $.ajax({
+           url: '/user/get-account/',
+           type:'GET',
+           success: function(data){
+               if (data.is_account_linked) {
+                   $('#equity').text("$" +data.account.equity);
+                   $('#change-of-today').text("$" + data.account.change_of_today);
+                   $('#perc-change-of-today').text(data.account.perc_change_of_today + "%");
+                   for (var i = 1; i<=data.watchlist.assets.length; i++){
+                       $('#watch-list-price-' + i).text("$" + data.watchlist.assets[i-1].current_price)
+                       $('#watch-list-change-of-today-' + i).text("$" + data.watchlist.assets[i-1].price_change.toFixed(2))
+                       $('#watch-list-perc-change-of-today-' + i).text(data.watchlist.assets[i-1].price_change_perc.toFixed(2) + "%")
+                   }
+                   for(var i = 1; i<=data.positions.length; i++){
+                       $('#position-symbol-' + i).text(data.positions[i-1].symbol)
+                       $('#position-qty-' + i).text(data.positions[i-1].qty)
+                       $('#position-current-price-' + i).text("$" + data.positions[i-1].current_price)
+                       $('#position-change-today-' + i).text( (data.positions[i-1].change_today*100).toFixed(2) + "%")
+                       $('#position-cost-basis-' + i).text("$" + data.positions[i-1].cost_basis )
+                       $('#position-market-value-' + i).text("$" + data.positions[i-1].market_value)
+                       $('#position-earning-' + i).text("$" + data.positions[i-1].earning)
+                   }
+               }
+           }, error: function(xhr, status, error){
+               console.log('Error:', error);
+            }
+        });
+    }
+    setInterval(updateAccount, 3000);
+</script>
 {% endblock %}
