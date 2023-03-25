@@ -127,9 +127,7 @@ class Algorithm:
             updated_shares = 0
 
         if (position == 'cash'):
-
             if (updated_shares > 0):
-
                 # sell order
                 market_order_data = MarketOrderRequest(
                                         symbol=symbol,
@@ -230,16 +228,6 @@ class Algorithm:
                 pos = 'cash'
             else:
                 prevpos = pos
-            # temp.append(self.investment if shares == 0 else shares*bars['close'][i])
-            # sh.append(shares)
-            # p.append(pos)
-            # if(prevpos == pos):
-            #     bsh.append(0)
-            # else:
-            #     if(pos=='cash'):
-            #         bsh.append(-1)
-            #     else:
-            #         bsh.append(1)
             prev_close = bars['close'][i]
 
         # retrieving user_id from DB
@@ -360,9 +348,6 @@ class Algorithm:
         signals = pd.DataFrame()
         signals['ma'] = bars['close'].rolling(window=ma_days).mean()
         signals['signal'] = 0.0
-        # in1 = []
-        # for index, row in bars.iterrows():
-        #     in1.append(index.date())
 
         signals['signal'][ma_days:] = np.where(bars['close'][ma_days:] > bands['upper band'][ma_days:], -1.0, 0.0)
         signals['signal'][ma_days:] = np.where(bars['close'][ma_days:] < bands['lower band'][ma_days:], 1.0, signals['signal'][ma_days:])
@@ -370,7 +355,6 @@ class Algorithm:
 
         positions = signals.positions.values.tolist()
         shares = 0
-        # temp, bsh, sh, p = [], [], [], []
         prevpos = 'cash'
         pos = 'cash'
         prev_close = 0
@@ -388,16 +372,6 @@ class Algorithm:
                 pos = 'cash'
             else:
                 prevpos = pos
-            # temp.append(self.investment if shares == 0 else shares*bars['close'][i])
-            # sh.append(shares)
-            # p.append(pos)
-            # if(prevpos == pos):
-            #     bsh.append(0)
-            # else:
-            #     if(pos=='cash'):
-            #         bsh.append(-1)
-            #     else:
-            #         bsh.append(1)
             prev_close = bars['close'][i]
         
         # retrieving user_id from DB
@@ -496,7 +470,6 @@ class Algorithm:
         self.conn.commit()
         
         ret = "\nEND OF BB FUNCTION TESTING\n"
-        # ret = pd.DataFrame({'date': in1, 'investment': temp, 'buy_sell_hold': bsh, 'position': p, 'shares': sh})
         return ret
 
     def execute_atr(self, start, symbol, short, long):
@@ -527,7 +500,6 @@ class Algorithm:
         data = bars['close']
 
         df = pd.concat([atr_short, atr_long, data], axis=1)
-        # in1, in2, in3, in4, in5 = [], [], [], [], []
 
         prev_close = 0
 
@@ -544,21 +516,6 @@ class Algorithm:
                 position = 'cash'
             else:
                 prevpos = position
-            # if position == 'long':
-            #     in1.append(index.date())
-            #     in2.append((row['close'] * shares))
-            # else:
-            #     in1.append(index.date())
-            #     in2.append(self.investment)
-            # if(prevpos == position):
-            #     in3.append(0)
-            # else:
-            #     if(position=='cash'):
-            #         in3.append(-1)
-            #     else:
-            #         in3.append(1)
-            # in4.append(position)
-            # in5.append(shares)
 
             prev_close = row['close']
 
@@ -661,7 +618,6 @@ class Algorithm:
         self.conn.commit()
         
         ret = "\nEND OF ATR FUNCTION TESTING\n"
-        # ret = pd.DataFrame({'date': in1, 'investment': in2, 'buy_sell_hold': in3, 'position': in4, 'shares': in5})
         return ret
 
     def execute_fib(self, start, symbol, short, long):
@@ -694,7 +650,6 @@ class Algorithm:
         df2 = data.to_frame()
 
         df = pd.concat([fib_signals, data], axis=1)
-        # in1, in2, in3, in4, in5 = [], [], [], [], []
 
         position = 'cash'
         prevpos = 'cash'
@@ -723,23 +678,6 @@ class Algorithm:
                     buy_price = 0
                 else:
                     prevpos = position
-
-            # if(prevpos == position):
-            #     in3.append(0)
-            # else:
-            #     if(position=='cash'):
-            #         in3.append(-1)
-            #     else:
-            #         in3.append(1)
-            # in4.append(position)
-            # in5.append(shares)
-            
-            # if position == 'long':
-            #     in1.append(index[1].date())
-            #     in2.append((row['close'] * shares))
-            # else:
-            #     in1.append(index[1].date())
-            #     in2.append(self.investment)
 
             hi_level, lo_level = get_level(price)
 
@@ -841,7 +779,6 @@ class Algorithm:
         self.conn.commit()
         
         ret = "\nEND OF FIB FUNCTION TESTING\n"
-        # ret = pd.DataFrame({'date': in1, 'investment': in2, 'buy_sell_hold': in3, 'position': in4, 'shares': in5})
         return ret
 
     def getVal(self):
