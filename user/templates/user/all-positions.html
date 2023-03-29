@@ -23,11 +23,23 @@
         <tr>
             <th scope="row">{{position.symbol}}</th>
             <td>{{position.qty}}</td>
-            <td>${{position.current_price}}</td>
-            <td>${{ position.change_today|mult:100|floatformat:2 }}%</td>
+            <td>
+                <div class="btn {% if  position.change_today|positive  %} btn-success {%else%} btn-danger {%endif%}">
+                    ${{position.current_price}}
+                </div>
+            </td>
+            <td>
+                <div class="btn {% if  position.change_today|positive  %} btn-success {%else%} btn-danger {%endif%}">
+                    ${{ position.change_today|mult:100|floatformat:2 }}%
+                </div>
+            </td>
             <td>${{position.cost_basis|floatformat:2}}</td>
             <td>${{position.market_value|floatformat:2}}</td>
-            <td>{{ position.market_value|sub:position.cost_basis|floatformat:2}}</td>
+            <td>
+                <div class="btn {% if  position.market_value|sub:position.cost_basis|positive  %} btn-success {%else%} btn-danger {%endif%}">
+                    {{ position.market_value|sub:position.cost_basis|floatformat:2}}
+                </div>
+            </td>
         </tr>
         {%endfor%}
         </tbody>
