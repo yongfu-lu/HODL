@@ -2,38 +2,61 @@
 
 {% block content %}
 
-  <h2>Recommendations</h2>
-  
- 
-  {% for index, row in df.iterrows %}
-  <div class="card">
-    <div class="card-body">
-      <h5 class="card-title">Algorithm: {{ row.algorithm }}</h5>
-      <p class="card-text">Stock Name: {{ row.stock_name }}</p>
-      <p class="card-text">Percent Difference: {{ row.Percent_Difference }}</p>
-      {{ row.plots|safe }}
-      <button class="btn btn-primary" onclick="showPopup('{{ row.Period }}', '{{row.investment_amount}}', '{{row.short_moving_avg}}', '{{row.long_moving_avg}}', '{{ row.current }}', '{{ row.potential }}')">See More Details</button>
-
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <h2 class="text-center mb-4">Recommendations</h2>
+      <div class="form-group">
+        <label for="period-select">Select Period:</label>
+        <select class="form-control" id="period-select">
+          <option value="period-1">Period 1: 05/20 - 05/22</option>
+          <option value="period-2">Period 2</option>
+          <option value="period-3">Period 3</option>
+          <option value="period-4">Period 4</option>
+        </select>
+      </div>
     </div>
   </div>
-  {% endfor %}
 
-  
-  <!-- {% if plots %}
-    {% for plot in plots %}
-      {{ plot|safe }}
-    {% endfor %}
-  {% endif %} -->
-  
-  <!-- {% if p %}
-  {% autoescape off %}
-    {{ p }}
-  {% endautoescape %}
-  {% endif %} -->
-  
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div id="period-1">
+        {% for index, row in df.iterrows %}
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Algorithm: {{ row.algorithm }}</h5>
+            <p class="card-text">Stock Name: {{ row.stock_name }}</p>
+            <p class="card-text">Percent Difference: {{ row.Percent_Difference }}</p>
+            {{ row.plots|safe }}
+            <button class="btn btn-primary" onclick="showPopup('{{row.investment_amount}}', '{{row.short_moving_avg}}', '{{row.long_moving_avg}}', '{{ row.current }}', '{{ row.potential }}')">See More Details</button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div id="no-strategies" class="text-center mt-4" style="display:none;">
+        <h5>No strategies generated during this time frame</h5>
+      </div>
+    </div>
+  </div>
 
   <script>
-    function showPopup(period, investment_amount, short_moving_avg, long_moving_avg, current, potential) {
+    var period1Div = document.getElementById("period-1");
+    var noStrategiesDiv = document.getElementById("no-strategies");
+    var periodSelect = document.getElementById("period-select");
+
+    periodSelect.addEventListener("change", function () {
+      var selectedPeriod = periodSelect.value;
+
+      if (selectedPeriod === "period-1") {
+        period1Div.style.display = "block";
+        noStrategiesDiv.style.display = "none";
+      } else {
+        period1Div.style.display = "none";
+        noStrategiesDiv.style.display = "block";
+      }
+    });
+
+    function showPopup(investment_amount, short_moving_avg, long_moving_avg, current, potential) {
       var popup = window.open("", "popup", "width=800,height=600");
       var popupDocument = popup.document;
     
@@ -115,11 +138,6 @@
       var longElement = popupDocument.createElement("p");
       longElement.innerHTML = "<strong>Long Moving Average:</strong> " + long_moving_avg;
       infoDiv.appendChild(longElement);
-
-      var periodElement = popupDocument.createElement("p");
-      periodElement.innerHTML = "<strong>Period:</strong> " + period;
-      infoDiv.appendChild(periodElement);
-    
 
       var currentEarningsElement = popupDocument.createElement("p");
       currentEarningsElement.innerHTML = "<strong>Current Earnings:</strong> " + current;
