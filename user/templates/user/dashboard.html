@@ -324,11 +324,11 @@
     window.addEventListener('DOMContentLoaded', function(){
         periodButtons = document.getElementsByClassName("period-section")
         for (var i = 0; i < periodButtons.length; i++) {
-          periodButtons[i].classList.add("btn-outline-dark");
+          periodButtons[i].classList.add("btn-outline-success");
         }
-      selectedButton = document.getElementById('7D')
-       selectedButton.classList.remove("btn-outline-dark")
-       selectedButton.classList.add('btn-dark')
+       selectedButton = document.getElementById('7D')
+       selectedButton.classList.remove("btn-outline-success")
+       selectedButton.classList.add('btn-success')
         drawGraph({{timestamp|safe}}, {{equity|safe}})
     })
 
@@ -343,12 +343,12 @@
            Plotly.react('plot', newData, newLayout, {displayModeBar: false})
            periodButtons = document.getElementsByClassName("period-section")
            for (var i = 0; i < periodButtons.length; i++) {
-               selectedButton.classList.remove('btn-dark')
-              periodButtons[i].classList.add("btn-outline-dark");
+               selectedButton.classList.remove('btn-success')
+              periodButtons[i].classList.add("btn-outline-success");
            }
            selectedButton = document.getElementById(period)
-           selectedButton.classList.remove("btn-outline-dark")
-           selectedButton.classList.add('btn-dark')
+           selectedButton.classList.remove("btn-outline-success")
+           selectedButton.classList.add('btn-success')
            }, error: function(xhr, status, error){
                console.log('Error:', error);
             }
