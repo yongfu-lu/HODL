@@ -96,3 +96,8 @@ class AlpacaAccount:
             return False
         else:
             return not getattr(asset,'class') == 'us_equity'
+
+    def get_history(self, period='7D'):
+        if not self.account_linked:
+            return
+        return self.API.get_portfolio_history(period=period, timeframe='1D')

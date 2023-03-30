@@ -69,6 +69,9 @@ def dashboard(request):
         context["activities"] = alpaca_account.get_activities()[:5]
         context["watchlist"] = alpaca_account.get_stocks_in_watchlist()
         context['all_stocks_alphabet'] = all_tradable_stocks_alphabet
+        history = alpaca_account.get_history()
+        context['equity'] = history.equity
+        context['timestamp'] = [datetime.fromtimestamp(t).strftime('%Y-%m-%d') for t in history.timestamp]
 
     return render(request, "user/dashboard.html", context)
 
@@ -92,15 +95,23 @@ def algorithms(request):
             elif float(request.POST['short-moving-avg']) > float(request.POST['long-moving-avg']):
                 messages.warning(request, "Short moving average must be smaller then long moving average")
             else:
-                obj, created = ActivatedAlgorithm.objects.get_or_create(user=request.user, algorithm=request.POST['algorithm'], stock_name=stock,
+                obj, created = ActivatedAlgorithm.objects.get_or_create(user=request.user,
+                                                                        algorithm=request.POST['algorithm'],
+                                                                        stock_name=stock,
                                                                         defaults={
-                                                                                  'investment_amount':  request.POST['amount'],
-                                                                                  'short_moving_avg': request.POST['short-moving-avg'],
-                                                                                  'long_moving_avg': request.POST['long-moving-avg'],
-                                                                                  'days_of_moving_avg': request.POST['days-of-moving-avg'],
-                                                                                  'over_percentage_threshold': request.POST['over-percentage-threshold'],
-                                                                                  'under_percentage_threshold': request.POST['under-percentage-threshold'],
-                                                                                  'standard_deviation': request.POST['standard-deviation']})
+                                                                            'investment_amount': request.POST['amount'],
+                                                                            'short_moving_avg': request.POST[
+                                                                                'short-moving-avg'],
+                                                                            'long_moving_avg': request.POST[
+                                                                                'long-moving-avg'],
+                                                                            'days_of_moving_avg': request.POST[
+                                                                                'days-of-moving-avg'],
+                                                                            'over_percentage_threshold': request.POST[
+                                                                                'over-percentage-threshold'],
+                                                                            'under_percentage_threshold': request.POST[
+                                                                                'under-percentage-threshold'],
+                                                                            'standard_deviation': request.POST[
+                                                                                'standard-deviation']})
                 if not created:
                     obj.investment_amount = request.POST['amount']
                     obj.short_moving_avg = request.POST['short-moving-avg']
@@ -152,7 +163,8 @@ def dataAnalysis(request):
             client = StockHistoricalDataClient(user.api_key, user.secret_key)
             temp = Strategy(client, investment, 5)
         except:
-            return render(request, "user/data-analysis.html", {"e": "Please connect your API key before you utilize data analysis."})
+            return render(request, "user/data-analysis.html",
+                          {"e": "Please connect your API key before you utilize data analysis."})
 
         if algorithm == 'RSI':
             try:
@@ -161,13 +173,14 @@ def dataAnalysis(request):
                 rsi_under = int(request.POST.get('rsi_under'))
             except:
                 return render(request, "user/data-analysis.html", {"e": "Please input all values"})
-            e = temp.test_parameters(start_date, end_date, stock_symbol, algorithm, investment, client, window = rsi_days, rsi_over = rsi_over, rsi_under = rsi_under)
-            if(e != "Valid"):
+            e = temp.test_parameters(start_date, end_date, stock_symbol, algorithm, investment, client, window=rsi_days,
+                                     rsi_over=rsi_over, rsi_under=rsi_under)
+            if (e != "Valid"):
                 return render(request, "user/data-analysis.html", {"e": e})
             d = temp.execute_rsi(start_date, end_date, stock_symbol, rsi_days, rsi_over, rsi_under)
             temp.setVal(investment)
             control = temp.execute_control(start_date, end_date, stock_symbol)
-            data = json.loads(d.reset_index().to_json(orient = 'records', date_format='iso'))
+            data = json.loads(d.reset_index().to_json(orient='records', date_format='iso'))
             plt = Plot(d, control, client)
             p = plt.plot_strategy("RSI Strategy")
             return render(request, "user/data-analysis.html", {"d": data, 'p': p})
@@ -177,13 +190,14 @@ def dataAnalysis(request):
                 ma_long = int(request.POST.get('ma_long'))
             except:
                 return render(request, "user/data-analysis.html", {"e": "Please input all values"})
-            e = temp.test_parameters(start_date, end_date, stock_symbol, algorithm, investment, client, short = ma_short, long = ma_long)
-            if(e != "Valid"):
+            e = temp.test_parameters(start_date, end_date, stock_symbol, algorithm, investment, client, short=ma_short,
+                                     long=ma_long)
+            if (e != "Valid"):
                 return render(request, "user/data-analysis.html", {"e": e})
             d = temp.execute_ma(start_date, end_date, stock_symbol, ma_short, ma_long)
             temp.setVal(investment)
             control = temp.execute_control(start_date, end_date, stock_symbol)
-            data = json.loads(d.reset_index().to_json(orient = 'records', date_format='iso'))
+            data = json.loads(d.reset_index().to_json(orient='records', date_format='iso'))
             plt = Plot(d, control, client)
             p = plt.plot_strategy("Moving Average Strategy")
             return render(request, "user/data-analysis.html", {"d": data, 'p': p})
@@ -193,13 +207,14 @@ def dataAnalysis(request):
                 atr_long = int(request.POST.get('atr_long'))
             except:
                 return render(request, "user/data-analysis.html", {"e": "Please input all values"})
-            e = temp.test_parameters(start_date, end_date, stock_symbol, algorithm, investment, client, short = atr_short, long = atr_long)
-            if(e != "Valid"):
+            e = temp.test_parameters(start_date, end_date, stock_symbol, algorithm, investment, client, short=atr_short,
+                                     long=atr_long)
+            if (e != "Valid"):
                 return render(request, "user/data-analysis.html", {"e": e})
             d = temp.execute_atr(start_date, end_date, stock_symbol, atr_short, atr_long)
             temp.setVal(investment)
             control = temp.execute_control(start_date, end_date, stock_symbol)
-            data = json.loads(d.reset_index().to_json(orient = 'records', date_format='iso'))
+            data = json.loads(d.reset_index().to_json(orient='records', date_format='iso'))
             plt = Plot(d, control, client)
             p = plt.plot_strategy("Average True Range Strategy")
             return render(request, "user/data-analysis.html", {"d": data, 'p': p})
@@ -209,13 +224,14 @@ def dataAnalysis(request):
                 fib_long = int(request.POST.get('fib_long'))
             except:
                 return render(request, "user/data-analysis.html", {"e": "Please input all values"})
-            e = temp.test_parameters(start_date, end_date, stock_symbol, algorithm, investment, client, short = fib_short, long = fib_long)
-            if(e != "Valid"):
+            e = temp.test_parameters(start_date, end_date, stock_symbol, algorithm, investment, client, short=fib_short,
+                                     long=fib_long)
+            if (e != "Valid"):
                 return render(request, "user/data-analysis.html", {"e": e})
             d = temp.execute_fib(start_date, end_date, stock_symbol, fib_short, fib_long)
             temp.setVal(investment)
             control = temp.execute_control(start_date, end_date, stock_symbol)
-            data = json.loads(d.reset_index().to_json(orient = 'records', date_format='iso'))
+            data = json.loads(d.reset_index().to_json(orient='records', date_format='iso'))
             plt = Plot(d, control, client)
             p = plt.plot_strategy("Fibonacci Strategy")
             return render(request, "user/data-analysis.html", {"d": data, 'p': p})
@@ -225,24 +241,25 @@ def dataAnalysis(request):
                 bb_num_std = int(request.POST.get('bb_num_std'))
             except:
                 return render(request, "user/data-analysis.html", {"e": "Please input all values"})
-            e = temp.test_parameters(start_date, end_date, stock_symbol, algorithm, investment, client, window=bb_ma_days, std_dev=bb_num_std)
-            if(e != "Valid"):
+            e = temp.test_parameters(start_date, end_date, stock_symbol, algorithm, investment, client,
+                                     window=bb_ma_days, std_dev=bb_num_std)
+            if (e != "Valid"):
                 return render(request, "user/data-analysis.html", {"e": e})
             d = temp.execute_bb(start_date, end_date, stock_symbol, bb_ma_days, bb_num_std)
             temp.setVal(investment)
             control = temp.execute_control(start_date, end_date, stock_symbol)
-            data = json.loads(d.reset_index().to_json(orient = 'records', date_format='iso'))
+            data = json.loads(d.reset_index().to_json(orient='records', date_format='iso'))
             plt = Plot(d, control, client)
             p = plt.plot_strategy("Fibonacci Strategy")
             return render(request, "user/data-analysis.html", {"d": data, 'p': p})
-            
+
     return render(request, "user/data-analysis.html", {})
 
 
 def recommendations(request):
     if not request.user.is_authenticated:
         return redirect('/user/login')
-    
+
     try:
         user = CustomUser.objects.filter(id=request.user.id)[0]
         trading_client = StockHistoricalDataClient(user.api_key, user.secret_key)
@@ -250,20 +267,24 @@ def recommendations(request):
         y = datetime(2022, 5, 17)
         test = Recommendation(trading_client, x, y)
     except:
-        return render(request, 'user/recommendations.html', {"e": "Please connect your API key before you utilize recommendations."})
+        return render(request, 'user/recommendations.html',
+                      {"e": "Please connect your API key before you utilize recommendations."})
 
     try:
-        loss_analysis=[]
+        loss_analysis = []
         potential = []
         current = []
         activated_algorithm = ActivatedAlgorithm.objects.filter(user=request.user)
         plots = []
         for i in activated_algorithm:
             try:
-                l,c,p= test.generate_analysis(i.algorithm,i.stock_name, short=int(i.short_moving_avg),long=int(i.long_moving_avg),days=int(i.days_of_moving_avg),
-                                                    over=int(i.over_percentage_threshold),under=int(i.under_percentage_threshold),num_std_dev=int(i.standard_deviation))
+                l, c, p = test.generate_analysis(i.algorithm, i.stock_name, short=int(i.short_moving_avg),
+                                                 long=int(i.long_moving_avg), days=int(i.days_of_moving_avg),
+                                                 over=int(i.over_percentage_threshold),
+                                                 under=int(i.under_percentage_threshold),
+                                                 num_std_dev=int(i.standard_deviation))
             except:
-                l=c=p= -1
+                l = c = p = -1
             loss_analysis.append(l)
             potential.append(p)
             current.append(c)
@@ -273,19 +294,19 @@ def recommendations(request):
             plt = Plot(d, control, trading_client)
             p = plt.plot_strategy("Plot")
             plots.append(p)
-        
-        df = pd.DataFrame(list(activated_algorithm.values()))    
+
+        df = pd.DataFrame(list(activated_algorithm.values()))
         df['Percent_Difference'] = loss_analysis
         df['plots'] = plots
         df['potential'] = potential
         df['current'] = current
-        
 
         return render(request, 'user/recommendations.html', {'df': df})
-              
-    
+
+
     except:
-        return render(request, "user/recommendations.html" , {"e": "Error. please try again."})
+        return render(request, "user/recommendations.html", {"e": "Error. please try again."})
+
 
 def userAPI(request):
     if not request.user.is_authenticated:
@@ -300,6 +321,7 @@ def userAPI(request):
         messages.success(request, "API key updated successfully")
 
     return render(request, "user/user-api.html", {"api_key": user.api_key, "secret_key": user.secret_key})
+
 
 def add_to_watchlist(request):
     if request.method == "POST":
@@ -377,8 +399,11 @@ def get_account(request):
     if alpaca_account.account_linked:
         account = {
             'equity': round(float(alpaca_account.get_account().equity), 2),
-            'change_of_today': round(float(alpaca_account.get_account().equity) - float(alpaca_account.get_account().last_equity),2),
-            'perc_change_of_today': round((float(alpaca_account.get_account().equity) - float(alpaca_account.get_account().last_equity)) / float(alpaca_account.get_account().last_equity) * 100, 2)
+            'change_of_today': round(
+                float(alpaca_account.get_account().equity) - float(alpaca_account.get_account().last_equity), 2),
+            'perc_change_of_today': round(
+                (float(alpaca_account.get_account().equity) - float(alpaca_account.get_account().last_equity)) / float(
+                    alpaca_account.get_account().last_equity) * 100, 2)
         }
         watchlist = alpaca_account.get_stocks_in_watchlist()
         positions_info = alpaca_account.get_positions()[:5]
@@ -399,5 +424,22 @@ def get_account(request):
     return JsonResponse(data)
 
 
+def get_history(request):
+    if not request.user.is_authenticated:
+        return redirect('/user/login')
+
+    alpaca_account = AlpacaAccount(request.user.api_key, request.user.secret_key)
+    data = {
+        "is_account_linked": alpaca_account.account_linked,
+    }
+    if alpaca_account.account_linked:
+        history = alpaca_account.get_history(request.GET['period'])
+        data = {
+            'equity': history.equity,
+            'timestamp': [datetime.fromtimestamp(t).strftime('%Y-%m-%d') for t in history.timestamp]
+        }
+    return JsonResponse(data)
+
 def help(request):
     return render(request, "user/help.html", {})
+

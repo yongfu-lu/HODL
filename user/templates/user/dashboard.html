@@ -4,8 +4,24 @@
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
 <div class="container mt-2 bg-light" style="padding-top:65px;">
+    {% if is_account_linked %}
+    <div class="row">
+        <div class="col">
+            <div class="section-box">
+                <button class="btn btn-sm period-section" id="7D" onclick="updateGraph('7D')"> 7D</button>
+                <button class="btn btn-sm period-section" id="30D" onclick="updateGraph('30D')"> 30D</button>
+                <button class="btn btn-sm period-section" id="90D" onclick="updateGraph('90D')"> 3M</button>
+                <button class="btn btn-sm period-section" id="365D" onclick="updateGraph('365D')"> 1Y</button>
+                <div id="plot"></div>
+            </div>
+        </div>
+        <div class="col">
+        </div>
+    </div>
+    {%endif%}
     <h3 class="text-center">Account Balance </h3>
     {% if is_account_linked %}
     <table class="table text-center">
@@ -264,6 +280,7 @@
 
 <script src="{% static 'script/dashboard.js' %}"></script>
 <script>
+    //this script update account and stock information every 3 seconds without refreshing page
     function updateAccount(){
         $.ajax({
            url: '/user/get-account/',
@@ -294,5 +311,48 @@
         });
     }
     setInterval(updateAccount, 3000);
+</script>
+<script>
+    //this script update investment graph without refreshing page
+    function drawGraph(x, y){
+        var trace = {x: x, y: y, type: 'scatter', hovertemplate: '%{y}', name: '', mode:'lines', line: {shape: 'spline', color:'green'},};
+        var layout = {title: 'Investment', xaxis: {showgrid: false,},  hovermode: 'x unified', hoverlabel: {bgcolor: '#fff', font: {family: 'Arial', size: 12}, bordercolor: '#000', borderwidth: 1, namelength: 0,}};
+        var data = [trace];
+        Plotly.newPlot('plot', data, layout,  {displayModeBar: false});
+    }
+
+    window.addEventListener('DOMContentLoaded', function(){
+        periodButtons = document.getElementsByClassName("period-section")
+        for (var i = 0; i < periodButtons.length; i++) {
+          periodButtons[i].classList.add("btn-outline-dark");
+        }
+      selectedButton = document.getElementById('7D')
+       selectedButton.classList.remove("btn-outline-dark")
+       selectedButton.classList.add('btn-dark')
+        drawGraph({{timestamp|safe}}, {{equity|safe}})
+    })
+
+    function updateGraph(period){
+        $.ajax({
+           url: '/user/get-history/',
+           data:{ period: period},
+           type:'GET',
+           success: function(data){
+           var newData = [{ x: data.timestamp, y: data.equity, type: 'scatter', hovertemplate: '%{y}', name: '', mode:'lines', line: {shape: 'spline', color:'green'},}]
+           var newLayout = { title: 'Investment', xaxis: {showgrid: false,}, hovermode: 'x unified', hoverlabel: {bgcolor: '#fff', font: {family: 'Arial', size: 12}, bordercolor: '#000', borderwidth: 1, namelength: 0,}};
+           Plotly.react('plot', newData, newLayout, {displayModeBar: false})
+           periodButtons = document.getElementsByClassName("period-section")
+           for (var i = 0; i < periodButtons.length; i++) {
+               selectedButton.classList.remove('btn-dark')
+              periodButtons[i].classList.add("btn-outline-dark");
+           }
+           selectedButton = document.getElementById(period)
+           selectedButton.classList.remove("btn-outline-dark")
+           selectedButton.classList.add('btn-dark')
+           }, error: function(xhr, status, error){
+               console.log('Error:', error);
+            }
+        });
+    }
 </script>
 {% endblock %}
