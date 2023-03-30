@@ -7,20 +7,23 @@
     <div class="col-md-8">
       <h2 class="text-center mb-4">Recommendations</h2>
       <div class="form-group">
-        <label for="period-select">Select Period:</label>
-        <select class="form-control" id="period-select">
-          <option value="period-1">Period 1: 05/20 - 05/22</option>
-          <option value="period-2">Period 2</option>
-          <option value="period-3">Period 3</option>
-          <option value="period-4">Period 4</option>
-        </select>
+        <form method="POST">
+          {% csrf_token %}
+          <select class="form-control" id="period-select" name="select_period" onchange="this.form.submit()">
+            <option disabled selected>Select Period</option>
+            <option value="covid">Period 1: Covid19 (2019-2023)</option>
+            <option value="2008">Period 2: 2008 Financial Crisis (2007-2013)</option>
+            <option value="dotcom">Period 3: Dotcom Bubble (1995-2007)</option>
+            <option value="period-4">Period 4: Live</option>
+          </select>
+        </form>
       </div>
     </div>
   </div>
-
+  
   <div class="row justify-content-center">
     <div class="col-md-8">
-      <div id="period-1">
+      <div id="period-cards">
         {% for index, row in df.iterrows %}
         <div class="card">
           <div class="card-body">
@@ -40,21 +43,6 @@
   </div>
 
   <script>
-    var period1Div = document.getElementById("period-1");
-    var noStrategiesDiv = document.getElementById("no-strategies");
-    var periodSelect = document.getElementById("period-select");
-
-    periodSelect.addEventListener("change", function () {
-      var selectedPeriod = periodSelect.value;
-
-      if (selectedPeriod === "period-1") {
-        period1Div.style.display = "block";
-        noStrategiesDiv.style.display = "none";
-      } else {
-        period1Div.style.display = "none";
-        noStrategiesDiv.style.display = "block";
-      }
-    });
 
     function showPopup(investment_amount, short_moving_avg, long_moving_avg, current, potential) {
       var popup = window.open("", "popup", "width=800,height=600");
