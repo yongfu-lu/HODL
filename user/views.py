@@ -242,10 +242,13 @@ def recommendations(request):
     if not request.user.is_authenticated:
         return redirect('/user/login')
     periods = {"covid" : [datetime(2019, 12, 1),datetime(2022, 12, 31)],
-               "2008" : [datetime(2007, 11, 1),datetime(2013, 12, 31)],
-               "dotcom" : [datetime(1995, 1, 1),datetime(2007, 12, 31)]}
+               #"2008" : [datetime(2007, 11, 1),datetime(2013, 12, 31)],
+               "2008" : [datetime(2015, 11, 1),datetime(2020, 12, 31)],
+               #"dotcom" : [datetime(1995, 1, 1),datetime(2007, 12, 31)]}
+               "dotcom" : [datetime(2010, 1, 1),datetime(2016, 12, 31)]}
     try: 
         period = periods.get(request.POST.get("select_period"))
+        #period = periods.get("dotcom")
     except: 
         print("Failed")
         return render(request, 'user/recommendations.html')
