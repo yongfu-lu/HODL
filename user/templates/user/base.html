@@ -61,9 +61,10 @@
     {%endif%}
 </nav>
 
+
 {% if messages %}
 {% for message in messages %}
-<div class="alert alert-{{message.tags}} {%if message.tags == 'error'%} alert-danger {%endif%} alert-dismissible fade show"
+<div class="alert alert-{{message.tags}} {%if message.tags == 'error'%} alert-danger {%endif%} alert-dismissible fade show" style="margin-top: 65px"
      role="alert">
     {{message}}
 </div>
