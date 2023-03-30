@@ -2,38 +2,49 @@
 
 {% block content %}
 
-  <h2>Recommendations</h2>
-  
- 
-  {% for index, row in df.iterrows %}
-  <div class="card">
-    <div class="card-body">
-      <h5 class="card-title">Algorithm: {{ row.algorithm }}</h5>
-      <p class="card-text">Stock Name: {{ row.stock_name }}</p>
-      <p class="card-text">Percent Difference: {{ row.Percent_Difference }}</p>
-      {{ row.plots|safe }}
-      <button class="btn btn-primary" onclick="showPopup('{{ row.Period }}', '{{row.investment_amount}}', '{{row.short_moving_avg}}', '{{row.long_moving_avg}}', '{{ row.current }}', '{{ row.potential }}')">See More Details</button>
-
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <h2 class="text-center mb-4">Recommendations</h2>
+      <div class="form-group">
+        <form method="POST">
+          {% csrf_token %}
+          <select class="form-control" id="period-select" name="select_period" onchange="this.form.submit()">
+            <option disabled selected>Select Period</option>
+            <option value="covid">Period 1: Covid19 (2019-2023)</option>
+            <option value="2008">Period 2: 2008 Financial Crisis (2007-2013)</option>
+            <option value="dotcom">Period 3: Dotcom Bubble (1995-2007)</option>
+            <option value="period-4">Period 4: Live</option>
+          </select>
+        </form>
+      </div>
     </div>
   </div>
-  {% endfor %}
-
   
-  <!-- {% if plots %}
-    {% for plot in plots %}
-      {{ plot|safe }}
-    {% endfor %}
-  {% endif %} -->
-  
-  <!-- {% if p %}
-  {% autoescape off %}
-    {{ p }}
-  {% endautoescape %}
-  {% endif %} -->
-  
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div id="period-cards">
+        {% for index, row in df.iterrows %}
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Algorithm: {{ row.algorithm }}</h5>
+            <p class="card-text">Stock Name: {{ row.stock_name }}</p>
+            <p class="card-text">Percent Difference: {{ row.Percent_Difference }}</p>
+            {{ row.plots|safe }}
+            <button class="btn btn-primary" onclick="showPopup('{{row.investment_amount}}', '{{row.short_moving_avg}}', '{{row.long_moving_avg}}', '{{ row.current }}', '{{ row.potential }}')">See More Details</button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div id="no-strategies" class="text-center mt-4" style="display:none;">
+        <h5>No strategies generated during this time frame</h5>
+      </div>
+    </div>
+  </div>
 
   <script>
-    function showPopup(period, investment_amount, short_moving_avg, long_moving_avg, current, potential) {
+
+    function showPopup(investment_amount, short_moving_avg, long_moving_avg, current, potential) {
       var popup = window.open("", "popup", "width=800,height=600");
       var popupDocument = popup.document;
     
@@ -115,11 +126,6 @@
       var longElement = popupDocument.createElement("p");
       longElement.innerHTML = "<strong>Long Moving Average:</strong> " + long_moving_avg;
       infoDiv.appendChild(longElement);
-
-      var periodElement = popupDocument.createElement("p");
-      periodElement.innerHTML = "<strong>Period:</strong> " + period;
-      infoDiv.appendChild(periodElement);
-    
 
       var currentEarningsElement = popupDocument.createElement("p");
       currentEarningsElement.innerHTML = "<strong>Current Earnings:</strong> " + current;

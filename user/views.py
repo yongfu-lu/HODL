@@ -242,12 +242,23 @@ def dataAnalysis(request):
 def recommendations(request):
     if not request.user.is_authenticated:
         return redirect('/user/login')
+    periods = {"covid" : [datetime(2019, 12, 1),datetime(2022, 12, 31)],
+               #"2008" : [datetime(2007, 11, 1),datetime(2013, 12, 31)],
+               "2008" : [datetime(2015, 11, 1),datetime(2020, 12, 31)],
+               #"dotcom" : [datetime(1995, 1, 1),datetime(2007, 12, 31)]}
+               "dotcom" : [datetime(2010, 1, 1),datetime(2016, 12, 31)]}
+    try: 
+        period = periods.get(request.POST.get("select_period"))
+        #period = periods.get("dotcom")
+    except: 
+        print("Failed")
+        return render(request, 'user/recommendations.html')
     
     try:
         user = CustomUser.objects.filter(id=request.user.id)[0]
         trading_client = StockHistoricalDataClient(user.api_key, user.secret_key)
-        x = datetime(2020, 5, 17)
-        y = datetime(2022, 5, 17)
+        x = period[0]
+        y = period[1]
         test = Recommendation(trading_client, x, y)
     except:
         return render(request, 'user/recommendations.html', {"e": "Please connect your API key before you utilize recommendations."})
@@ -259,6 +270,7 @@ def recommendations(request):
         activated_algorithm = ActivatedAlgorithm.objects.filter(user=request.user)
         plots = []
         for i in activated_algorithm:
+            print("looping through algos")
             try:
                 l,c,p= test.generate_analysis(i.algorithm,i.stock_name, short=int(i.short_moving_avg),long=int(i.long_moving_avg),days=int(i.days_of_moving_avg),
                                                     over=int(i.over_percentage_threshold),under=int(i.under_percentage_threshold),num_std_dev=int(i.standard_deviation))
@@ -280,9 +292,9 @@ def recommendations(request):
         df['potential'] = potential
         df['current'] = current
         
-
+        print("done")
         return render(request, 'user/recommendations.html', {'df': df})
-              
+            
     
     except:
         return render(request, "user/recommendations.html" , {"e": "Error. please try again."})
