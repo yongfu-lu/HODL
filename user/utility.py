@@ -46,10 +46,13 @@ class AlpacaAccount:
         if not self.account_linked:
             return None
 
-        watchlist_id = self.API.get_watchlists()[0].id
-        watchlist = self.API.get_watchlist(watchlist_id)
-        symbols = [asset['symbol'] for asset in watchlist.assets]
-        current_time = datetime.datetime.now(tz=pytz.timezone('US/Eastern'))
+        try:
+            watchlist_id = self.API.get_watchlists()[0].id
+            watchlist = self.API.get_watchlist(watchlist_id)
+            symbols = [asset['symbol'] for asset in watchlist.assets]
+            current_time = datetime.datetime.now(tz=pytz.timezone('US/Eastern'))
+        except:
+            return None
 
         # create list of stock dictionary, each dictionary contains symbol, current price, last market close price
         assets = []

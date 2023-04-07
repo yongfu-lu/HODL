@@ -370,6 +370,8 @@ class Strategy:
     def test_parameters(self, s, e, symbol, algorithm, investment, client, window = 0, rsi_over = 0, rsi_under = 0, short = 0, long = 0, std_dev = 0):
         if(investment <= 0):
             return ("Investment must be positive.")
+        if(s.year < 2016 or e.year < 2016):
+            return ("Please input data ranges post-2016 for Alpaca compatibility.")
         if(datetime.now() < s):
             return ("Start date must be before the current day.")
         if(datetime.now() < e):
