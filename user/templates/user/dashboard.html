@@ -9,7 +9,7 @@
 <div class="container mt-2 bg-light" style="padding-top:65px;">
     {% if is_account_linked %}
     <div class="row">
-        <div class="col">
+        <div class="col-lg-8 col-md-8 col-sm-8">
             <div class="section-box">
                 <button class="btn btn-sm period-section" id="7D" onclick="updateGraph('7D')"> 7D</button>
                 <button class="btn btn-sm period-section" id="30D" onclick="updateGraph('30D')"> 30D</button>
@@ -18,42 +18,65 @@
                 <div id="plot"></div>
             </div>
         </div>
-        <div class="col">
+        <div class="col-lg-4 col-md-4 col-sm-4">
+            <div class="section-box balance-box">
+                <h5 style="color:grey;">Equity:</h5>
+                <div class="btn {% if account.equity|sub:account.last_equity|positive  %} btn-success {%else%} btn-danger {%endif%}">
+                    <h3 >${{account.equity|floatformat:2}}</h3>
+                </div>
+            </div>
+            <div class="section-box balance-box">
+                <h5 style="color:grey">Change of Today:</h5>
+                <div class="btn {% if account.equity|sub:account.last_equity|positive  %} btn-success {%else%} btn-danger {%endif%}">
+                    <h3>${{account.equity|sub:account.last_equity|floatformat:2}}</h3>
+                </div>
+            </div>
+            <div class="section-box balance-box">
+                <h5 style="color:grey">% Change of Today:</h5>
+                <div class="btn {% if account.equity|sub:account.last_equity|positive  %} btn-success {%else%} btn-danger {%endif%}">
+                    <h3>{{account.equity|sub:account.last_equity|div:account.last_equity|mult:100|floatformat:2}}%</h3>
+                </div>
+            </div>
         </div>
     </div>
-    {%endif%}
-    <h3 class="text-center">Account Balance </h3>
-    {% if is_account_linked %}
-    <table class="table text-center">
-        <thead>
-        <tr>
-            <th scope="col">Equity</th>
-            <th scope="col">Change of Today</th>
-            <th scope="col"> % Change of Today</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td id="equity">${{account.equity|floatformat:2}}</td>
-            <td>
-                <div id="change-of-today" class="btn {% if account.equity|sub:account.last_equity|positive  %} btn-success {%else%} btn-danger {%endif%}">
-                    ${{account.equity|sub:account.last_equity|floatformat:2}}
-                </div>
-            </td>
-            <td >
-                <div id="perc-change-of-today" class="btn {% if account.equity|sub:account.last_equity|positive %} btn-success {%else%} btn-danger {%endif%}">
-                {{account.equity|sub:account.last_equity|div:account.last_equity|mult:100|floatformat:2}}%
-                </div>
-            </td>
-        </tr>
-        </tbody>
-    </table>
     {%else%}
     <div class="container text-center">
         <h6> Ops, We can't link to your Alpaca account</h6>
         <h6> Please Update your api key and secret key of your Alpaca Account</h6>
     </div>
     {%endif%}
+<!--    <h3 class="text-center">Account Balance </h3>-->
+<!--    {% if is_account_linked %}-->
+<!--    <table class="table text-center">-->
+<!--        <thead>-->
+<!--        <tr>-->
+<!--            <th scope="col">Equity</th>-->
+<!--            <th scope="col">Change of Today</th>-->
+<!--            <th scope="col"> % Change of Today</th>-->
+<!--        </tr>-->
+<!--        </thead>-->
+<!--        <tbody>-->
+<!--        <tr>-->
+<!--            <td id="equity">${{account.equity|floatformat:2}}</td>-->
+<!--            <td>-->
+<!--                <div id="change-of-today" class="btn {% if account.equity|sub:account.last_equity|positive  %} btn-success {%else%} btn-danger {%endif%}">-->
+<!--                    ${{account.equity|sub:account.last_equity|floatformat:2}}-->
+<!--                </div>-->
+<!--            </td>-->
+<!--            <td >-->
+<!--                <div id="perc-change-of-today" class="btn {% if account.equity|sub:account.last_equity|positive %} btn-success {%else%} btn-danger {%endif%}">-->
+<!--                {{account.equity|sub:account.last_equity|div:account.last_equity|mult:100|floatformat:2}}%-->
+<!--                </div>-->
+<!--            </td>-->
+<!--        </tr>-->
+<!--        </tbody>-->
+<!--    </table>-->
+<!--    {%else%}-->
+<!--    <div class="container text-center">-->
+<!--        <h6> Ops, We can't link to your Alpaca account</h6>-->
+<!--        <h6> Please Update your api key and secret key of your Alpaca Account</h6>-->
+<!--    </div>-->
+<!--    {%endif%}-->
 </div>
 
 <div class="container text-center mt-4">
@@ -315,7 +338,13 @@
 <script>
     //this script update investment graph without refreshing page
     function drawGraph(x, y){
-        var trace = {x: x, y: y, type: 'scatter', hovertemplate: '%{y}', name: '', mode:'lines', line: {shape: 'spline', color:'green'},};
+       var line_color = "green"
+       if(y[y.length-1] < y[0] ){
+           line_color = "red"
+       }
+        console.log(y[0])
+        console.log(y[y.length-1])
+        var trace = {x: x, y: y, type: 'scatter', hovertemplate: '%{y}', name: '', mode:'lines', line: {shape: 'spline', color:line_color},};
         var layout = {title: 'Investment', xaxis: {showgrid: false,},  hovermode: 'x unified', hoverlabel: {bgcolor: '#fff', font: {family: 'Arial', size: 12}, bordercolor: '#000', borderwidth: 1, namelength: 0,}};
         var data = [trace];
         Plotly.newPlot('plot', data, layout,  {displayModeBar: false});
@@ -338,7 +367,12 @@
            data:{ period: period},
            type:'GET',
            success: function(data){
-           var newData = [{ x: data.timestamp, y: data.equity, type: 'scatter', hovertemplate: '%{y}', name: '', mode:'lines', line: {shape: 'spline', color:'green'},}]
+           var line_color = "green"
+           if(data.equity[data.equity.length-1] < data.equity[0] ){
+               line_color = "red"
+           }
+
+           var newData = [{ x: data.timestamp, y: data.equity, type: 'scatter', hovertemplate: '%{y}', name: '', mode:'lines', line: {shape: 'spline', color:line_color},}]
            var newLayout = { title: 'Investment', xaxis: {showgrid: false,}, hovermode: 'x unified', hoverlabel: {bgcolor: '#fff', font: {family: 'Arial', size: 12}, bordercolor: '#000', borderwidth: 1, namelength: 0,}};
            Plotly.react('plot', newData, newLayout, {displayModeBar: false})
            periodButtons = document.getElementsByClassName("period-section")
