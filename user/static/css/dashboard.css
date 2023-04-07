@@ -34,3 +34,15 @@ input {
 .dropdown-content a:hover {
     background-color: #ddd;
 }
+
+.section-box {
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    margin: 5px;
+    padding:8px;
+}
+
+.balance-box{
+    padding: 15px;
+    margin-bottom: 30px;
+}
