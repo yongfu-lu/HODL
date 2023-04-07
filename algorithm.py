@@ -8,6 +8,7 @@ from alpaca.trading.enums import OrderSide, TimeInForce, QueryOrderStatus
 from alpaca.common.exceptions import APIError
 
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 import Indicator as Indicator
 import pandas as pd
 import numpy as np
@@ -15,11 +16,11 @@ import numpy as np
 import psycopg2
 
 class Algorithm:
-    def __init__(self, api_key, h_client, t_client, investment, commission):
+    def __init__(self, api_key, h_client, t_client, commission):
         self.api_key = api_key
         self.h_client = h_client
         self.t_client = t_client
-        self.investment = investment
+        # self.investment = investment
         self.commission = commission
         
         # connect to the DB
@@ -40,8 +41,9 @@ class Algorithm:
         self.conn.close()
     
     
-    def execute_ma(self, start, symbol, short, long):
+    def execute_ma(self, symbol, invest, short, long):
         today = datetime.now()
+        start = today - relativedelta(years=1)
 
         ma = Indicator.Indicator(self.h_client, symbol)
         ma_short = ma.moving_average(start, today, short)
@@ -70,12 +72,12 @@ class Algorithm:
 
         for index, row in df.iterrows():
             if(row['short'] > row['long']) and (position=='cash'):
-                shares = self.investment / row['close']
-                self.investment = 0
+                shares = invest / row['close']
+                invest = 0
                 prevpos = position
                 position = 'long'
             elif (row['short'] < row['long']) and (position == 'long'):
-                self.investment = shares * row['close'] - self.commission
+                invest = shares * row['close'] - self.commission
                 shares = 0
                 prevpos = position
                 position = 'cash'
@@ -127,7 +129,9 @@ class Algorithm:
             updated_shares = 0
 
         if (position == 'cash'):
+
             if (updated_shares > 0):
+
                 # sell order
                 market_order_data = MarketOrderRequest(
                                         symbol=symbol,
@@ -187,8 +191,9 @@ class Algorithm:
         ret = "\nEND OF MA FUNCTION TESTING\n"
         return ret
     
-    def execute_rsi(self, start, symbol, days, over, under):
+    def execute_rsi(self, symbol, invest, days, over, under):
         today = datetime.now()
+        start = today - relativedelta(years=1)
 
         request_params = StockBarsRequest(symbol_or_symbols=[symbol],
                                           timeframe = TimeFrame.Day,
@@ -217,12 +222,12 @@ class Algorithm:
 
         for i in range(len(positions)):
             if positions[i] == 1 and (pos=='cash'):
-                shares = self.investment / bars['close'][i]
-                self.investment = 0
+                shares = invest / bars['close'][i]
+                invest = 0
                 prevpos = pos
                 pos = 'long'
             elif positions[i] == -1 and (pos=='long'):
-                self.investment = shares * bars['close'][i]
+                invest = shares * bars['close'][i]
                 shares = 0
                 prevpos = pos
                 pos = 'cash'
@@ -326,11 +331,11 @@ class Algorithm:
         self.conn.commit()
 
         ret = "\nEND OF RSI FUNCTION TESTING\n"
-        # ret = pd.DataFrame({'date': in1, 'investment': temp, 'buy_sell_hold': bsh, 'position': p, 'shares': sh})
         return ret
 
-    def execute_bb(self, start, symbol, ma_days, num_std_devs):
+    def execute_bb(self, symbol, invest, ma_days, num_std_devs):
         today = datetime.now()
+        start = today - relativedelta(years=1)
 
         request_params = StockBarsRequest(symbol_or_symbols=[symbol],
                                           timeframe = TimeFrame.Day,
@@ -361,12 +366,12 @@ class Algorithm:
 
         for i in range(len(positions)):
             if positions[i] == 1.0 and (pos=='cash'):
-                shares = self.investment / bars['close'][i]
-                self.investment = 0
+                shares = invest / bars['close'][i]
+                invest = 0
                 prevpos = pos
                 pos = 'long'
             elif positions[i] == -1.0 and (pos=='long'):
-                self.investment = shares * bars['close'][i]
+                invest = shares * bars['close'][i]
                 shares = 0
                 prevpos = pos
                 pos = 'cash'
@@ -472,8 +477,9 @@ class Algorithm:
         ret = "\nEND OF BB FUNCTION TESTING\n"
         return ret
 
-    def execute_atr(self, start, symbol, short, long):
+    def execute_atr(self, symbol, invest, short, long):
         today = datetime.now()
+        start = today - relativedelta(years=1)
 
         atr = Indicator.Indicator(self.h_client, symbol)
         atr_short = atr.ATR(start, today, short)
@@ -505,12 +511,12 @@ class Algorithm:
 
         for index, row in df.iterrows():
             if (prev_close != 0) and (row['long'] + row['close'] > prev_close) and (position == 'cash'):
-                shares = self.investment / row['close']
-                self.investment = 0
+                shares = invest / row['close']
+                invest = 0
                 prevpos = position
                 position = 'long'
             elif (prev_close != 0) and (row['long'] + row['close'] < prev_close) and (position == 'long'):
-                self.investment = shares * row['close'] - self.commission
+                invest = shares * row['close'] - self.commission
                 shares = 0
                 prevpos = position
                 position = 'cash'
@@ -620,8 +626,9 @@ class Algorithm:
         ret = "\nEND OF ATR FUNCTION TESTING\n"
         return ret
 
-    def execute_fib(self, start, symbol, short, long):
+    def execute_fib(self, symbol, invest, short, long):
         today = datetime.now()
+        start = today - relativedelta(years=1)
 
         fib = Indicator.Indicator(self.h_client, symbol)
         fib_signals = fib.MACD(start, today, short, long)
@@ -665,13 +672,13 @@ class Algorithm:
                 continue
             elif(price >= hi_level) or (price <= lo_level): ## Enter new level
                 if (row['signal'] > row['MACD']) and (position == 'cash'): # buy
-                    shares = self.investment / row['close']
-                    self.investment = 0
+                    shares = invest / row['close']
+                    invest = 0
                     prevpos = position
                     position = 'long'
                     buy_price = price
                 elif (row['signal'] < row['MACD']) and (position == 'long') and price > buy_price: # sell
-                    self.investment = shares * row['close'] - self.commission
+                    invest = shares * row['close'] - self.commission
                     shares = 0
                     prevpos = position
                     position = 'cash'
@@ -781,8 +788,8 @@ class Algorithm:
         ret = "\nEND OF FIB FUNCTION TESTING\n"
         return ret
 
-    def getVal(self):
-        return self.investment
+    # def getVal(self):
+    #     return self.investment
     
     def checkDB(self):
         # testing DB functions
@@ -816,24 +823,19 @@ class Algorithm:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # TESTING FUNCTIONS:
 
-x = datetime(2020, 5, 17)
-y = datetime(2022, 5, 17)
-
-# TESTING USING API KEY AND SECRET KEY:
-h_client = StockHistoricalDataClient('',
-                                           '')
-t_client = TradingClient('',
-                         '',
-                         paper=True)
+# h_client = StockHistoricalDataClient('',
+#                                            '')
+# t_client = TradingClient('',
+#                          '',
+#                          paper=True)
 
 
-# INSERT API KEY TO TEST:
-test = Algorithm("", h_client, t_client, 10000, 5)
+# test = Algorithm("", h_client, t_client, 5)
 
-#print(test.execute_ma(y, "AAPL", 50, 100))
-#print(test.execute_rsi(y, "SPY", 20, 70, 30))
-#print(test.execute_bb(y, "AAPL", 50, 2))
-#print(test.execute_atr(y, "MSFT", 50, 100)) # negative quantity of stock causing problem. see error msg from running this: https://alpaca.markets/support/insufficient-quantity-available
-#print(test.execute_fib(y, "AAPL", 50, 100))
+#print(test.execute_ma("AAPL", 10000, 50, 100))
+#print(test.execute_rsi("SPY", 10000, 20, 70, 30))
+#print(test.execute_bb("AAPL", 10000, 50, 2))
+#print(test.execute_atr("MSFT", 10000, 50, 100)) # negative quantity of stock causing problem. see error msg from running this: https://alpaca.markets/support/insufficient-quantity-available
+#print(test.execute_fib("AAPL", 10000, 50, 100))
 
 #test.checkDB()

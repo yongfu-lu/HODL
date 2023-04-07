@@ -19,6 +19,14 @@ def main():
         cur = conn.cursor()
         print("Connected to PostgreSQL database!\n")
 
+        # execute SQL query to get table names
+        # cur.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ")
+
+        # table_names = [row[0] for row in cur.fetchall()]
+
+        # print(table_names)
+        # print("\n")
+
         cur.execute("""SELECT id, username, api_key, secret_key FROM user_customuser
                                                             WHERE (api_key != '' OR api_key IS NULL)
                                                             AND (secret_key != '' OR secret_key IS NULL)""")
@@ -37,6 +45,7 @@ def main():
             for act_algo in act_algos:
                 print(act_algo)
                 # Goes through each act_algo and runs the corresponding execute algo function
+                # TODO: TEST EACH EXECUTION
                 if act_algo[1] == 'moving-average':
                     user_algos.execute_ma(act_algo[2], act_algo[3], act_algo[4], act_algo[5])
 
