@@ -10,7 +10,7 @@ class ActivatedAlgorithmAdmin(admin.ModelAdmin):
 
 
 class TradeLogAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'trade_time', 'trade_type', 'algorithm_name')
+    list_display = ('id', 'user', 'trade_time', 'trade_type', 'stock_name', 'shares', 'algorithm_name')
 
 
 admin.site.register(ActivatedAlgorithm, ActivatedAlgorithmAdmin)
