@@ -23,13 +23,18 @@
   
   <div class="row justify-content-center">
     <div class="col-md-8">
-      <div id="period-cards">
+      <div id="loading" class="text-center mt-4">
+        <h5>Loading...</h5>
+      </div>
+      <div id="period-cards" style="display:none;">
         {% for index, row in df.iterrows %}
         <div class="card">
           <div class="card-body">
             <h5 class="card-title">Algorithm: {{ row.algorithm }}</h5>
             <p class="card-text">Stock Name: {{ row.stock_name }}</p>
-            <p class="card-text">Percent Difference: {{ row.Percent_Difference }}</p>
+            <p class="card-text {% if row.Percent_Difference < 0 %}text-danger{% elif row.Percent_Difference > 0 %}text-success{% endif %}">
+              Percent Difference: {{ row.Percent_Difference }}
+          </p>          
             {{ row.plots|safe }}
             <button class="btn btn-primary" onclick="showPopup('{{row.investment_amount}}', '{{row.short_moving_avg}}', '{{row.long_moving_avg}}', '{{ row.current }}', '{{ row.potential }}')">See More Details</button>
           </div>
@@ -43,6 +48,11 @@
   </div>
 
   <script>
+
+    window.addEventListener('DOMContentLoaded', function() {
+      document.querySelector('#loading').style.display = 'none';
+      document.querySelector('#period-cards').style.display = 'block';
+    });
 
     function showPopup(investment_amount, short_moving_avg, long_moving_avg, current, potential) {
       var popup = window.open("", "popup", "width=800,height=600");
