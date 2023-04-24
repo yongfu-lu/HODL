@@ -3,7 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from .forms import *
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib import messages
-from .models import CustomUser, ActivatedAlgorithm
+from .models import CustomUser, ActivatedAlgorithm, TradeLog
 from .utility import AlpacaAccount
 from alpaca_trade_api.rest import APIError
 from .all_tradable_stocks import all_tradable_stocks, all_tradable_stocks_alphabet
@@ -453,6 +453,15 @@ def get_history(request):
         }
     return JsonResponse(data)
 
+
 def help(request):
     return render(request, "user/help.html", {})
+
+
+def trade_logs(request):
+    if not request.user.is_authenticated:
+        return redirect('/user/login')
+
+    trade_logs = TradeLog.objects.filter(user=request.user).order_by('-trade_time')
+    return render(request, "user/trade-logs.html", {'trade_logs': trade_logs})
 
