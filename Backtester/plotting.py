@@ -53,7 +53,6 @@ class Plot:
     def plot_strategy(self, title):
         pd.options.plotting.backend = "plotly"
         
-
         fig = px.line(self.inputs, x=self.inputs['date'], y=self.inputs['investment'])
 
         fig.add_trace(go.Scatter(x=self.control['date'],
@@ -86,3 +85,16 @@ class Plot:
         plt_div = plot(fig, output_type='div')
         return(plt_div)
 
+    def plot_indicator(self, title):
+        pd.options.plotting.backend = "plotly"
+        fig = px.line()
+        
+        for column_name, column_data in df.items():
+            fig.add_trace(go.Scatter(x=column_data.index,
+                                 y=column_data.values,
+                                 name=column_name,
+                                 mode='lines'))
+            
+        fig.update_layout(title=title)
+        plt_div = plot(fig, output_type='div')
+        return(plt_div)
