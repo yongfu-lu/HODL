@@ -18,4 +18,5 @@ urlpatterns = [
     path('get-account/', views.get_account, name='get-account'),
     path('get-history/', views.get_history, name='get-history'),
     path('help/', views.help, name='help'),
+    path('trade-logs/', views.trade_logs, name='trade-logs'),
 ]

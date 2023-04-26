@@ -320,7 +320,7 @@
        }
         console.log(y[0])
         console.log(y[y.length-1])
-        var trace = {x: x, y: y, type: 'scatter', hovertemplate: '%{y}', name: '', mode:'lines', line: {shape: 'spline', color:line_color},};
+        var trace = {x: x, y: y, type: 'scatter', hovertemplate: '%{y}', name: '', mode:'lines', line: {shape: 'spline', color:line_color, smoothing:0.01},};
         var layout = {title: 'Investment', xaxis: {showgrid: false,},  hovermode: 'x unified', hoverlabel: {bgcolor: '#fff', font: {family: 'Arial', size: 12}, bordercolor: '#000', borderwidth: 1, namelength: 0,}};
         var data = [trace];
         Plotly.newPlot('plot', data, layout,  {displayModeBar: false});
@@ -348,7 +348,7 @@
                line_color = "red"
            }
 
-           var newData = [{ x: data.timestamp, y: data.equity, type: 'scatter', hovertemplate: '%{y}', name: '', mode:'lines', line: {shape: 'spline', color:line_color},}]
+           var newData = [{ x: data.timestamp, y: data.equity, type: 'scatter', hovertemplate: '%{y}', name: '', mode:'lines', line: {shape: 'spline', color:line_color, smoothing:0.01},}]
            var newLayout = { title: 'Investment', xaxis: {showgrid: false,}, hovermode: 'x unified', hoverlabel: {bgcolor: '#fff', font: {family: 'Arial', size: 12}, bordercolor: '#000', borderwidth: 1, namelength: 0,}};
            Plotly.react('plot', newData, newLayout, {displayModeBar: false})
            periodButtons = document.getElementsByClassName("period-section")
