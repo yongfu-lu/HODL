@@ -1,0 +1,134 @@
+{% extends 'user/base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/analysis.css' %}">
+<h1>Indicator Analysis</h1>
+
+<form method="POST">
+  {% csrf_token %}
+
+  {% if e %}
+  <div class="alert">
+    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+    {{e}}
+  </div>
+  {% endif %}
+
+  <label for="algorithm">Indicators:</label>
+  <select id="algorithm" name="algorithm">
+    <option value="RSI">Relative Strength Indicator</option>
+    <option value="MA">Moving Average</option>
+    <option value="ATR">Average True Range</option>
+    <option value="BB">Bollinger Bands</option>
+    <option value="ROC">Rate of Change</option>
+    <option value="ARN">Aroon</option>
+    <option value="STO">Stochastic Oscillator</option>
+    <option value="TSI">True Strength Index</option>
+    <option value="UO">Ultimate Oscillator</option>
+    <option value="EMV">Ease of Movement</option>
+  </select>
+
+  <div id="form_one" style="display:block;">
+    <label for="window">Day Window:</label>
+    <input type="number" id="window" name="window">
+  </div>
+
+  <div id="form_two" style="display:none;">
+    <label for="window1">Day Window 1:</label>
+    <input type="number" id="window1" name="window1">
+
+    <label for="window2">Day Window 2:</label>
+    <input type="number" id="window2" name="window2">
+  </div>
+
+  <div id="form_three" style="display:none;">
+    <label for="window3">Day Window:</label>
+    <input type="number" id="window3" name="window3">
+
+    <label for="stdev">Num of Standard Deviations:</label>
+    <input type="number" id="stdev" name="stdev">
+  </div>
+<button type="submit">Analyze</button>
+</form>
+
+<script>
+    const algorithmSelect = document.getElementById('algorithm');
+    const f1 = document.getElementById('form_one');
+    const f2 = document.getElementById('form_two');
+    const f3 = document.getElementById('form_three');
+
+    algorithmSelect.addEventListener('change', () => {
+      const selectedAlgorithm = algorithmSelect.value;
+
+      f1.style.display = 'block';
+      f2.style.display = 'none';
+      f3.style.display = 'none';
+
+      if (selectedAlgorithm === 'RSI') {
+        f1.style.display = 'block';
+      } else if (selectedAlgorithm === 'MA') {
+        f1.style.display = 'block';
+      } else if (selectedAlgorithm === 'ATR') {
+        f1.style.display = 'block';
+      } else if (selectedAlgorithm === 'ROC') {
+        f1.style.display = 'block';
+      } else if (selectedAlgorithm === 'ARN') {
+        f1.style.display = 'block';
+      } else if (selectedAlgorithm === 'UO') {
+        f1.style.display = 'block';
+      } else if (selectedAlgorithm === 'STO') {
+        f1.style.display = 'block';
+      } else if (selectedAlgorithm === 'EMV') {
+        f1.style.display = 'block';
+      } else if (selectedAlgorithm === 'TSI') {
+        f1.style.display = 'none';
+	f2.style.display = 'block';
+      } else if (selectedAlgorithm === 'BB') {
+        f1.style.display = 'none';
+	f3.style.display = 'block';
+      }
+    });
+  </script>
+</form>
+
+{% if p %}
+{% autoescape off %}
+  {{ p }}
+{% endautoescape %}
+{% endif %}
+
+{% if p2 %}
+{% autoescape off %}
+  {{ p2 }}
+{% endautoescape %}
+{% endif %}
+
+
+<div class="container" style="height: 500px; overflow-y:auto;">
+  {% if d %}       
+  <table class="table table-dark table-striped">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Investment</th>
+        <th>Buy/Sell/Hold</th>
+        <th>Current Position</th>
+        <th>Shares</th>
+      </tr>
+    </thead>
+    <tbody> 
+    {% for i in d %}
+      <tr>
+        <td>{{i.date}}</td>
+        <td>{{i.investment}}</td>
+        <td>{{i.buy_sell_hold}}</td>
+        <td>{{i.position}}</td>
+        <td>{{i.shares}}</td>
+      </tr>
+    {% endfor %}
+    {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

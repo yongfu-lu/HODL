@@ -34,7 +34,79 @@
     <option value="ATR">Average True Range</option>
     <option value="FIB">MACD with Fibonacci Levels</option>
     <option value="BB">Bollinger Bands</option>
+    <option value="ROC">Rate of Change</option>
+    <option value="ARN">Aroon</option>
+    <option value="STO">Stochastic Oscillator</option>
+    <option value="TSI">True Strength Index</option>
+    <option value="UO">Ultimate Oscillator</option>
+    <option value="EMV">Ease of Movement</option>
   </select>
+
+  <div id="emv-fields" style="display:none;">
+    <label for="emv_w1">EMV Window 1:</label>
+    <input type="number" id="emv_w1" name="emv_w1">
+
+    <label for="emv_w2">EMV Window 2:</label>
+    <input type="number" id="emv_w2" name="emv_w2">
+
+    <label for="emv_over">EMV Over:</label>
+    <input type="number" id="emv_over" name="emv_over">
+
+    <label for="emv_under">EMV Under:</label>
+    <input type="number" id="emv_under" name="emv_under">
+  </div>
+
+  <div id="uo-fields" style="display:none;">
+    <label for="uo_days">UO Days:</label>
+    <input type="number" id="uo_days" name="uo_days">
+
+    <label for="uo_over">UO Over:</label>
+    <input type="number" id="uo_over" name="uo_over">
+
+    <label for="uo_under">UO Under:</label>
+    <input type="number" id="uo_under" name="uo_under">
+  </div>
+
+  <div id="tsi-fields" style="display:none;">
+    <label for="tsi_w1">TSI Window 1:</label>
+    <input type="number" id="tsi_w1" name="tsi_w1">
+
+    <label for="tsi_w2">TSI Window 2:</label>
+    <input type="number" id="tsi_w2" name="tsi_w2">
+
+    <label for="tsi_over">TSI Over:</label>
+    <input type="number" id="tsi_over" name="tsi_over">
+
+    <label for="tsi_under">TSI Under:</label>
+    <input type="number" id="tsi_under" name="tsi_under">
+  </div>
+
+  <div id="sto-fields" style="display:none;">
+    <label for="sto_days">STO Days:</label>
+    <input type="number" id="sto_days" name="sto_days">
+
+    <label for="sto_over">STO Over:</label>
+    <input type="number" id="sto_over" name="sto_over">
+
+    <label for="sto_under">STO Under:</label>
+    <input type="number" id="sto_under" name="sto_under">
+  </div>
+
+  <div id="arn-fields" style="display:none;">
+    <label for="arn_days">Aroon Days:</label>
+    <input type="number" id="arn_days" name="arn_days">
+  </div>
+
+  <div id="roc-fields" style="display:none;">
+    <label for="roc_days">ROC Days:</label>
+    <input type="number" id="roc_days" name="roc_days">
+
+    <label for="roc_over">ROC Over:</label>
+    <input type="number" id="roc_over" name="roc_over">
+
+    <label for="roc_under">ROC Under:</label>
+    <input type="number" id="roc_under" name="roc_under">
+  </div>
 
   <div id="rsi-fields" style="display:block;">
     <label for="rsi_days">RSI Days:</label>
@@ -89,6 +161,12 @@
     const atrFields = document.getElementById('atr-fields');
     const fibFields = document.getElementById('fib-fields');
     const bbFields = document.getElementById('bb-fields');
+    const rocFields = document.getElementById('roc-fields');
+    const stoFields = document.getElementById('sto-fields');
+    const tsiFields = document.getElementById('tsi-fields');
+    const uoFields = document.getElementById('uo-fields');
+    const emvFields = document.getElementById('emv-fields');
+    const arnFields = document.getElementById('arn-fields');
 
     algorithmSelect.addEventListener('change', () => {
       const selectedAlgorithm = algorithmSelect.value;
@@ -98,6 +176,12 @@
       atrFields.style.display = 'none';
       fibFields.style.display = 'none';
       bbFields.style.display = 'none';
+      rocFields.style.display = 'none';
+      stoFields.style.display = 'none';
+      tsiFields.style.display = 'none';
+      uoFields.style.display = 'none';
+      emvFields.style.display = 'none';
+      arnFields.style.display = 'none';
 
       if (selectedAlgorithm === 'RSI') {
         rsiFields.style.display = 'block';
@@ -112,6 +196,24 @@
 	rsiFields.style.display = 'none';
       } else if (selectedAlgorithm === 'BB') {
         bbFields.style.display = 'block';
+	rsiFields.style.display = 'none';
+      } else if (selectedAlgorithm === 'ROC') {
+        rocFields.style.display = 'block';
+	rsiFields.style.display = 'none';
+      } else if (selectedAlgorithm === 'STO') {
+        stoFields.style.display = 'block';
+	rsiFields.style.display = 'none';
+      } else if (selectedAlgorithm === 'TSI') {
+        tsiFields.style.display = 'block';
+	rsiFields.style.display = 'none';
+      } else if (selectedAlgorithm === 'UO') {
+        uoFields.style.display = 'block';
+	rsiFields.style.display = 'none';
+      } else if (selectedAlgorithm === 'EMV') {
+        emvFields.style.display = 'block';
+	rsiFields.style.display = 'none';
+      } else if (selectedAlgorithm === 'ARN') {
+        arnFields.style.display = 'block';
 	rsiFields.style.display = 'none';
       }
     });

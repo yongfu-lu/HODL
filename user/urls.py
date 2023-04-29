@@ -9,6 +9,8 @@ urlpatterns = [
     path('logout', views.logout, name='logout'),
     path('algorithms/', views.algorithms, name='algorithms'),
     path('data-analysis/', views.dataAnalysis, name='dataAnalysis'),
+    path('indicator-analysis/', views.indicatorAnalysis, name='indicatorAnalysis'),
+    path('indicator-analysis2/', views.indicatorAnalysis2, name='indicatorAnalysis2'),
     path('recommendations/', views.recommendations, name='recommendations'),
     path('user-api/', views.userAPI, name='userAPI'),
     path('add-to-watchlist/', views.add_to_watchlist, name='add-to-watchlist'),
@@ -18,4 +20,5 @@ urlpatterns = [
     path('get-account/', views.get_account, name='get-account'),
     path('get-history/', views.get_history, name='get-history'),
     path('help/', views.help, name='help'),
+    path('trade-logs/', views.trade_logs, name='trade-logs'),
 ]

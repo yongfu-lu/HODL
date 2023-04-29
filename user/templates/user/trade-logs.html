@@ -1,0 +1,21 @@
+{% extends 'user/base.html' %}
+{% load static %}
+
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/api.css' %}">
+
+<div class="row justify-content-center text-center" style="min-height: calc(100vh - 80px); padding-top:65px;">
+    <div class="container mb-4">
+        <h2>Auto-trade History</h2>
+    </div>
+    <ul class="list-group mb-4">
+        {%for log in trade_logs %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <p>{{log.algorithm_name}} triggered {{log.trade_type}} {{log.shares|floatformat:2}} shares of {{log.stock_name}} at price {{log.avg_price}} on {{log.trade_time|date:"M d, Y"}}</p>
+        </li>
+        {%endfor%}
+    </ul>
+</div>
+
+{% endblock %}
