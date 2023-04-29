@@ -279,3 +279,64 @@ class Indicator:
         signal = signal.rename("signal")
         df = MACD.to_frame().join(signal.to_frame())
         return df
+
+    def test_parameters(self, s, e, symbol, client, algorithm = None, w=0, w1=0, w2=0, w3=0, stdev=0):
+        if(s.year < 2016 or e.year < 2016):
+            return ("Please input data ranges post-2016 for Alpaca compatibility.")
+        if(datetime.now() < s):
+            return ("Start date must be before the current day.")
+        if(datetime.now() < e):
+            return ("End date must be before the current day.")
+        if(e < s):
+            return ("End date must be chronologically after start date.")
+        if algorithm:
+            if( algorithm == 'MA' or algorithm == 'ATR' or algorithm == 'RSI' or
+                 algorithm == 'ROC' or algorithm == 'ARN' or algorithm == 'UO' or
+                 algorithm =='STO'):
+                if(w <= 1):
+                    return ("The window must be greater than 1.")
+            if(algorithm =='TSI'):
+                if(w1 <= 1):
+                    return ("The first window must be greater than 1.")
+                if(w2 <= 1):
+                    return ("The second window must be greater than 1.")
+            if(algorithm=='BB'):
+                if(w3 <=1):
+                    return ("The window must be greater than 1.")
+                if(stdev<=0):
+                    return("Standard deviation must be greater than 0.")
+        try:
+            request_params = StockBarsRequest(symbol_or_symbols=[symbol],
+                                          timeframe = TimeFrame.Day,
+                                          start = s,
+                                          end = e,
+                                          adjustment = 'all')
+            bars = client.get_stock_bars(request_params).df
+        except:
+            return ("Please input a correct ticker symbol.")
+
+        return("Valid")
+
+    def normalize_df(self, df1, df2):
+        if len(df1.columns) == 1:
+            col_min_df1 = df1.min()[0]
+            col_max_df1 = df1.max()[0]
+        else:
+            col_min_df1 = df1.min()
+            col_max_df1 = df1.max()
+            
+        df2_normalized = df2.copy()
+        for i in range(len(df2.columns)):
+            col_min = col_min_df1 if np.ndim(col_min_df1) == 0 else col_min_df1[i]
+            col_max = col_max_df1 if np.ndim(col_max_df1) == 0 else col_max_df1[i]
+            normalization_factor = col_max / df2.iloc[:, i].max()
+            df2_normalized.iloc[:, i] = ((df2_normalized.iloc[:, i] * normalization_factor - col_min) / (col_max - col_min)) * (col_max - col_min) + col_min
+                
+        return df2_normalized
+
+    def normalize_df2(self, df1, df2):
+        max_val = df1.values.max()
+        min_val = df1.values.min()
+        normalized_df2 = (df2 - df2.min()) / (df2.max() - df2.min())
+        normalized_df2 = (normalized_df2 * (max_val - min_val)) + min_val
+        return normalized_df2
