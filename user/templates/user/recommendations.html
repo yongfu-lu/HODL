@@ -9,12 +9,12 @@
       <div class="form-group">
         <form method="POST">
           {% csrf_token %}
-          <select class="form-control" id="period-select" name="select_period" onchange="this.form.submit()">
-            <option disabled selected>Select Period</option>
-            <option value="covid">Period 1: Covid19 (2019-2023)</option>
-            <option value="2008">Period 2: 2008 Financial Crisis (2007-2013)</option>
-            <option value="dotcom">Period 3: Dotcom Bubble (1995-2007)</option>
-            <option value="period-4">Period 4: Live</option>
+          <select class="form-control" name="select_algorithm" onchange="this.form.submit()">
+            <option value="">Select Algorithm</option>
+            
+            {% for algo in activated_algorithm_list %}
+              <option value="{{ algo.id }}|{{ algo.algorithm }}|{{ algo.stock_name }}">{{ algo.algorithm }} - {{ algo.stock_name }}</option>
+            {% endfor %}
           </select>
         </form>
       </div>
@@ -30,13 +30,13 @@
         {% for index, row in df.iterrows %}
         <div class="card">
           <div class="card-body">
-            <h5 class="card-title">Algorithm: {{ row.algorithm }}</h5>
-            <p class="card-text">Stock Name: {{ row.stock_name }}</p>
+            <h5 class="card-title">Dates: {{ row.start }} - {{ row.end }}</h5>
+            <!-- <p class="card-text">Stock Name: {{ row.stock_name }}</p> -->
             <p class="card-text {% if row.Percent_Difference < 0 %}text-danger{% elif row.Percent_Difference > 0 %}text-success{% endif %}">
               Percent Difference: {{ row.Percent_Difference }}
           </p>          
             {{ row.plots|safe }}
-            <button class="btn btn-primary" onclick="showPopup('{{row.investment_amount}}', '{{row.short_moving_avg}}', '{{row.long_moving_avg}}', '{{ row.current }}', '{{ row.potential }}')">See More Details</button>
+            <button class="btn btn-primary" onclick="showPopup('{{ row.current }}', '{{ row.potential }}')">See More Details</button>
           </div>
         </div>
         {% endfor %}
@@ -54,7 +54,7 @@
       document.querySelector('#period-cards').style.display = 'block';
     });
 
-    function showPopup(investment_amount, short_moving_avg, long_moving_avg, current, potential) {
+    function showPopup(current, potential) {
       var popup = window.open("", "popup", "width=800,height=600");
       var popupDocument = popup.document;
     
@@ -112,30 +112,11 @@
 
       // investment_amount, short_moving_avg, long_moving_avg,
 
-      var graphDiv = popupDocument.createElement("div");
-      graphDiv.classList.add("graph");
+  
 
-      var investmentAmountDiv = popupDocument.createElement("div");
-      investmentAmountDiv.classList.add("info");
-
-      var shortDiv = popupDocument.createElement("div");
-      shortDiv.classList.add("info");
-
-      var longDiv = popupDocument.createElement("div");
-      longDiv.classList.add("info");
       
     
-      var investmentElement = popupDocument.createElement("p");
-      investmentElement.innerHTML = "<strong>Investment:</strong> " + investment_amount;
-      infoDiv.appendChild(investmentElement);
-
-      var shortElement = popupDocument.createElement("p");
-      shortElement.innerHTML = "<strong>Short Moving Average:</strong> " + short_moving_avg;
-      infoDiv.appendChild(shortElement);
-
-      var longElement = popupDocument.createElement("p");
-      longElement.innerHTML = "<strong>Long Moving Average:</strong> " + long_moving_avg;
-      infoDiv.appendChild(longElement);
+      
 
       var currentEarningsElement = popupDocument.createElement("p");
       currentEarningsElement.innerHTML = "<strong>Current Earnings:</strong> " + current;
