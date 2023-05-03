@@ -5,14 +5,17 @@ from datetime import datetime
 
 import pandas as pd
 import numpy as np
+import pygad as pg
+import random
 
 class Recommendation:
-    def __init__(self, client, start_date, end_date, investment=10000, commission=5):
+    def __init__(self, client, start_date, end_date, investment=10000, commission=5, optimal_params={}):
         self.start_date = start_date
         self.end_date = end_date
         self.investment = investment
         self.Strategy = Strategy(client, investment, commission)
         self.data = None
+        self.optimal_params = optimal_params
     
     def generate_strategy(self, strat_name, symbol, **kwargs):
         strategy_output = None
@@ -63,22 +66,100 @@ class Recommendation:
     def get_control(self):
         return self.ctrl_df
     
-    # def get_under_dates(self,tolerance):
-    #     try:
-    #         loss_df = self.data[self.data["%_diff"] < tolerance * -1].copy()
-    #         loss_df['grp_date'] = loss_df['date'].diff().dt.days.ne(1).cumsum()
-    #         return
-    #     except:
-    #         return
+    def optimize_params(self, strat_name, symbol, num_people=5, num_generations=3):
+        def fitness(ga, solution, solution_idx):
+            x, y, z = solution
+            try:
+                if strat_name == "moving-average" or strat_name == "average-true-range" or strat_name == 'MACD-with-fibonacci-levels':
+                    if x >= y:
+                        # Return a high penalty for invalid solutions
+                        return -99999999
+                    result = self.generate_analysis(strat_name, symbol, short=int(x), long=int(y))
+                elif strat_name == "relative-strength-indicator":
+                    if z >= y:
+                        # Return a high penalty for invalid solutions
+                        return -99999999
+                    result = self.generate_analysis(strat_name, symbol, days=int(x), over=int(y), under=int(z))
+                elif strat_name == "bollinger-bands":
+                    result = self.generate_analysis(strat_name, symbol, days=int(x), num_std_dev=int(y))
+                #print(result)
+                return result[0]
+            except Exception as e:
+                print(e)
+                return -99999999
+
+        def print_generation(ga_instance):
+            print("Generation = ", ga_instance.generations_completed)
+        
+        #num_genes = 2
+        gene_space = [(1,100),(0,100),(0,100)] if strat_name == 'relative-strength-indicator' else [(1, 100), (1, 100)]
+
+        # Define the initial population
+        if (strat_name, symbol) in self.optimal_params:
+            initial_population = [self.optimal_params[(strat_name,symbol)]]
+        else:
+            initial_population = []
+        num_individuals = num_people - len(initial_population)
+
+        for j in range(num_individuals):
+            if strat_name == "moving-average" or strat_name == "average-true-range" or strat_name == 'MACD-with-fibonacci-levels':
+                init_x = 9999999
+                init_y = -9999999
+                while(init_x >= init_y):
+                    init_x =  random.uniform(gene_space[0][0], gene_space[0][1])
+                    init_y =  random.uniform(gene_space[1][0], gene_space[1][1])
+                initial_population.append([init_x,init_y,-1])
+            elif strat_name == "relative-strength-indicator":
+                init_y = -9999999
+                init_z = 9999999
+                while(init_z >= init_y):
+                    init_x =  random.uniform(gene_space[0][0], gene_space[0][1])
+                    init_y =  random.uniform(gene_space[1][0], gene_space[1][1])
+                    init_z =  random.uniform(gene_space[2][0], gene_space[2][1])
+                initial_population.append([init_x,init_y,init_z])
+            elif strat_name == "bollinger-bands":
+                init_x =  random.uniform(gene_space[0][0], gene_space[0][1])
+                init_y =  random.uniform(gene_space[1][0], gene_space[1][1])
+                initial_population.append([init_x,init_y,-1])
+        
+        #print(len(initial_population))
+
+        ga_instance = pg.GA(num_generations=num_generations, 
+                            num_parents_mating=5,
+                            initial_population=initial_population, 
+                            #parent_selection_type="tournament",
+                            fitness_func=fitness,
+                            mutation_type="Adaptive",
+                            mutation_probability=[1.0, 0.5],
+                            on_generation=print_generation)
+
+        # Run the GA optimization
+        print("starting optimization")
+        ga_instance.run()
+        print("optimization complete")
+
+        solution, solution_fitness, solution_idx = ga_instance.best_solution()
+        #print("Parameters of the best solution : ", solution)
+        #print("Fitness value of the best solution : ", solution_fitness)
+        return solution, solution_fitness
     
-    # def loss_analysis(self, strat_name, symbol, tolerance, **kwargs):
-    #     try:
-    #         df = self.generate_analysis(strat_name,symbol,**kwargs)
-    #         # Retrieve rows where strategy underperforms market by more than tolerance percentage
-    #         loss_df = df[df["%_diff"] < tolerance * -1].copy()
-    #         #Group by consecutive days
-    #         #loss_df['grp_date'] = loss_df['date'].diff().dt.days.ne(1).cumsum()
-    #         return loss_df["%_diff"].mean(), df.iloc[-1]['investment'], df.iloc[-1]['control']
-    #     except Exception as e:
-    #         print(e, "Unable to analyze")
-    #         return -1,-1,-1   
+    def get_under_dates(self,tolerance):
+        try:
+            loss_df = self.data[self.data["%_diff"] < tolerance * -1].copy()
+            loss_df['grp_date'] = loss_df['date'].diff().dt.days.ne(1).cumsum()
+            return
+        except:
+            return
+    
+    def loss_analysis(self, strat_name, symbol, tolerance, **kwargs):
+        try:
+            df = self.generate_analysis(strat_name,symbol,**kwargs)
+            # Retrieve rows where strategy underperforms market by more than tolerance percentage
+            loss_df = df[df["%_diff"] < tolerance * -1].copy()
+            #Group by consecutive days
+            #loss_df['grp_date'] = loss_df['date'].diff().dt.days.ne(1).cumsum()
+            return loss_df["%_diff"].mean(), df.iloc[-1]['investment'], df.iloc[-1]['control']
+        except Exception as e:
+            print(e, "Unable to analyze")
+            return -1,-1,-1   
+
