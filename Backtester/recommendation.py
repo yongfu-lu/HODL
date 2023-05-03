@@ -53,6 +53,7 @@ class Recommendation:
             self.strategy_df = self.generate_strategy(strat_name, symbol, **kwargs)
             data = self.strategy_df.merge(control, how="left")
             data["%_diff"] = self.percent_difference(data['investment'],data['control'])
+            self.data = data
             # print(kwargs)
             # print(strat_name)
             # print(df1)
@@ -143,23 +144,22 @@ class Recommendation:
         #print("Fitness value of the best solution : ", solution_fitness)
         return solution, solution_fitness
     
-    def get_under_dates(self,tolerance):
-        try:
-            loss_df = self.data[self.data["%_diff"] < tolerance * -1].copy()
-            loss_df['grp_date'] = loss_df['date'].diff().dt.days.ne(1).cumsum()
-            return
-        except:
-            return
+    def update_dates(self, start, end):
+        if (end > start):
+            self.start_date = start
+            self.end_date = end
     
-    def loss_analysis(self, strat_name, symbol, tolerance, **kwargs):
-        try:
-            df = self.generate_analysis(strat_name,symbol,**kwargs)
-            # Retrieve rows where strategy underperforms market by more than tolerance percentage
-            loss_df = df[df["%_diff"] < tolerance * -1].copy()
-            #Group by consecutive days
-            #loss_df['grp_date'] = loss_df['date'].diff().dt.days.ne(1).cumsum()
-            return loss_df["%_diff"].mean(), df.iloc[-1]['investment'], df.iloc[-1]['control']
-        except Exception as e:
-            print(e, "Unable to analyze")
-            return -1,-1,-1   
-
+    # def get_loss_dates(self,tolerance=1):
+    #     try:
+    #         loss_dict = {}
+    #         loss_df = self.data[self.data["%_diff"] < tolerance * -1].copy()
+    #         #print(loss_df)
+    #         loss_df['grp_date'] = pd.to_datetime(loss_df['date']).diff().dt.days.ne(1).cumsum()
+    #         print(loss_df)
+    #         num_periods = loss_df.iloc[-1:]['grp_date']
+    #         print(num_periods)
+    #         for i in range(num_periods):
+    #             print(loss_df[loss_df.grp_date == i].iloc[0])
+    #         return loss_df
+    #     except Exception as e:
+    #         print(e)
