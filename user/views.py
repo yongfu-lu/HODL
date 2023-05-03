@@ -243,10 +243,9 @@ def dataAnalysis(request):
 def recommendations(request):
     if not request.user.is_authenticated:
         return redirect('/user/login')
-    periods = [[datetime(2019, 12, 1),datetime(2022, 12, 31)],
-               [datetime(2015, 11, 1),datetime(2020, 12, 31)],
-               [datetime(2010, 1, 1),datetime(2016, 12, 31)],
-               [datetime(2016,1,1), datetime.today() - timedelta(days=1)]]
+    periods = [[datetime(2016,1,1), datetime.today() - timedelta(days=1)],
+               [datetime(2019, 12, 1),datetime(2022, 12, 31)],
+               [datetime(2015, 11, 1),datetime(2017, 12, 31)]]
     
     select_algorithm = request.POST.get('select_algorithm')
     activated_algorithm = ActivatedAlgorithm.objects.filter(user=request.user)
@@ -282,37 +281,45 @@ def recommendations(request):
         plots = []
         act_algo = ActivatedAlgorithm.objects.filter(user=request.user, id=id)
         act_algo = list(act_algo.values())[0]
-        
-        for i in periods:
+
+        test = Recommendation(trading_client, periods[0][0], periods[0][1])
+        index = 0
+        while index < len(periods):
+            i = periods[index]
             x = i[0]
             y = i[1]
-            test = Recommendation(trading_client, x, y)
-            print("looping through periods")
+            test.update_dates(x, y)
+            print("looping through periods", index)
             try:
                 l,c,p= test.generate_analysis(algorithm, stock_name, short=int(act_algo["short_moving_avg"]),long=int(act_algo["long_moving_avg"]),days=int(act_algo["days_of_moving_avg"]),
                                                     over=int(act_algo["over_percentage_threshold"]),under=int(act_algo["under_percentage_threshold"]),num_std_dev=int(act_algo["standard_deviation"]))
-               
             except Exception as e:
                 l=c=p= -1
-                print(e)
+                periods.remove(i)
+                continue
+
             loss_analysis.append(l)
             potential.append(p)
             current.append(c)
+            if index == 0:
+                loss_dates = test.get_loss_dates()
+                for j in loss_dates:
+                    periods.append([j[0],j[1]])
+                #print("Total periods: ", len(periods))
 
             d = test.get_strategy()
             control = test.get_control()
             plt = Plot(d, control, trading_client)
             p = plt.plot_strategy("Plot")
             plots.append(p)
+            index+=1
         
         for i, period in enumerate(periods):
             start_time = period[0].strftime("%m/%d/%Y")
             end_time = period[1].strftime("%m/%d/%Y")
             periods[i] = [start_time, end_time]
 
-        print(periods)
         df = pd.DataFrame(periods, columns =['start', 'end'])
-        
         df['Percent_Difference'] = loss_analysis
         df['plots'] = plots
         df['potential'] = potential
