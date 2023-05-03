@@ -37,8 +37,8 @@ class Recommendation:
                 strategy_output = self.Strategy.execute_fib(self.start_date,self.end_date,symbol,kwargs['short'],kwargs['long'])
             else:
                 raise NameError("No strategy called " + strat_name + "\n")
-        except KeyError as e:
-            print(e, "An exception occurred. Check the input arguments for the provided strategy.")
+        except Exception as e:
+            print("Generate Strategy Error: ", e)
         return strategy_output
 
     def percent_difference(self, strat_result, control_result):
@@ -56,10 +56,10 @@ class Recommendation:
             self.data = data
             # print(kwargs)
             # print(strat_name)
-            # print(df1)
             return data["%_diff"].mean(), data.iloc[-1]['investment'], data.iloc[-1]['control']
         except Exception as e:
-            print(e, strat_name, symbol, kwargs)
+            print("Generate Analysis Error: ", e, strat_name, symbol, kwargs)
+            #return -1,-1,-1
 
     def get_strategy(self):
         return self.strategy_df
@@ -149,17 +149,25 @@ class Recommendation:
             self.start_date = start
             self.end_date = end
     
-    # def get_loss_dates(self,tolerance=1):
-    #     try:
-    #         loss_dict = {}
-    #         loss_df = self.data[self.data["%_diff"] < tolerance * -1].copy()
-    #         #print(loss_df)
-    #         loss_df['grp_date'] = pd.to_datetime(loss_df['date']).diff().dt.days.ne(1).cumsum()
-    #         print(loss_df)
-    #         num_periods = loss_df.iloc[-1:]['grp_date']
-    #         print(num_periods)
-    #         for i in range(num_periods):
-    #             print(loss_df[loss_df.grp_date == i].iloc[0])
-    #         return loss_df
-    #     except Exception as e:
-    #         print(e)
+    def get_loss_dates(self,tolerance=0,days_under=5):
+        try:
+            loss_dict = {}
+            loss_df = self.data[self.data["%_diff"] < tolerance * -1].copy()
+            loss_df['grp_date'] = pd.to_datetime(loss_df['date']).diff().dt.days.ge(5).cumsum()
+            if (len(loss_df) == 0):
+                return loss_dict
+            #print(loss_df)
+            num_periods = loss_df['grp_date'].iloc[-1]
+            #print("Numperiods: ", num_periods)
+            for i in range(num_periods+1):
+                period_df = loss_df[loss_df.grp_date == i]
+                #print (period_df.shape[0])
+                if period_df.shape[0] >= days_under:
+                    start = pd.to_datetime(period_df['date']).iloc[0]
+                    end = pd.to_datetime(period_df['date']).iloc[-1]
+                    loss_dict[(start,end)] = period_df.drop(['grp_date'], axis=1)
+            print(len(loss_dict))
+            return loss_dict
+        except Exception as e:
+            print("Get Loss Dates Error: ", e )
+            print(e)
