@@ -12,7 +12,9 @@ from Backtester.strategy import Strategy
 from Backtester.plotting import Plot
 from Backtester.Indicator import Indicator
 from alpaca.data.historical import StockHistoricalDataClient
-from datetime import datetime
+from datetime import datetime, timedelta
+
+
 import pandas as pd
 import json
 from django.core.paginator import Paginator
@@ -561,64 +563,102 @@ def dataAnalysis(request):
 def recommendations(request):
     if not request.user.is_authenticated:
         return redirect('/user/login')
-
-    periods = {"covid" : [datetime(2019, 12, 1),datetime(2022, 12, 31)],
-               #"2008" : [datetime(2007, 11, 1),datetime(2013, 12, 31)],
-               "2008" : [datetime(2015, 11, 1),datetime(2020, 12, 31)],
-               #"dotcom" : [datetime(1995, 1, 1),datetime(2007, 12, 31)]}
-               "dotcom" : [datetime(2010, 1, 1),datetime(2016, 12, 31)]}
-    try: 
-        period = periods.get(request.POST.get("select_period"))
-        #period = periods.get("dotcom")
-    except: 
-        print("Failed")
-        return render(request, 'user/recommendations.html')
-
+    periods = [[datetime(2016,1,1), datetime.today() - timedelta(days=1)],
+               [datetime(2019, 12, 1),datetime(2022, 12, 31)],
+               [datetime(2015, 11, 1),datetime(2017, 12, 31)]]
+    
+    select_algorithm = request.POST.get('select_algorithm')
+    activated_algorithm = ActivatedAlgorithm.objects.filter(user=request.user)
+    activated_algorithm_list = []
+    for algo in activated_algorithm:
+        algo_dict = {
+            'id': algo.id,
+            'algorithm': algo.algorithm,
+            'stock_name': algo.stock_name,
+        }
+        activated_algorithm_list.append(algo_dict)
+    
     try:
-        user = CustomUser.objects.filter(id=request.user.id)[0]
-        trading_client = StockHistoricalDataClient(user.api_key, user.secret_key)
-        x = period[0]
-        y = period[1]
-        test = Recommendation(trading_client, x, y)
-    except:
-        return render(request, 'user/recommendations.html',
-                      {"e": "Please connect your API key before you utilize recommendations."})
-
+        if select_algorithm is not None and select_algorithm != "":
+            id, algorithm, stock_name = select_algorithm.split('|')
+        
+        if select_algorithm == None:
+            return render(request, 'user/recommendations.html', {'activated_algorithm_list': activated_algorithm_list})
+      
+    except Exception as e:
+        print(e)
+        return render(request, 'user/recommendations.html')
+    
+    
+    # id, algorithm, stock_name = select_algorithm.split('|')
+    user = CustomUser.objects.filter(id=request.user.id)[0]
+    trading_client = StockHistoricalDataClient(user.api_key, user.secret_key)
+    
     try:
         loss_analysis = []
         potential = []
         current = []
-        activated_algorithm = ActivatedAlgorithm.objects.filter(user=request.user)
         plots = []
-        for i in activated_algorithm:
-            print("looping through algos")
+        act_algo = ActivatedAlgorithm.objects.filter(user=request.user, id=id)
+        act_algo = list(act_algo.values())[0]
+
+        test = Recommendation(trading_client, periods[0][0], periods[0][1], optimal_params={('moving-average','AAPL') : [3,21,-1], ('bollinger-bands','META') : [34,2,-1], ('relative-strength-indicator','AMZN') : [43,39,1], ('average-true-range','TSLA') : [30,48,-1]})
+        try:
+            optimal = test.optimize_params(algorithm, stock_name, 3, 2) 
+            optimal_params = optimal[0]
+            optimal_score = optimal[1]
+              
+        except:
+            optimal_params = ""
+            optimal_score = ""            
+
+        index = 0
+        while index < len(periods):
+            i = periods[index]
+            x = i[0]
+            y = i[1]
+            test.update_dates(x, y)
+            print("looping through periods", index)
             try:
-                l, c, p = test.generate_analysis(i.algorithm, i.stock_name, short=int(i.short_moving_avg),
-                                                 long=int(i.long_moving_avg), days=int(i.days_of_moving_avg),
-                                                 over=int(i.over_percentage_threshold),
-                                                 under=int(i.under_percentage_threshold),
-                                                 num_std_dev=int(i.standard_deviation))
-            except:
-                l = c = p = -1
+                l,c,p= test.generate_analysis(algorithm, stock_name, short=int(act_algo["short_moving_avg"]),long=int(act_algo["long_moving_avg"]),days=int(act_algo["days_of_moving_avg"]),
+                                                    over=int(act_algo["over_percentage_threshold"]),under=int(act_algo["under_percentage_threshold"]),num_std_dev=int(act_algo["standard_deviation"]))
+            except Exception as e:
+                l=c=p= -1
+                periods.remove(i)
+                continue
+
             loss_analysis.append(l)
             potential.append(p)
             current.append(c)
+            if index == 0:
+                loss_dates = test.get_loss_dates()
+                for j in loss_dates:
+                    periods.append([j[0],j[1]])
+                #print("Total periods: ", len(periods))
 
             d = test.get_strategy()
             control = test.get_control()
             plt = Plot(d, control, trading_client)
             p = plt.plot_strategy("Plot")
             plots.append(p)
+            index+=1
+        
+        for i, period in enumerate(periods):
+            start_time = period[0].strftime("%m/%d/%Y")
+            end_time = period[1].strftime("%m/%d/%Y")
+            periods[i] = [start_time, end_time]
 
-        df = pd.DataFrame(list(activated_algorithm.values()))
+        df = pd.DataFrame(periods, columns =['start', 'end'])
+
         df['Percent_Difference'] = loss_analysis
         df['plots'] = plots
         df['potential'] = potential
         df['current'] = current
         
         print("done")
-        return render(request, 'user/recommendations.html', {'df': df})
+        print(df)
 
+        return render(request, 'user/recommendations.html', {'df': df, 'activated_algorithm_list': activated_algorithm_list, 'optimal_params': optimal_params, 'optimal_score': optimal_score})
     except:
         return render(request, "user/recommendations.html", {"e": "Error. please try again."})
 
