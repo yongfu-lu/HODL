@@ -14,46 +14,10 @@ class Plot:
         self.inputs = inputs
         self.control = control
         self.client = client
-
-    def candlestick_plot(self, symbol, start, end):
-        request_params = StockBarsRequest(symbol_or_symbols=[symbol],
-                                          timeframe = TimeFrame.Day,
-                                          start = start,
-                                          end = end,
-                                          adjustment='all')
-
-        bars = self.client.get_stock_bars(request_params).df
-        in1, in2, in3, in4, in5 = [], [], [], [], []
-        for index, row in bars.iterrows():
-            in1.append(index[1].date())
-            in2.append(row['open'])
-            in3.append(row['high'])
-            in4.append(row['low'])
-            in5.append(row['close'])
-
-        in1 = pd.Series(in1)
-        in1 = in1.rename('date')
-        in2 = pd.Series(in2)
-        in2 = in2.rename('open')
-        in3 = pd.Series(in3)
-        in3 = in3.rename('high')
-        in4 = pd.Series(in4)
-        in4 = in4.rename('low')
-        in5 = pd.Series(in5)
-        in5 = in5.rename('close')
-
-        ret = pd.concat([in1,in2,in3,in4,in5], axis=1)
-        fig = go.Figure(data=[go.Candlestick(x=ret['date'],
-                open=ret['open'],
-                high=ret['high'],
-                low=ret['low'],
-                close=ret['close'])])
-        fig.show()
     
     def plot_strategy(self, title):
         pd.options.plotting.backend = "plotly"
         
-
         fig = px.line(self.inputs, x=self.inputs['date'], y=self.inputs['investment'])
 
         fig.add_trace(go.Scatter(x=self.control['date'],
@@ -86,3 +50,42 @@ class Plot:
         plt_div = plot(fig, output_type='div')
         return(plt_div)
 
+    def plot_stock(self, title):
+        pd.options.plotting.backend = "plotly"
+        
+        fig = px.line(self.inputs, x=self.inputs['date'], y=self.inputs['stock_price'])
+        fig.update_layout(title=title)
+        
+        plt_div = plot(fig, output_type='div')
+        return(plt_div)
+
+    def plot_indicator(self, title, df, df2, df3):
+        pd.options.plotting.backend = "plotly"
+        fig = px.line(self.inputs, x=df2.index, y=df2.iloc[:, 0])
+        
+        for column_name, column_data in df.items():
+            fig.add_trace(go.Scatter(x=column_data.index,
+                                 y=column_data.values,
+                                 name=column_name,
+                                 mode='lines'))
+            
+        for column_name, column_data in df3.items():
+            fig.update_traces(text=column_data.values, selector=dict(name=column_name))
+            
+        fig.update_layout(title=title)
+        plt_div = plot(fig, output_type='div')
+        return(plt_div)
+
+    def plot_indicator2(self, title, df, df2):
+        pd.options.plotting.backend = "plotly"
+        fig = px.line(self.inputs, x=df2.index, y=df2['stock_price'])
+        
+        for column_name, column_data in df.items():
+            fig.add_trace(go.Scatter(x=column_data.index,
+                                 y=column_data.values,
+                                 name=column_name,
+                                 mode='lines'))
+            
+        fig.update_layout(title=title)
+        plt_div = plot(fig, output_type='div')
+        return(plt_div)

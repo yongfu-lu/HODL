@@ -1,7 +1,10 @@
 {% extends 'user/base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="container">
+<link rel="stylesheet" href="{% static 'css/algorithm.css' %}">
+
+<div class="container" style="padding-top:65px;">
     <!--Moving Average -->
     <div class="row">
         <div class="col-md-6 mx-auto">
@@ -16,7 +19,7 @@
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">Apply Moving Average Strategy a Stock</h5>
+                                <h5 class="modal-title">Apply Moving Average Strategy To a Stock</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -29,8 +32,20 @@
                                     <input type="hidden" name="over-percentage-threshold" value=0>
                                     <input type="hidden" name="under-percentage-threshold" value=0>
                                     <input type="hidden" name="standard-deviation" value=0>
-                                    <label for="stock-symbol">Stock Symbol:</label>
-                                    <input type="text" name="stock-symbol" id="stock-symbol" required> <br>
+                                    <div style="position: relative">
+                                        <label for="stockInput1">Stock Symbol:</label>
+                                        <input type="text" name="stock-symbol" id="stockInput1" required> <br>
+                                        <div class="dropdown-content" id="stockDropdown1">
+                                            {%for stocks in all_stocks_alphabet%}
+                                            <div class="index{{forloop.counter}}">
+                                                {%for stock in stocks %}
+                                                <a style="display: none">{{stock}}</a>
+                                                {%endfor%}
+                                            </div>
+                                            {%endfor%}
+                                        </div>
+                                    </div>
+
                                     <label for="amount">Investment amount:</label>
                                     <input type="number" min="0" step="0.01" name="amount" id="amount" required>
                                     <br>
@@ -83,7 +98,7 @@
                                             <input type="hidden" name="over-percentage-threshold" value=0>
                                             <input type="hidden" name="under-percentage-threshold" value=0>
                                             <input type="hidden" name="standard-deviation" value=0>
-                                            <label for="stock-symbol">Stock Symbol:</label>
+                                            <label>Stock Symbol:</label>
                                             <input type="text" name="stock-symbol" id="stock-symbol-detail{{ma.id}}"
                                                    value="{{ma.stock_name}}" required readonly> <br>
                                             <label for="amount">Investment amount:</label>
@@ -145,7 +160,7 @@
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">Apply Relative Strength Indicator Strategy a Stock</h5>
+                                <h5 class="modal-title">Apply Relative Strength Indicator Strategy To a Stock</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -158,8 +173,19 @@
                                     <input type="hidden" name="long-moving-avg" value=0>
                                     <input type="hidden" name="standard-deviation" value=0>
 
-                                    <label for="stock-symbol-2">Stock Symbol:</label>
-                                    <input type="text" name="stock-symbol" id="stock-symbol-2" required><br>
+                                    <div style="position: relative">
+                                        <label for="stockInput1">Stock Symbol:</label>
+                                        <input type="text" name="stock-symbol" id="stockInput2" required> <br>
+                                        <div class="dropdown-content" id="stockDropdown2">
+                                            {%for stocks in all_stocks_alphabet%}
+                                            <div class="index{{forloop.counter}}">
+                                                {%for stock in stocks %}
+                                                <a style="display: none">{{stock}}</a>
+                                                {%endfor%}
+                                            </div>
+                                            {%endfor%}
+                                        </div>
+                                    </div>
                                     <label for="amount">Investment amount:</label>
                                     <input type="number" min="0" step="0.01" name="amount" id="amount-2" required><br>
                                     <label for="days-of-moving-avg-2">Days of Moving Avg:</label>
@@ -216,7 +242,7 @@
                                             <input type="hidden" name="long-moving-avg" value=0>
                                             <input type="hidden" name="standard-deviation" value=0>
 
-                                            <label for="stock-symbol-2">Stock Symbol:</label>
+                                            <label >Stock Symbol:</label>
                                             <input type="text" name="stock-symbol" id="stock-symbol-2-detail{{rsi.id}}"
                                                    value="{{rsi.stock_name}}" required readonly><br>
                                             <label for="amount">Investment amount:</label>
@@ -285,7 +311,7 @@
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">Apply Average True Range Strategy a Stock</h5>
+                                <h5 class="modal-title">Apply Average True Range Strategy To a Stock</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -298,8 +324,19 @@
                                     <input type="hidden" name="over-percentage-threshold" value=0>
                                     <input type="hidden" name="under-percentage-threshold" value=0>
                                     <input type="hidden" name="standard-deviation" value=0>
-                                    <label for="stock-symbol-3">Stock Symbol:</label>
-                                    <input type="text" name="stock-symbol" id="stock-symbol-3" required><br>
+                                    <div style="position: relative">
+                                        <label for="stockInput1">Stock Symbol:</label>
+                                        <input type="text" name="stock-symbol" id="stockInput3" required> <br>
+                                        <div class="dropdown-content" id="stockDropdown3">
+                                            {%for stocks in all_stocks_alphabet%}
+                                            <div class="index{{forloop.counter}}">
+                                                {%for stock in stocks %}
+                                                <a style="display: none">{{stock}}</a>
+                                                {%endfor%}
+                                            </div>
+                                            {%endfor%}
+                                        </div>
+                                    </div>
                                     <label for="amount-3">Investment amount:</label>
                                     <input type="number" min="0" step="0.01" name="amount" id="amount-3" required>
                                     <br>
@@ -351,7 +388,7 @@
                                             <input type="hidden" name="over-percentage-threshold" value=0>
                                             <input type="hidden" name="under-percentage-threshold" value=0>
                                             <input type="hidden" name="standard-deviation" value=0>
-                                            <label for="stock-symbol-3">Stock Symbol:</label>
+                                            <label>Stock Symbol:</label>
                                             <input type="text" name="stock-symbol" id="stock-symbol-3-detail{{atr.id}}"
                                                    value="{{atr.stock_name}}" required readonly><br>
                                             <label for="amount-3">Investment amount:</label>
@@ -412,7 +449,7 @@
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">Apply MACD Fibonacci Levels a Stock</h5>
+                                <h5 class="modal-title">Apply MACD Fibonacci Levels To a Stock</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -425,8 +462,19 @@
                                     <input type="hidden" name="over-percentage-threshold" value=0>
                                     <input type="hidden" name="under-percentage-threshold" value=0>
                                     <input type="hidden" name="standard-deviation" value=0>
-                                    <label for="stock-symbol-4">Stock Symbol:</label>
-                                    <input type="text" name="stock-symbol" id="stock-symbol-4" required> <br>
+                                    <div style="position: relative">
+                                        <label for="stockInput1">Stock Symbol:</label>
+                                        <input type="text" name="stock-symbol" id="stockInput4" required> <br>
+                                        <div class="dropdown-content" id="stockDropdown4">
+                                            {%for stocks in all_stocks_alphabet%}
+                                            <div class="index{{forloop.counter}}">
+                                                {%for stock in stocks %}
+                                                <a style="display: none">{{stock}}</a>
+                                                {%endfor%}
+                                            </div>
+                                            {%endfor%}
+                                        </div>
+                                    </div>
                                     <label for="amount-4">Investment amount:</label>
                                     <input type="number" min="0" step="0.01" name="amount" id="amount-4" required> <br>
 
@@ -478,7 +526,7 @@
                                             <input type="hidden" name="over-percentage-threshold" value=0>
                                             <input type="hidden" name="under-percentage-threshold" value=0>
                                             <input type="hidden" name="standard-deviation" value=0>
-                                            <label for="stock-symbol-4">Stock Symbol:</label>
+                                            <label>Stock Symbol:</label>
                                             <input type="text" name="stock-symbol" id="stock-symbol-4-detail{{fib.id}}"
                                                    value="{{fib.stock_name}}" required readonly> <br>
                                             <label for="amount-4">Investment amount:</label>
@@ -540,7 +588,7 @@
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">Apply Bollinger Bands to a Stock</h5>
+                                <h5 class="modal-title">Apply Bollinger Bands To a Stock</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -553,8 +601,19 @@
                                     <input type="hidden" name="under-percentage-threshold" value=0>
                                     <input type="hidden" name="short-moving-avg" value=0>
                                     <input type="hidden" name="long-moving-avg" value=0>
-                                    <label for="stock-symbol-5">Stock Symbol:</label>
-                                    <input type="text" name="stock-symbol" id="stock-symbol-5" required><br>
+                                    <div style="position: relative">
+                                        <label for="stockInput1">Stock Symbol:</label>
+                                        <input type="text" name="stock-symbol" id="stockInput5" required> <br>
+                                        <div class="dropdown-content" id="stockDropdown5">
+                                            {%for stocks in all_stocks_alphabet%}
+                                            <div class="index{{forloop.counter}}">
+                                                {%for stock in stocks %}
+                                                <a style="display: none">{{stock}}</a>
+                                                {%endfor%}
+                                            </div>
+                                            {%endfor%}
+                                        </div>
+                                    </div>
                                     <label for="amount-5">Investment amount:</label>
                                     <input type="number" min="0" step="0.01" name="amount" id="amount-5" required>
                                     <br>
@@ -605,21 +664,25 @@
                                             <input type="hidden" name="under-percentage-threshold" value=0>
                                             <input type="hidden" name="short-moving-avg" value=0>
                                             <input type="hidden" name="long-moving-avg" value=0>
-                                            <label for="stock-symbol-5">Stock Symbol:</label>
-                                            <input type="text" name="stock-symbol" id="stock-symbol-5-detail{{bb.id}}" value="{{bb.stock_name}}"required readonly>
+                                            <label >Stock Symbol:</label>
+                                            <input type="text" name="stock-symbol" id="stock-symbol-5-detail{{bb.id}}"
+                                                   value="{{bb.stock_name}}" required readonly>
                                             <br>
                                             <label for="amount-5">Investment amount:</label>
-                                            <input type="number" min="0" step="0.01" name="amount" id="amount-5-detail{{bb.id}}"
+                                            <input type="number" min="0" step="0.01" name="amount"
+                                                   id="amount-5-detail{{bb.id}}"
                                                    value="{{bb.investment_amount}}"
                                                    required>
                                             <br>
                                             <label for="days-of-moving-avg-5">Days of Moving Avg:</label>
                                             <input type="number" min="1" max="1000" step="1" name="days-of-moving-avg"
-                                                   id="days-of-moving-avg-5-detail{{bb.id}}" value="{{bb.days_of_moving_avg}}"
+                                                   id="days-of-moving-avg-5-detail{{bb.id}}"
+                                                   value="{{bb.days_of_moving_avg}}"
                                                    required><br>
                                             <label for="standard-deviation-5">Standard Deviation:</label>
                                             <input type="number" min="1" step="0.01" name="standard-deviation"
-                                                   id="standard-deviation-5-detail{{bb.id}}" value="{{bb.standard_deviation}}"
+                                                   id="standard-deviation-5-detail{{bb.id}}"
+                                                   value="{{bb.standard_deviation}}"
                                                    required>
                                         </div>
                                         <div class="modal-footer">
@@ -650,5 +713,11 @@
             </div>
         </div>
     </div>
+
+    <div class="container text-center mb-4">
+        <a href="/user/trade-logs/" class="btn btn-success">View Auto-trade History</a>
+    </div>
 </div>
+<script src="{% static 'script/algorithm.js' %}"></script>
+
 {% endblock %}

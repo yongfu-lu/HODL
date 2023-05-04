@@ -23,10 +23,8 @@ class AlpacaAccount:
             self.client.get_account()
             self.API = tradeapi.REST(api_key, secret_key, api_version="v2", base_url=self.base_url)
         except:
-            print("account is not found")
             self.account_linked = False
         else:
-            print("account is found")
             self.account_linked = True
 
     def get_account(self):
@@ -48,10 +46,13 @@ class AlpacaAccount:
         if not self.account_linked:
             return None
 
-        watchlist_id = self.API.get_watchlists()[0].id
-        watchlist = self.API.get_watchlist(watchlist_id)
-        symbols = [asset['symbol'] for asset in watchlist.assets]
-        current_time = datetime.datetime.now(tz=pytz.timezone('US/Eastern'))
+        try:
+            watchlist_id = self.API.get_watchlists()[0].id
+            watchlist = self.API.get_watchlist(watchlist_id)
+            symbols = [asset['symbol'] for asset in watchlist.assets]
+            current_time = datetime.datetime.now(tz=pytz.timezone('US/Eastern'))
+        except:
+            return None
 
         # create list of stock dictionary, each dictionary contains symbol, current price, last market close price
         assets = []
@@ -98,3 +99,8 @@ class AlpacaAccount:
             return False
         else:
             return not getattr(asset,'class') == 'us_equity'
+
+    def get_history(self, period='7D'):
+        if not self.account_linked:
+            return
+        return self.API.get_portfolio_history(period=period, timeframe='1D')

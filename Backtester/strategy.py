@@ -15,6 +15,30 @@ class Strategy:
         self.commission = commission
         self.client = client
 
+    def get_stock_price(self, start, end, symbol):
+        request_params = StockBarsRequest(symbol_or_symbols=[symbol],
+                                          timeframe = TimeFrame.Day,
+                                          start = start,
+                                          end = end,
+                                          adjustment='all')
+        bars = self.client.get_stock_bars(request_params).df
+        bars = bars.reset_index()
+        del bars["symbol"]
+        bars = bars.set_index('timestamp')
+        bars = bars.truncate(before=pd.Timestamp(start, tz='US/Pacific'))
+
+        in1, in2, in3, in4, in5 = [], [], [], [], []
+        shares = self.investment / bars['close'][0]
+        pos = 'cash'
+        prevpos = 'cash'
+        
+        for index, row in bars.iterrows():
+            in1.append(index.date())
+            in2.append(row['close'])
+        
+        ret = pd.DataFrame({'date': in1, 'stock_price': in2})
+        return ret
+
     def execute_control(self, start, end, symbol):
         request_params = StockBarsRequest(symbol_or_symbols=[symbol],
                                           timeframe = TimeFrame.Day,
@@ -42,7 +66,352 @@ class Strategy:
         
         ret = pd.DataFrame({'date': in1, 'investment': in2, 'buy_sell_hold': in3, 'position': in4, 'shares': in5})
         return ret
+
+    def execute_roc(self, start, end, symbol, window, over, under):
+        rocI = Indicator(self.client, symbol)
+        roc = rocI.roc(start, end, window)
+        position = 'cash'
+        prevpos = 'cash'
+
+        request_params = StockBarsRequest(symbol_or_symbols=[symbol],
+                                          timeframe = TimeFrame.Day,
+                                          start = start,
+                                          end = end,
+                                          adjustment='all')
+
+        bars = self.client.get_stock_bars(request_params).df
+        bars = bars.reset_index()
+        del bars["symbol"]
+        bars = bars.set_index('timestamp')
+        bars = bars.truncate(before=pd.Timestamp(start, tz='US/Pacific'))
+
+        data = bars['close']
+        df = pd.concat([roc, data], axis=1)
+        in1, in2, in3, in4, in5 = [], [], [], [], []
+        shares = 0
+
+        for index, row in df.iterrows():
+            if(row['ROC']<=under) and (position=='cash'):
+                shares = self.investment / row['close']
+                self.investment = 0
+                prevpos = position
+                position = 'long'
+            elif (row['ROC']>=over) and (position == 'long'):
+                self.investment = shares * row['close'] - self.commission
+                shares = 0
+                prevpos = position
+                position = 'cash'
+            else:
+                prevpos = position
+            if position == 'long':
+                in1.append(index.date())
+                in2.append((row['close'] * shares))
+            else:
+                in1.append(index.date())
+                in2.append(self.investment)
+
+            if(prevpos == position):
+                in3.append(0)
+            else:
+                if(position=='cash'):
+                    in3.append(-1)
+                else:
+                    in3.append(1)
+            in4.append(position)
+            in5.append(shares)
+            
+        ret = pd.DataFrame({'date': in1, 'investment': in2, 'buy_sell_hold': in3, 'position': in4, 'shares': in5})
+        return ret
+
+    def execute_stochastic(self, start, end, symbol, window, over, under):
+        stoI = Indicator(self.client, symbol)
+        sto = stoI.stochastic_oscillator(start, end, window)
+        position = 'cash'
+        prevpos = 'cash'
+
+        request_params = StockBarsRequest(symbol_or_symbols=[symbol],
+                                          timeframe = TimeFrame.Day,
+                                          start = start,
+                                          end = end,
+                                          adjustment='all')
+
+        bars = self.client.get_stock_bars(request_params).df
+        bars = bars.reset_index()
+        del bars["symbol"]
+        bars = bars.set_index('timestamp')
+        bars = bars.truncate(before=pd.Timestamp(start, tz='US/Pacific'))
+
+        data = bars['close']
+        df = pd.concat([sto, data], axis=1)
+        in1, in2, in3, in4, in5 = [], [], [], [], []
+        shares = 0
+
+        for index, row in df.iterrows():
+            if(row['k percent']<=under) and (row['d percent']<=under) and (position=='cash'):
+                shares = self.investment / row['close']
+                self.investment = 0
+                prevpos = position
+                position = 'long'
+            elif (row['k percent']>=over) and (row['d percent']>=over) and (position == 'long'):
+                self.investment = shares * row['close'] - self.commission
+                shares = 0
+                prevpos = position
+                position = 'cash'
+            else:
+                prevpos = position
+            if position == 'long':
+                in1.append(index.date())
+                in2.append((row['close'] * shares))
+            else:
+                in1.append(index.date())
+                in2.append(self.investment)
+
+            if(prevpos == position):
+                in3.append(0)
+            else:
+                if(position=='cash'):
+                    in3.append(-1)
+                else:
+                    in3.append(1)
+            in4.append(position)
+            in5.append(shares)
+            
+        ret = pd.DataFrame({'date': in1, 'investment': in2, 'buy_sell_hold': in3, 'position': in4, 'shares': in5})
+        return ret
+
+    def execute_tsi(self, start, end, symbol, window1, window2, over, under):
+        tsiI = Indicator(self.client, symbol)
+        tsi = tsiI.tsi(start, end, window1, window2)
+        position = 'cash'
+        prevpos = 'cash'
+
+        request_params = StockBarsRequest(symbol_or_symbols=[symbol],
+                                          timeframe = TimeFrame.Day,
+                                          start = start,
+                                          end = end,
+                                          adjustment='all')
+
+        bars = self.client.get_stock_bars(request_params).df
+        bars = bars.reset_index()
+        del bars["symbol"]
+        bars = bars.set_index('timestamp')
+        bars = bars.truncate(before=pd.Timestamp(start, tz='US/Pacific'))
+
+        data = bars['close']
+        df = pd.concat([tsi, data], axis=1)
+        in1, in2, in3, in4, in5 = [], [], [], [], []
+        shares = 0
+
+        for index, row in df.iterrows():
+            if(row['tsi']<=under) and (position=='cash'):
+                shares = self.investment / row['close']
+                self.investment = 0
+                prevpos = position
+                position = 'long'
+            elif (row['tsi']>=over) and (position == 'long'):
+                self.investment = shares * row['close'] - self.commission
+                shares = 0
+                prevpos = position
+                position = 'cash'
+            else:
+                prevpos = position
+            if position == 'long':
+                in1.append(index.date())
+                in2.append((row['close'] * shares))
+            else:
+                in1.append(index.date())
+                in2.append(self.investment)
+
+            if(prevpos == position):
+                in3.append(0)
+            else:
+                if(position=='cash'):
+                    in3.append(-1)
+                else:
+                    in3.append(1)
+            in4.append(position)
+            in5.append(shares)
+            
+        ret = pd.DataFrame({'date': in1, 'investment': in2, 'buy_sell_hold': in3, 'position': in4, 'shares': in5})
+        return ret
+
+    def execute_uo(self, start, end, symbol, window, over, under):
+        uoI = Indicator(self.client, symbol)
+        uo = uoI.ultimate_oscillator(start, end, window)
+        position = 'cash'
+        prevpos = 'cash'
+
+        request_params = StockBarsRequest(symbol_or_symbols=[symbol],
+                                          timeframe = TimeFrame.Day,
+                                          start = start,
+                                          end = end,
+                                          adjustment='all')
+
+        bars = self.client.get_stock_bars(request_params).df
+        bars = bars.reset_index()
+        del bars["symbol"]
+        bars = bars.set_index('timestamp')
+        bars = bars.truncate(before=pd.Timestamp(start, tz='US/Pacific'))
+
+        data = bars['close']
+        df = pd.concat([uo, data], axis=1)
+        in1, in2, in3, in4, in5 = [], [], [], [], []
+        shares = 0
+
+        for index, row in df.iterrows():
+            if(row['UO']<=under) and (position=='cash'):
+                shares = self.investment / row['close']
+                self.investment = 0
+                prevpos = position
+                position = 'long'
+            elif (row['UO']>=over) and (position == 'long'):
+                self.investment = shares * row['close'] - self.commission
+                shares = 0
+                prevpos = position
+                position = 'cash'
+            else:
+                prevpos = position
+            if position == 'long':
+                in1.append(index.date())
+                in2.append((row['close'] * shares))
+            else:
+                in1.append(index.date())
+                in2.append(self.investment)
+
+            if(prevpos == position):
+                in3.append(0)
+            else:
+                if(position=='cash'):
+                    in3.append(-1)
+                else:
+                    in3.append(1)
+            in4.append(position)
+            in5.append(shares)
+            
+        ret = pd.DataFrame({'date': in1, 'investment': in2, 'buy_sell_hold': in3, 'position': in4, 'shares': in5})
+        return ret
+
+    def execute_emv(self, start, end, symbol, window1, window2, over, under):
+        emvI = Indicator(self.client, symbol)
+        emv = emvI.emv(start, end,  window1)
+        position = 'cash'
+        prevpos = 'cash'
+
+        request_params = StockBarsRequest(symbol_or_symbols=[symbol],
+                                          timeframe = TimeFrame.Day,
+                                          start = start,
+                                          end = end,
+                                          adjustment='all')
+
+        emv['emv signal'] = emv['emv'].rolling(window2).mean()
+        emv['diff'] = emv['emv'] - emv['emv signal']
+        emv['sign'] = emv['diff'].apply(lambda x: '+' if x > 0 else '-')
+        emv['cross'] = emv['sign'] != emv['sign'].shift()
+
+        bars = self.client.get_stock_bars(request_params).df
+        bars = bars.reset_index()
+        del bars["symbol"]
+        bars = bars.set_index('timestamp')
+        bars = bars.truncate(before=pd.Timestamp(start, tz='US/Pacific'))
+
+        data = bars['close']
+        df = pd.concat([emv, data], axis=1)
+        in1, in2, in3, in4, in5 = [], [], [], [], []
+        shares = 0
         
+        for index, row in df.iterrows():
+            if(row['emv']<=under) and (row['cross']) and (position=='cash'):
+                shares = self.investment / row['close']
+                self.investment = 0
+                prevpos = position
+                position = 'long'
+            elif (row['emv']>=over) and (row['cross']) and (position == 'long'):
+                self.investment = shares * row['close'] - self.commission
+                shares = 0
+                prevpos = position
+                position = 'cash'
+            else:
+                prevpos = position
+            if position == 'long':
+                in1.append(index.date())
+                in2.append((row['close'] * shares))
+            else:
+                in1.append(index.date())
+                in2.append(self.investment)
+
+            if(prevpos == position):
+                in3.append(0)
+            else:
+                if(position=='cash'):
+                    in3.append(-1)
+                else:
+                    in3.append(1)
+            in4.append(position)
+            in5.append(shares)
+            
+        ret = pd.DataFrame({'date': in1, 'investment': in2, 'buy_sell_hold': in3, 'position': in4, 'shares': in5})
+        return ret
+
+    def execute_aroon(self, start, end, symbol, window):
+        aroonI = Indicator(self.client, symbol)
+        aroon = aroonI.aroon(start, end, window)
+        position = 'cash'
+        prevpos = 'cash'
+
+        request_params = StockBarsRequest(symbol_or_symbols=[symbol],
+                                          timeframe = TimeFrame.Day,
+                                          start = start,
+                                          end = end,
+                                          adjustment='all')
+
+        bars = self.client.get_stock_bars(request_params).df
+        bars = bars.reset_index()
+        del bars["symbol"]
+        bars = bars.set_index('timestamp')
+        bars = bars.truncate(before=pd.Timestamp(start, tz='US/Pacific'))
+
+        data = bars['close']
+        aroon['diff'] = aroon['aroon up'] - aroon['aroon down']
+        aroon['sign'] = aroon['diff'].apply(lambda x: '+' if x > 0 else '-')
+        aroon['cross'] = aroon['sign'] != aroon['sign'].shift()
+        
+        df = pd.concat([aroon, data], axis=1)
+        in1, in2, in3, in4, in5 = [], [], [], [], []
+        shares = 0
+
+        for index, row in df.iterrows():
+            if(row['aroon up']>row['aroon down']) and (row['cross']) and (position=='cash'):
+                shares = self.investment / row['close']
+                self.investment = 0
+                prevpos = position
+                position = 'long'
+            elif(row['aroon down']>row['aroon up']) and (row['cross']) and (position=='long'):
+                self.investment = shares * row['close'] - self.commission
+                shares = 0
+                prevpos = position
+                position = 'cash'
+            else:
+                prevpos = position
+            if position == 'long':
+                in1.append(index.date())
+                in2.append((row['close'] * shares))
+            else:
+                in1.append(index.date())
+                in2.append(self.investment)
+
+            if(prevpos == position):
+                in3.append(0)
+            else:
+                if(position=='cash'):
+                    in3.append(-1)
+                else:
+                    in3.append(1)
+            in4.append(position)
+            in5.append(shares)
+            
+        ret = pd.DataFrame({'date': in1, 'investment': in2, 'buy_sell_hold': in3, 'position': in4, 'shares': in5})
+        return ret
+            
     def execute_ma(self, start, end, symbol, short, long):
         ma = Indicator(self.client, symbol)
         ma_short = ma.moving_average(start, end, short)
@@ -367,9 +736,11 @@ class Strategy:
     def setVal(self, amount):
         self.investment = amount
 
-    def test_parameters(self, s, e, symbol, algorithm, investment, client, window = 0, rsi_over = 0, rsi_under = 0, short = 0, long = 0, std_dev = 0):
+    def test_parameters(self, s, e, symbol, algorithm, investment, client, window = 0, rsi_over = 0, rsi_under = 0, short = 0, long = 0, std_dev = 0, window2 = 0):
         if(investment <= 0):
             return ("Investment must be positive.")
+        if(s.year < 2016 or e.year < 2016):
+            return ("Please input data ranges post-2016 for Alpaca compatibility.")
         if(datetime.now() < s):
             return ("Start date must be before the current day.")
         if(datetime.now() < e):
@@ -385,6 +756,17 @@ class Strategy:
                 return ("RSI over and under must be between 0 to 100")
             if(rsi_under > rsi_over or rsi_under==rsi_over):
                 return ("RSI over must be greater than RSI under.")
+        if(algorithm=='STO' or algorithm =='UO' or algorithm =='TSI' or algorithm =='ROC' or algorithm=='EMV'):
+            if(window <= 1):
+                return ("The window must be greater than 1.")
+            if(rsi_under > rsi_over or rsi_under==rsi_over):
+                return ("Over threshold must be greater than under threshold.")
+            if(algorithm=='TSI' or algorithm=='EMV'):
+                if(window2 <= 1):
+                    return ("The second window must be greater than 1.")
+        if(algorithm =="ARN"):
+            if(window <= 1):
+                return ("The window must be greater than 1.")
         if(algorithm == 'MA' or algorithm == 'ATR' or algorithm == 'FIB'):
             if(short <= 0 or long <= 0):
                 return ("Short and long periods must be greater than 0")

@@ -1,75 +1,109 @@
 {% extends 'user/base.html' %}
 {% load mathfilters %}
+{% load static %}
 
 {% block content %}
-<div class="container mt-2 bg-light">
-    <h3 class="text-center">Account Balance </h3>
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<div class="container mt-2" style="padding-top:65px;">
     {% if is_account_linked %}
-    <table class="table">
-        <thead>
-        <tr>
-            <th scope="col">Equity</th>
-            <th scope="col">Change of Today</th>
-            <th scope="col"> % Change of Today</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>${{account.equity|floatformat:2}}</td>
-            <td>${{account.equity|sub:account.last_equity|floatformat:2}}</td>
-            <td>{{account.equity|sub:account.last_equity|div:account.last_equity|mult:100|floatformat:2}}%</td>
-        </tr>
-        </tbody>
-    </table>
+    <div class="row">
+        <div class="col-lg-8 col-md-8 col-sm-8">
+            <div class="section-box bg-light">
+                <button class="btn btn-sm period-section" id="7D" onclick="updateGraph('7D')"> 7D</button>
+                <button class="btn btn-sm period-section" id="30D" onclick="updateGraph('30D')"> 30D</button>
+                <button class="btn btn-sm period-section" id="90D" onclick="updateGraph('90D')"> 3M</button>
+                <button class="btn btn-sm period-section" id="365D" onclick="updateGraph('365D')"> 1Y</button>
+                <div id="plot"></div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-4">
+            <div class="section-box balance-box">
+                <h5 style="color:grey;">Equity:</h5>
+                <div class="btn {% if account.equity|sub:account.last_equity|positive  %} btn-success {%else%} btn-danger {%endif%}">
+                    <h3 >${{account.equity|floatformat:2}}</h3>
+                </div>
+            </div>
+            <div class="section-box balance-box">
+                <h5 style="color:grey">Change of Today:</h5>
+                <div class="btn {% if account.equity|sub:account.last_equity|positive  %} btn-success {%else%} btn-danger {%endif%}">
+                    <h3>${{account.equity|sub:account.last_equity|floatformat:2}}</h3>
+                </div>
+            </div>
+            <div class="section-box balance-box">
+                <h5 style="color:grey">% Change of Today:</h5>
+                <div class="btn {% if account.equity|sub:account.last_equity|positive  %} btn-success {%else%} btn-danger {%endif%}">
+                    <h3>{{account.equity|sub:account.last_equity|div:account.last_equity|mult:100|floatformat:2}}%</h3>
+                </div>
+            </div>
+        </div>
+    </div>
     {%else%}
-    <div class="container text-center">
+    <div class="container text-center section-box">
+        <h3>Account Balance</h3>
         <h6> Ops, We can't link to your Alpaca account</h6>
         <h6> Please Update your api key and secret key of your Alpaca Account</h6>
     </div>
     {%endif%}
 </div>
 
-<div class="container mt-4">
-    <h3 class="text-center">Positions</h3>
-    {%if is_account_linked %}
-    <table class="table">
-        <thead>
-        <tr>
-            <th scope="col">Asset</th>
-            <th scope="col">Quantity</th>
-            <th scope="col">Last Price</th>
-            <th scope="col">% Change of Today</th>
-            <th scope="col">Cost Basis</th>
-            <th scope="col">Market Value</th>
-            <th scope="col">Total Earning</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for position in positions%}
-        <tr>
-            <th scope="row">{{position.symbol}}</th>
-            <td>{{position.qty}}</td>
-            <td>${{position.current_price}}</td>
-            <td>${{ position.change_today|mult:100|floatformat:2 }}%</td>
-            <td>${{position.cost_basis|floatformat:2}}</td>
-            <td>${{position.market_value|floatformat:2}}</td>
-            <td>{{ position.market_value|sub:position.cost_basis|floatformat:2}}</td>
-        </tr>
-        {%endfor%}
-        </tbody>
-    </table>
-    {%else%}
-    <div class="container text-center">
-        <h6> Ops, We can't link to your Alpaca account</h6>
-        <h6> Please Update your api key and secret key of your Alpaca Account</h6>
+<div class="container text-center mt-4">
+    <div class="section-box">
+        <h3 class="text-center">Positions</h3>
+        {%if is_account_linked %}
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">Asset</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Last Price</th>
+                <th scope="col">% Change of Today</th>
+                <th scope="col">Cost Basis</th>
+                <th scope="col">Market Value</th>
+                <th scope="col">Total Earning</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for position in positions%}
+            <tr>
+                <th scope="row" id="position-symbol-{{forloop.counter}}">{{position.symbol}}</th>
+                <td id="position-qty-{{forloop.counter}}">{{position.qty}}</td>
+                <td>
+                    <div id="position-current-price-{{forloop.counter}}" class="btn {% if  position.change_today|positive %} btn-success {%else%} btn-danger {%endif%}">
+                    ${{position.current_price}}
+                    </div>
+                </td>
+                <td>
+                    <div id="position-change-today-{{forloop.counter}}" class="btn {% if  position.change_today|positive %} btn-success {%else%} btn-danger {%endif%}">
+                        {{ position.change_today|mult:100|floatformat:2 }}%
+                    </div>
+                </td>
+                <td id="position-cost-basis-{{forloop.counter}}">${{position.cost_basis|floatformat:2}}</td>
+                <td id="position-market-value-{{forloop.counter}}">${{position.market_value|floatformat:2}}</td>
+                <td >
+                    <div id="position-earning-{{forloop.counter}}" class="btn {% if  position.market_value|sub:position.cost_basis|positive %} btn-success {%else%} btn-danger {%endif%}">
+                    {{ position.market_value|sub:position.cost_basis|floatformat:2}}
+                    </div>
+                </td>
+            </tr>
+            {%endfor%}
+            </tbody>
+        </table>
+        <a href="/user/all-positions/" class="btn btn-primary">View All Positions</a>
+        {%else%}
+        <div class="container text-center">
+            <h6> Ops, We can't link to your Alpaca account</h6>
+            <h6> Please Update your api key and secret key of your Alpaca Account</h6>
+        </div>
+        {%endif%}
     </div>
-    {%endif%}
-
 </div>
 
-<div class="container text-center mt-4 bg-light">
-    <h3> Activated Algorithms </h3>
-    <div class="container pb-4">
+<div class="container text-center mt-4">
+    <div class="section-box bg-light">
+        <h3> Activated Algorithms </h3>
+        <div class="container pb-4">
         {% if activated_algorithms|length == 0 %}
         <h5>You haven't activated any trading algorithms yet</h5>
         {% else %}
@@ -90,12 +124,14 @@
             </tbody>
         </table>
         {% endif %}
-        <a href="/user/algorithms" class="btn btn-primary"> Edit Activated Algorithms</a>
+        <a href="/user/algorithms" class="btn btn-primary"> View All Activated Algorithms</a>
+    </div>
     </div>
 </div>
 
-<div class="container mt-4">
-    <h3 class="text-center">Trading History</h3>
+<div class="container text-center mt-4">
+    <div class="section-box">
+        <h3 class="text-center">Trading History</h3>
     {%if is_account_linked %}
     <table class="table">
         <thead>
@@ -123,16 +159,19 @@
         {%endfor%}
         </tbody>
     </table>
+    <a href="/user/all-activities/" class="btn btn-primary"> View All History</a>
     {%else%}
     <div class="container text-center">
         <h6> Ops, We can't link to your Alpaca account</h6>
         <h6> Please Update your api key and secret key of your Alpaca Account</h6>
     </div>
     {%endif%}
-
+    </div>
 </div>
 
-<div class="container mt-4 mb-4 bg-light">
+<div class="container mt-4 mb-4">
+    <div class="section-box bg-light">
+
     <div>
         <div class="text-center">
             <span class="h3"> Watch List </span>
@@ -155,8 +194,20 @@
                         <form action="/user/add-to-watchlist/" method="post" class="mb-4">
                             {% csrf_token %}
                             <div class="modal-body">
-                                <input type="text" class="form-control" name="stock-symbol"
-                                       placeholder="Enter Stock Symbol Here">
+                                <div style="position: relative">
+                                    <input type="text" class="form-control" name="stock-symbol" id="myInput"
+                                           placeholder="Enter Stock Symbol Here">
+                                    <div class="dropdown-content" id="myDropdown">
+                                        {%for stocks in all_stocks_alphabet%}
+                                        <div class="index{{forloop.counter}}">
+                                            {%for stock in stocks %}
+                                            <a style="display: none">{{stock}}</a>
+                                            {%endfor%}
+                                        </div>
+                                        {%endfor%}
+                                    </div>
+                                </div>
+
                                 <input type="hidden" name="watchlist-id" value={{watchlist.id}}>
                             </div>
                             <div class="modal-footer">
@@ -195,9 +246,21 @@
         {%for asset in watchlist.assets%}
         <tr>
             <th scope="row">{{asset.symbol}}</th>
-            <td>${{asset.current_price|floatformat:2}}</td>
-            <td>${{asset.price_change|floatformat:2}}</td>
-            <td>{{asset.price_change_perc|floatformat:2}}%</td>
+            <td >
+                <div id="watch-list-price-{{forloop.counter}}" class="btn {% if asset.price_change|positive %} btn-success {%else%} btn-danger {%endif%}">
+                    ${{asset.current_price|floatformat:2}}
+                </div>
+            </td>
+            <td >
+                <div id="watch-list-change-of-today-{{forloop.counter}}" class="btn {% if asset.price_change|positive %} btn-success {%else%} btn-danger {%endif%}">
+                    ${{asset.price_change|floatformat:2}}
+                </div>
+            </td>
+            <td >
+                <div id="watch-list-perc-change-of-today-{{forloop.counter}}" class="btn {% if asset.price_change|positive %} btn-success {%else%} btn-danger {%endif%}">
+                    {{asset.price_change_perc|floatformat:2}}%
+                </div>
+            </td>
             <th scope="col">
                 <form action="/user/remove-from-watchlist/" method="post">
                     {% csrf_token %}
@@ -211,5 +274,95 @@
         </tbody>
     </table>
     {%endif%}
+    </div>
 </div>
+
+<script src="{% static 'script/dashboard.js' %}"></script>
+<script>
+    //this script update account and stock information every 3 seconds without refreshing page
+    function updateAccount(){
+        $.ajax({
+           url: '/user/get-account/',
+           type:'GET',
+           success: function(data){
+               if (data.is_account_linked) {
+                   $('#equity').text("$" +data.account.equity);
+                   $('#change-of-today').text("$" + data.account.change_of_today);
+                   $('#perc-change-of-today').text(data.account.perc_change_of_today + "%");
+                   for (var i = 1; i<=data.watchlist.assets.length; i++){
+                       $('#watch-list-price-' + i).text("$" + data.watchlist.assets[i-1].current_price)
+                       $('#watch-list-change-of-today-' + i).text("$" + data.watchlist.assets[i-1].price_change.toFixed(2))
+                       $('#watch-list-perc-change-of-today-' + i).text(data.watchlist.assets[i-1].price_change_perc.toFixed(2) + "%")
+                   }
+                   for(var i = 1; i<=data.positions.length; i++){
+                       $('#position-symbol-' + i).text(data.positions[i-1].symbol)
+                       $('#position-qty-' + i).text(data.positions[i-1].qty)
+                       $('#position-current-price-' + i).text("$" + data.positions[i-1].current_price)
+                       $('#position-change-today-' + i).text( (data.positions[i-1].change_today*100).toFixed(2) + "%")
+                       $('#position-cost-basis-' + i).text("$" + data.positions[i-1].cost_basis )
+                       $('#position-market-value-' + i).text("$" + data.positions[i-1].market_value)
+                       $('#position-earning-' + i).text("$" + data.positions[i-1].earning)
+                   }
+               }
+           }, error: function(xhr, status, error){
+               console.log('Error:', error);
+            }
+        });
+    }
+    setInterval(updateAccount, 3000);
+</script>
+<script>
+    //this script update investment graph without refreshing page
+    function drawGraph(x, y){
+       var line_color = "green"
+       if(y[y.length-1] < y[0] ){
+           line_color = "red"
+       }
+        console.log(y[0])
+        console.log(y[y.length-1])
+        var trace = {x: x, y: y, type: 'scatter', hovertemplate: '%{y}', name: '', mode:'lines', line: {shape: 'spline', color:line_color, smoothing:0.01},};
+        var layout = {title: 'Investment', xaxis: {showgrid: false,},  hovermode: 'x unified', hoverlabel: {bgcolor: '#fff', font: {family: 'Arial', size: 12}, bordercolor: '#000', borderwidth: 1, namelength: 0,}};
+        var data = [trace];
+        Plotly.newPlot('plot', data, layout,  {displayModeBar: false});
+    }
+
+    window.addEventListener('DOMContentLoaded', function(){
+        periodButtons = document.getElementsByClassName("period-section")
+        for (var i = 0; i < periodButtons.length; i++) {
+          periodButtons[i].classList.add("btn-outline-success");
+        }
+       selectedButton = document.getElementById('7D')
+       selectedButton.classList.remove("btn-outline-success")
+       selectedButton.classList.add('btn-success')
+        drawGraph({{timestamp|safe}}, {{equity|safe}})
+    })
+
+    function updateGraph(period){
+        $.ajax({
+           url: '/user/get-history/',
+           data:{ period: period},
+           type:'GET',
+           success: function(data){
+           var line_color = "green"
+           if(data.equity[data.equity.length-1] < data.equity[0] ){
+               line_color = "red"
+           }
+
+           var newData = [{ x: data.timestamp, y: data.equity, type: 'scatter', hovertemplate: '%{y}', name: '', mode:'lines', line: {shape: 'spline', color:line_color, smoothing:0.01},}]
+           var newLayout = { title: 'Investment', xaxis: {showgrid: false,}, hovermode: 'x unified', hoverlabel: {bgcolor: '#fff', font: {family: 'Arial', size: 12}, bordercolor: '#000', borderwidth: 1, namelength: 0,}};
+           Plotly.react('plot', newData, newLayout, {displayModeBar: false})
+           periodButtons = document.getElementsByClassName("period-section")
+           for (var i = 0; i < periodButtons.length; i++) {
+               selectedButton.classList.remove('btn-success')
+              periodButtons[i].classList.add("btn-outline-success");
+           }
+           selectedButton = document.getElementById(period)
+           selectedButton.classList.remove("btn-outline-success")
+           selectedButton.classList.add('btn-success')
+           }, error: function(xhr, status, error){
+               console.log('Error:', error);
+            }
+        });
+    }
+</script>
 {% endblock %}
