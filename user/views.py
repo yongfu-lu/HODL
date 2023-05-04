@@ -282,7 +282,16 @@ def recommendations(request):
         act_algo = ActivatedAlgorithm.objects.filter(user=request.user, id=id)
         act_algo = list(act_algo.values())[0]
 
-        test = Recommendation(trading_client, periods[0][0], periods[0][1])
+        test = Recommendation(trading_client, periods[0][0], periods[0][1], optimal_params={('moving-average','AAPL') : [3,21,-1], ('bollinger-bands','META') : [34,2,-1], ('relative-strength-indicator','AMZN') : [43,39,1], ('average-true-range','TSLA') : [30,48,-1]})
+        try:
+            optimal = test.optimize_params(algorithm, stock_name, 3, 2) 
+            optimal_params = optimal[0]
+            optimal_score = optimal[1]
+              
+        except:
+            optimal_params = ""
+            optimal_score = ""            
+
         index = 0
         while index < len(periods):
             i = periods[index]
@@ -328,7 +337,7 @@ def recommendations(request):
         print("done")
         print(df)
 
-        return render(request, 'user/recommendations.html', {'df': df, 'activated_algorithm_list': activated_algorithm_list})
+        return render(request, 'user/recommendations.html', {'df': df, 'activated_algorithm_list': activated_algorithm_list, 'optimal_params': optimal_params, 'optimal_score': optimal_score})
             
     
     except:

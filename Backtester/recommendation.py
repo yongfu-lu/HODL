@@ -126,7 +126,7 @@ class Recommendation:
         #print(len(initial_population))
 
         ga_instance = pg.GA(num_generations=num_generations, 
-                            num_parents_mating=5,
+                            num_parents_mating=3,
                             initial_population=initial_population, 
                             #parent_selection_type="tournament",
                             fitness_func=fitness,

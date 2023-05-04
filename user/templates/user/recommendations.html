@@ -31,12 +31,12 @@
         <div class="card">
           <div class="card-body">
             <h5 class="card-title">Dates: {{ row.start }} - {{ row.end }}</h5>
-            <!-- <p class="card-text">Stock Name: {{ row.stock_name }}</p> -->
             <p class="card-text {% if row.Percent_Difference < 0 %}text-danger{% elif row.Percent_Difference > 0 %}text-success{% endif %}">
               Percent Difference: {{ row.Percent_Difference }}
           </p>          
             {{ row.plots|safe }}
-            <button class="btn btn-primary" onclick="showPopup('{{ row.current }}', '{{ row.potential }}')">See More Details</button>
+            <button class="btn btn-primary" onclick="showPopup('{{ row.current }}', '{{ row.potential }}, {{ optimal }}')">See More Details</button>
+            <button class="btn btn-primary" onclick="showOptimalPopup('{{ optimal_params }}', '{{ optimal_score }}')">Optimize Params</button>
           </div>
         </div>
         {% endfor %}
@@ -57,7 +57,7 @@
     function showPopup(current, potential) {
       var popup = window.open("", "popup", "width=800,height=600");
       var popupDocument = popup.document;
-    
+
       var style = popupDocument.createElement("style");
       style.innerHTML = `
         body {
@@ -106,26 +106,29 @@
         }
       `;
       popupDocument.head.appendChild(style);
-    
-      var infoDiv = popupDocument.createElement("div");
-      infoDiv.classList.add("info");
 
-      // investment_amount, short_moving_avg, long_moving_avg,
+      var form = popupDocument.createElement("form");
+      form.id = "optimal-form"
+      form.method = "POST";
+      form.action = "{% url 'recommendations' %}";
 
-  
-
-      
-    
-      
+      var hiddenField = popupDocument.createElement("input");
+      hiddenField.type = "hidden";
+      hiddenField.name = "optimal";
+      hiddenField.value = "true";
+      form.appendChild(hiddenField);
 
       var currentEarningsElement = popupDocument.createElement("p");
       currentEarningsElement.innerHTML = "<strong>Current Earnings:</strong> " + current;
-      infoDiv.appendChild(currentEarningsElement);
-    
+      form.appendChild(currentEarningsElement);
+
       var potentialEarningsElement = popupDocument.createElement("p");
       potentialEarningsElement.innerHTML = "<strong>Potential Earnings:</strong> " + potential;
-      infoDiv.appendChild(potentialEarningsElement);
-    
+      form.appendChild(potentialEarningsElement);
+
+      
+      popupDocument.body.appendChild(form);
+
       var closeButton = popupDocument.createElement("p");
       closeButton.classList.add("close-btn");
       closeButton.innerHTML = "Close";
@@ -133,9 +136,96 @@
         popup.close();
       };
       popupDocument.body.appendChild(closeButton);
-    
-      popupDocument.body.appendChild(infoDiv);
+
+      document.querySelector('#optimal-params-button').addEventListener('click', function() {
+        document.querySelector('#optimal-form').submit();
+      });
+
+
+      
+      
     }
+
+    function showOptimalPopup(optimal_params, optimal_score) {
+      var popup = window.open("", "popup", "width=800,height=600");
+      var popupDocument = popup.document;
+
+      var style = popupDocument.createElement("style");
+      style.innerHTML = `
+          body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 1rem;
+          }
+          h1 {
+            font-size: 1.5rem;
+            margin-top: 0;
+          }
+          p {
+            margin: 0;
+            padding: 0.5rem 0;
+          }
+          .info {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            padding: 1rem;
+          }
+          .graph {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            height: 300px;
+            margin-top: 1rem;
+            overflow: hidden;
+          }
+          .close-btn {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            color: #333;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            text-align: center;
+            transition: all 0.2s ease;
+          }
+          .close-btn:hover {
+            background-color: #f7f7f7;
+          }
+        `;
+      popupDocument.head.appendChild(style);
+
+      var infoContainer = popupDocument.createElement("div");
+      infoContainer.classList.add("info");
+
+      var titleElement = popupDocument.createElement("h1");
+      titleElement.innerHTML = "Optimal Parameters";
+      infoContainer.appendChild(titleElement);
+
+      var paramsElement = popupDocument.createElement("p");
+      paramsElement.innerHTML = "<strong>Params:</strong> " + optimal_params;
+      infoContainer.appendChild(paramsElement);
+
+      var scoreElement = popupDocument.createElement("p");
+      scoreElement.innerHTML = "<strong>Score:</strong> " + optimal_score;
+      infoContainer.appendChild(scoreElement);
+
+      popupDocument.body.appendChild(infoContainer);
+
+      var closeButton = popupDocument.createElement("p");
+      closeButton.classList.add("close-btn");
+      closeButton.innerHTML = "Close";
+      closeButton.onclick = function() {
+        popup.close();
+      };
+      popupDocument.body.appendChild(closeButton);
+    }
+
+
     </script>
     
     
